@@ -14,3 +14,4 @@ from . import test_public_booking
 from . import test_public_order
 from . import test_member_login
 from . import test_dashboard
+from . import test_owner_reports

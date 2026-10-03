@@ -18,7 +18,8 @@
     <record id="group_club_manager" model="res.groups">
         <field name="name">Club Manager</field>
         <field name="category_id" ref="module_category_club"/>
-        <field name="implied_ids" eval="[(4, ref('group_club_staff')), (4, ref('sales_team.group_sale_manager'))]"/>
+        <field name="implied_ids" eval="[(4, ref('group_club_staff')), (4, ref('sales_team.group_sale_manager')),
+            (4, ref('point_of_sale.group_pos_manager'))]"/>
         <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>
 </odoo>

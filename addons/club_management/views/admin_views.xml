@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================= Staff ================= -->
+    <record id="action_club_staff_users" model="ir.actions.act_window">
+        <field name="name">Staff Users</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain" eval="[('groups_id', 'in', [ref('group_club_staff')]), ('share', '=', False)]"/>
+    </record>
+
+    <record id="action_club_roles" model="ir.actions.act_window">
+        <field name="name">Roles &amp; Permissions</field>
+        <field name="res_model">res.groups</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain" eval="[('category_id', '=', ref('module_category_club'))]"/>
+    </record>
+
+    <record id="action_club_staff_activity" model="ir.actions.act_window">
+        <field name="name">Bookings by Staff Member</field>
+        <field name="res_model">club.booking</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="context">{'pivot_row_groupby': ['create_uid'], 'pivot_column_groupby': ['state'],
+            'pivot_measures': ['__count', 'price']}</field>
+    </record>
+
+    <menuitem id="menu_club_staff" name="Staff" parent="menu_club_root" sequence="82" groups="group_club_manager"/>
+    <menuitem id="menu_club_staff_overview" name="Staff Overview" parent="menu_club_staff"
+              action="action_club_staff_overview" sequence="5"/>
+    <menuitem id="menu_club_staff_users" name="Staff Users" parent="menu_club_staff"
+              action="action_club_staff_users" sequence="10" groups="base.group_erp_manager"/>
+    <menuitem id="menu_club_staff_shifts" name="POS Shifts" parent="menu_club_staff"
+              action="point_of_sale.action_pos_session" sequence="20"/>
+    <menuitem id="menu_club_staff_roles" name="Roles &amp; Permissions" parent="menu_club_staff"
+              action="action_club_roles" sequence="30" groups="base.group_erp_manager"/>
+    <menuitem id="menu_club_staff_activity" name="Staff Activity" parent="menu_club_staff"
+              action="action_club_staff_activity" sequence="40"/>
+
+    <!-- ================= Notifications ================= -->
+    <record id="action_club_email_templates" model="ir.actions.act_window">
+        <field name="name">Notification Templates</field>
+        <field name="res_model">mail.template</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('name', 'ilike', 'Club:')]</field>
+    </record>
+
+    <record id="action_club_sent_emails" model="ir.actions.act_window">
+        <field name="name">Sent Emails</field>
+        <field name="res_model">mail.mail</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_club_notifications" name="Notifications" parent="menu_club_root" sequence="85"
+              groups="group_club_manager"/>
+    <menuitem id="menu_club_notification_templates" name="Notification Templates" parent="menu_club_notifications"
+              action="action_club_email_templates" sequence="10"/>
+    <menuitem id="menu_club_notification_sent" name="Sent Emails" parent="menu_club_notifications"
+              action="action_club_sent_emails" sequence="20" groups="base.group_system"/>
+
+    <!-- ================= Administration ================= -->
+    <record id="action_club_products" model="ir.actions.act_window">
+        <field name="name">Shop &amp; Bar Products</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain" eval="[('categ_id', 'child_of', [ref('product_category_shop'), ref('product_category_bar')])]"/>
+    </record>
+
+    <record id="action_club_record_history" model="ir.actions.act_window">
+        <field name="name">Record History</field>
+        <field name="res_model">mail.tracking.value</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_groupby_model': 1}</field>
+    </record>
+
+    <menuitem id="menu_club_products" name="Products" parent="menu_club_config"
+              action="action_club_products" sequence="30"/>
+    <menuitem id="menu_club_admin_users" name="Users &amp; Permissions" parent="menu_club_config"
+              action="base.action_res_users" sequence="40" groups="base.group_erp_manager"/>
+    <menuitem id="menu_club_admin_history" name="Record History" parent="menu_club_config"
+              action="action_club_record_history" sequence="50" groups="base.group_system"/>
+    <menuitem id="menu_club_admin_settings" name="Settings" parent="menu_club_config"
+              action="base_setup.action_general_configuration" sequence="60" groups="base.group_system"/>
+</odoo>

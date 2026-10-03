@@ -16,6 +16,7 @@ export class OwnerDashboard extends Component {
 
     setup() {
         this.orm = useService("orm");
+        this.action = useService("action");
         this.periods = PERIODS;
         this.state = useState({ period: "month", data: null, loading: true });
         onWillStart(() => this.load());
@@ -30,6 +31,10 @@ export class OwnerDashboard extends Component {
     async setPeriod(period) {
         this.state.period = period;
         await this.load();
+    }
+
+    openReports() {
+        this.action.doAction("club_management.action_club_analytics");
     }
 
     money(amount) {

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.ClubAnalytics">
+        <div class="o_club_analytics p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h2 class="m-0">Reports &amp; Analytics</h2>
+                <div class="btn-group">
+                    <t t-foreach="ranges" t-as="r" t-key="r.months">
+                        <button class="btn"
+                                t-att-class="state.months === r.months ? 'btn-primary' : 'btn-outline-primary'"
+                                t-on-click="() => this.setRange(r.months)" t-esc="r.label"/>
+                    </t>
+                </div>
+            </div>
+            <t t-if="state.data">
+                <t t-set="d" t-value="state.data"/>
+                <div class="row g-3">
+                    <!-- Monthly revenue -->
+                    <div class="col-lg-7"><div class="card p-3 h-100">
+                        <h5>Monthly revenue</h5>
+                        <t t-foreach="d.monthly_revenue" t-as="row" t-key="row.month">
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between small">
+                                    <span t-esc="row.month"/><b t-esc="money(row.total)"/>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar" t-att-style="'width:' + width(row.total, d.monthly_revenue, 'total') + '%'"/>
+                                </div>
+                                <div class="small text-muted">
+                                    Memberships <t t-esc="money(row.membership)"/> · Courts <t t-esc="money(row.court)"/> ·
+                                    Shop <t t-esc="money(row.shop)"/> · Bar <t t-esc="money(row.bar)"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div></div>
+
+                    <!-- Revenue by tier -->
+                    <div class="col-lg-5"><div class="card p-3 h-100">
+                        <h5>Revenue by membership tier</h5>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Tier</th><th class="text-end">Plans</th><th class="text-end">Courts</th><th class="text-end">Shop &amp; bar</th><th class="text-end">Total</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="d.revenue_by_plan" t-as="row" t-key="row.name">
+                                    <td t-esc="row.name"/>
+                                    <td class="text-end" t-esc="money(row.membership)"/>
+                                    <td class="text-end" t-esc="money(row.court)"/>
+                                    <td class="text-end" t-esc="money(row.shop_bar)"/>
+                                    <td class="text-end fw-bold" t-esc="money(row.total)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div></div>
+
+                    <!-- Membership growth -->
+                    <div class="col-lg-6"><div class="card p-3 h-100">
+                        <h5>Membership growth</h5>
+                        <t t-foreach="d.membership_growth" t-as="row" t-key="row.month">
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between small">
+                                    <span t-esc="row.month"/>
+                                    <span><b t-esc="row.total"/> members <span class="text-success">(+<t t-esc="row.joined"/>)</span></span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" t-att-style="'width:' + width(row.total, d.membership_growth, 'total') + '%'"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div></div>
+
+                    <!-- Court utilization -->
+                    <div class="col-lg-6"><div class="card p-3 h-100">
+                        <h5>Court utilization <small class="text-muted">last <t t-esc="d.utilization_days"/> days</small></h5>
+                        <t t-foreach="d.court_utilization" t-as="row" t-key="row.court">
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between small">
+                                    <span><t t-esc="row.court"/> <span class="text-muted text-capitalize" t-esc="row.sport"/></span>
+                                    <span><t t-esc="row.hours"/> h · <b><t t-esc="row.percent"/>%</b></span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" t-att-style="'width:' + row.percent + '%'"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div></div>
+
+                    <!-- Best sellers -->
+                    <div class="col-lg-6"><div class="card p-3 h-100">
+                        <h5>Best-selling products</h5>
+                        <table class="table table-sm mb-0" t-if="d.best_sellers.length">
+                            <thead><tr><th>Product</th><th>Where</th><th class="text-end">Units</th><th class="text-end">Sales</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="d.best_sellers" t-as="row" t-key="row.product">
+                                    <td t-esc="row.product"/><td class="text-muted" t-esc="row.channel"/>
+                                    <td class="text-end" t-esc="row.qty"/><td class="text-end" t-esc="money(row.amount)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-muted mb-0" t-else="">No shop or bar sales in this period yet.</p>
+                    </div></div>
+
+                    <!-- Payment methods -->
+                    <div class="col-lg-6"><div class="card p-3 h-100">
+                        <h5>Payment methods <small class="text-muted">shop and bar orders</small></h5>
+                        <t t-foreach="d.payment_methods" t-as="row" t-key="row.method">
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between small">
+                                    <span><t t-esc="row.method"/> <span class="text-muted">(<t t-esc="row.count"/> orders)</span></span>
+                                    <span><t t-esc="money(row.amount)"/> · <b><t t-esc="row.share"/>%</b></span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" t-att-style="'width:' + row.share + '%'"/>
+                                </div>
+                            </div>
+                        </t>
+                        <p class="text-muted mb-0" t-if="!d.payment_methods.length">No orders in this period yet.</p>
+                    </div></div>
+
+                    <!-- Bar sales -->
+                    <div class="col-12"><div class="card p-3">
+                        <h5>Bar &amp; Cafeteria sales</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="text-muted">Total</div><div class="fs-3 fw-bold" t-esc="money(d.bar.total)"/>
+                                <div class="small text-muted"><t t-esc="d.bar.orders"/> orders · average <t t-esc="money(d.bar.average)"/></div>
+                                <t t-foreach="d.bar.top_items" t-as="item" t-key="item.product">
+                                    <div class="d-flex justify-content-between small mt-2">
+                                        <span t-esc="item.product"/><span><t t-esc="item.qty"/> sold · <t t-esc="money(item.amount)"/></span>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="text-muted small mb-1">Last 14 days</div>
+                                <div class="d-flex align-items-end gap-1" style="height: 120px;">
+                                    <t t-foreach="d.bar.daily" t-as="day" t-key="day.day">
+                                        <div class="flex-fill text-center" t-att-title="day.day + ': ' + money(day.amount)">
+                                            <div class="bg-primary mx-auto rounded-top" style="width: 70%; min-height: 2px;"
+                                                 t-att-style="'width:70%; height:' + width(day.amount, d.bar.daily, 'amount') + 'px'"/>
+                                            <div class="text-muted" style="font-size: 9px;" t-esc="day.day.slice(0, 2)"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div></div>
+                </div>
+            </t>
+            <div t-elif="state.loading" class="text-muted">Loading...</div>
+        </div>
+    </t>
+</templates>

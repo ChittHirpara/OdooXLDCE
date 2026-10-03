@@ -28,6 +28,19 @@
         <field name="target">main</field>
     </record>
 
+    <!-- Reports and staff OWL Client Actions -->
+    <record id="action_club_analytics" model="ir.actions.client">
+        <field name="name">Reports &amp; Analytics</field>
+        <field name="tag">club_management.analytics</field>
+        <field name="target">main</field>
+    </record>
+
+    <record id="action_club_staff_overview" model="ir.actions.client">
+        <field name="name">Staff</field>
+        <field name="tag">club_management.staff_overview</field>
+        <field name="target">main</field>
+    </record>
+
     <!-- Bar & Cafeteria POS OWL Client Action -->
     <record id="action_club_bar_pos_ui" model="ir.actions.client">
         <field name="name">Bar &amp; Cafeteria POS</field>

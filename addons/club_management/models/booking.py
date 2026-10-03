@@ -212,6 +212,13 @@ class Booking(models.Model):
                     "Booking %s has a posted invoice (%s). Issue a credit note before cancelling."
                     % (booking.name, booking.invoice_id.name))
         self.state = 'cancelled'
+        self._send_cancellation()
+
+    def _send_cancellation(self):
+        template = self.env.ref('club_management.mail_template_booking_cancelled', raise_if_not_found=False)
+        for booking in self:
+            if template and (booking.partner_id.email or booking.guest_email):
+                template.sudo().send_mail(booking.id)
 
     def action_create_invoice(self):
         """Create a draft customer invoice for the booking price.

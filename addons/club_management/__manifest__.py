@@ -29,6 +29,7 @@
         'views/report_views.xml',
         'views/order_views.xml',
         'views/crm_lead_views.xml',
+        'views/admin_views.xml',
     ],
     'demo': [
         'demo/demo_courts.xml',
@@ -53,6 +54,10 @@
             'club_management/static/src/components/bar_pos/bar_pos.js',
             'club_management/static/src/components/owner_dashboard/owner_dashboard.xml',
             'club_management/static/src/components/owner_dashboard/owner_dashboard.js',
+            'club_management/static/src/components/analytics/analytics.xml',
+            'club_management/static/src/components/analytics/analytics.js',
+            'club_management/static/src/components/staff_overview/staff_overview.xml',
+            'club_management/static/src/components/staff_overview/staff_overview.js',
         ],
     },
     'application': True,

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.StaffOverview">
+        <div class="o_club_staff p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h2 class="m-0">Staff</h2>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-outline-primary" t-on-click="() => this.open('club_management.action_club_staff_users')"><i class="fa fa-users"/> Staff users</button>
+                    <button class="btn btn-outline-primary" t-on-click="() => this.open('club_management.action_club_roles')"><i class="fa fa-key"/> Roles &amp; permissions</button>
+                    <button class="btn btn-outline-primary" t-on-click="() => this.open('point_of_sale.action_pos_session')"><i class="fa fa-clock-o"/> POS shifts</button>
+                </div>
+            </div>
+            <t t-if="state.data">
+                <div class="card p-3 mb-3">
+                    <h5>Team and activity</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead><tr>
+                                <th>Name</th><th>Role</th><th>Last sign-in</th>
+                                <th class="text-end">Bookings made</th><th class="text-end">Orders taken</th>
+                                <th class="text-end">Enquiries owned</th><th class="text-end">POS shifts</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="state.data.staff" t-as="u" t-key="u.id">
+                                    <td><b t-esc="u.name"/><div class="small text-muted" t-esc="u.login"/></td>
+                                    <td><span class="badge" t-att-class="u.role === 'Manager' ? 'text-bg-primary' : 'text-bg-secondary'" t-esc="u.role"/></td>
+                                    <td t-esc="u.last_login || 'Never'"/>
+                                    <td class="text-end" t-esc="u.bookings"/><td class="text-end" t-esc="u.orders"/>
+                                    <td class="text-end" t-esc="u.leads"/><td class="text-end" t-esc="u.shifts"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card p-3">
+                    <h5>Recent POS shifts <small class="text-muted"><t t-esc="state.data.open_shifts"/> open</small></h5>
+                    <table class="table table-sm mb-0" t-if="state.data.shifts.length">
+                        <thead><tr><th>Session</th><th>Cashier</th><th>Status</th><th>Opened</th><th>Closed</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="state.data.shifts" t-as="s" t-key="s.name">
+                                <td t-esc="s.name"/><td t-esc="s.user"/>
+                                <td><span class="badge" t-att-class="s.state === 'closed' ? 'text-bg-secondary' : 'text-bg-success'" t-esc="s.state"/></td>
+                                <td t-esc="s.start || '-'"/><td t-esc="s.stop || '-'"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted mb-0" t-else="">No POS shifts yet.</p>
+                </div>
+            </t>
+            <div t-elif="state.loading" class="text-muted">Loading...</div>
+        </div>
+    </t>
+</templates>
