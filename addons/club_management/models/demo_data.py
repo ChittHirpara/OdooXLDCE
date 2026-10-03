@@ -4,6 +4,7 @@ Static demo records (courts, members, products) live in demo/*.xml. Anything tha
 must be relative to "today" (bookings, enquiries, stock) is generated here so the
 demo never goes stale. Only called from demo/demo_activity.xml.
 """
+import base64
 import random
 from datetime import datetime, time, timedelta
 
@@ -12,7 +13,7 @@ import pytz
 from odoo import api, models
 from odoo.exceptions import ValidationError
 from odoo.modules.module import get_manifest
-from odoo.tools import convert_file
+from odoo.tools import convert_file, file_path
 
 from .booking import CLUB_TZ, FRIDAY, club_today
 
@@ -39,6 +40,23 @@ STOCK = {
 }
 
 
+# product xmlid -> picture in static/img/products (see scripts/gen_product_images.py)
+PRODUCT_IMAGES = {
+    'demo_product_racket': 'tennis_racket', 'demo_product_balls': 'tennis_balls',
+    'demo_product_bat': 'cricket_bat', 'demo_product_grip': 'grip_tape',
+    'demo_product_towel': 'towel', 'demo_product_water': 'water_bottle',
+    'demo_product_coffee': 'cold_coffee', 'demo_product_energy': 'energy_drink',
+    'demo_product_lime': 'lime_soda', 'demo_product_sandwich': 'sandwich',
+    'demo_product_shake': 'protein_shake',
+    'product_racket_padel_1': 'padel_racket', 'product_racket_tennis_1': 'tennis_racket',
+    'product_racket_badminton_1': 'badminton_racket', 'product_balls_tennis_can': 'tennis_balls',
+    'product_balls_padel_can': 'padel_balls', 'product_shuttlecocks_doz': 'shuttlecocks',
+    'product_bar_espresso': 'espresso', 'product_bar_cappuccino': 'cappuccino',
+    'product_bar_shake': 'protein_shake', 'product_bar_water': 'water_bottle',
+    'product_bar_burger': 'burger', 'product_bar_wrap': 'wrap',
+}
+
+
 def utc(day, hour, minute=0):
     """Club-local wall time on ``day`` as the naive UTC datetime Odoo stores."""
     local = CLUB_TZ.localize(datetime.combine(day, time(hour, minute)))
@@ -61,6 +79,18 @@ class ClubDemo(models.AbstractModel):
         for filename in get_manifest('club_management')['demo']:
             convert_file(self.env, 'club_management', filename, {}, mode='init',
                          noupdate=True, kind='demo')
+        return True
+
+    @api.model
+    def load_product_images(self):
+        """Give the demo products their picture. Safe to run again: a picture someone
+        uploaded is never replaced, and products that are not installed are skipped."""
+        for xmlid, name in PRODUCT_IMAGES.items():
+            product = self.env.ref('club_management.%s' % xmlid, raise_if_not_found=False)
+            if not product or product.image_1920:
+                continue
+            with open(file_path('club_management/static/img/products/%s.svg' % name), 'rb') as picture:
+                product.image_1920 = base64.b64encode(picture.read())
         return True
 
     @api.model

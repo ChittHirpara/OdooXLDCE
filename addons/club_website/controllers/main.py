@@ -6,6 +6,7 @@ from odoo import http
 from odoo.addons.club_management.controllers.main import ClubController
 from odoo.addons.club_management.models.booking import WEBSITE_BOOKING_DAYS, club_today
 from odoo.addons.club_management.models.crm_lead import ENQUIRY_TYPES, SPORTS
+from odoo.addons.club_website.controllers.member import signed_in_defaults
 from odoo.exceptions import ValidationError
 from odoo.http import request
 
@@ -24,6 +25,7 @@ class ClubWebsite(http.Controller):
     def _join_values(self, form=None, error=None):
         values = {'type': 'membership', 'plan': '', 'sport': '', 'name': '', 'email': '',
                   'phone': '', 'message': ''}
+        values.update({k: v for k, v in signed_in_defaults().items() if k in values})
         values.update({key: (value or '') for key, value in (form or {}).items()})
         return {'plans': self.site.plans(), 'types': ENQUIRY_TYPES, 'sports': SPORTS,
                 'form': values, 'error': error}
@@ -64,6 +66,17 @@ class ClubWebsite(http.Controller):
             'product': product, 'stock_label': self.site.stock_label(product['stock']),
             'reserve_url': reserve_url, 'cart_count': self._cart_count(),
             'flash': request.session.pop('club_flash', None)})
+
+    @http.route('/club-shop/image/<int:product_id>', type='http', auth='public', website=True, sitemap=False)
+    def shop_image(self, product_id, **kw):
+        """A shop product's picture. Visitors cannot read products, so this serves the image
+        of products that are publicly for sale, and nothing else."""
+        product = self.site.shop_product(product_id)
+        if not product or not product['has_image']:
+            return request.not_found()
+        record = request.env['product.product'].sudo().browse(product_id)
+        stream = request.env['ir.binary']._get_image_stream_from(record, 'image_512')
+        return stream.get_response(max_age=http.STATIC_CACHE)
 
     @http.route('/join', type='http', auth='public', website=True, sitemap=True)
     def join(self, type=None, plan=None, sport=None, message=None, **kw):

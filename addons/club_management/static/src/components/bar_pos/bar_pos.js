@@ -17,30 +17,30 @@ const DEFAULT_TABLES = [
 ];
 
 const DEFAULT_CATEGORIES = [
-    { id: "all", label: "All Items", icon: "🍽️" },
-    { id: "drinks", label: "Drinks", icon: "🍹" },
-    { id: "food", label: "Food", icon: "🥗" },
-    { id: "snacks", label: "Snacks", icon: "🍿" },
-    { id: "coffee", label: "Coffee & Tea", icon: "☕" },
-    { id: "shakes", label: "Protein & Shakes", icon: "🥤" },
+    { id: "all", label: "All Items", icon: "fa-cutlery" },
+    { id: "drinks", label: "Drinks", icon: "fa-glass" },
+    { id: "food", label: "Food", icon: "fa-leaf" },
+    { id: "snacks", label: "Snacks", icon: "fa-cube" },
+    { id: "coffee", label: "Coffee & Tea", icon: "fa-coffee" },
+    { id: "shakes", label: "Protein & Shakes", icon: "fa-bolt" },
 ];
 
 const DEFAULT_PRODUCTS = [
-    { id: 1, name: "Espresso Single Origin", category: "coffee", price: 80, stock: 40, image_icon: "☕", is_available: true },
-    { id: 2, name: "Artisanal Cappuccino", category: "coffee", price: 140, stock: 35, image_icon: "☕", is_available: true },
-    { id: 3, name: "Cold Brew Nitro", category: "coffee", price: 160, stock: 20, image_icon: "🧊", is_available: true },
-    { id: 4, name: "Whey Gold Recovery Shake", category: "shakes", price: 220, stock: 18, image_icon: "🥤", is_available: true },
-    { id: 5, name: "Plant Berry Antioxidant Smoothie", category: "shakes", price: 240, stock: 15, image_icon: "🫐", is_available: true },
-    { id: 6, name: "Hydration Electrolyte Coconut Water", category: "drinks", price: 90, stock: 50, image_icon: "🥥", is_available: true },
-    { id: 7, name: "Fresh Orange & Mint Juice", category: "drinks", price: 130, stock: 25, image_icon: "🍊", is_available: true },
-    { id: 8, name: "Sparkling Mineral Water (500ml)", category: "drinks", price: 60, stock: 60, image_icon: "💧", is_available: true },
-    { id: 9, name: "Clubhouse Grilled Chicken Wrap", category: "food", price: 210, stock: 14, image_icon: "🌯", is_available: true },
-    { id: 10, name: "Avocado & Sourdough Toast", category: "food", price: 190, stock: 12, image_icon: "🥑", is_available: true },
-    { id: 11, name: "Mediterranean Quinoa Power Bowl", category: "food", price: 260, stock: 10, image_icon: "🥗", is_available: true },
-    { id: 12, name: "Champions Classic Smash Burger", category: "food", price: 250, stock: 16, image_icon: "🍔", is_available: true },
-    { id: 13, name: "Raw Whey Protein Bar (Salted Caramel)", category: "snacks", price: 110, stock: 45, image_icon: "🍫", is_available: true },
-    { id: 14, name: "Roasted Almond & Cranberry Mix", category: "snacks", price: 120, stock: 30, image_icon: "🥜", is_available: true },
-    { id: 15, name: "Baked Sweet Potato Crisps", category: "snacks", price: 95, stock: 0, image_icon: "🍠", is_available: false },
+    { id: 1, name: "Espresso Single Origin", category: "coffee", price: 80, stock: 40, is_available: true },
+    { id: 2, name: "Artisanal Cappuccino", category: "coffee", price: 140, stock: 35, is_available: true },
+    { id: 3, name: "Cold Brew Nitro", category: "coffee", price: 160, stock: 20, is_available: true },
+    { id: 4, name: "Whey Gold Recovery Shake", category: "shakes", price: 220, stock: 18, is_available: true },
+    { id: 5, name: "Plant Berry Antioxidant Smoothie", category: "shakes", price: 240, stock: 15, is_available: true },
+    { id: 6, name: "Hydration Electrolyte Coconut Water", category: "drinks", price: 90, stock: 50, is_available: true },
+    { id: 7, name: "Fresh Orange & Mint Juice", category: "drinks", price: 130, stock: 25, is_available: true },
+    { id: 8, name: "Sparkling Mineral Water (500ml)", category: "drinks", price: 60, stock: 60, is_available: true },
+    { id: 9, name: "Clubhouse Grilled Chicken Wrap", category: "food", price: 210, stock: 14, is_available: true },
+    { id: 10, name: "Avocado & Sourdough Toast", category: "food", price: 190, stock: 12, is_available: true },
+    { id: 11, name: "Mediterranean Quinoa Power Bowl", category: "food", price: 260, stock: 10, is_available: true },
+    { id: 12, name: "Champions Classic Smash Burger", category: "food", price: 250, stock: 16, is_available: true },
+    { id: 13, name: "Raw Whey Protein Bar (Salted Caramel)", category: "snacks", price: 110, stock: 45, is_available: true },
+    { id: 14, name: "Roasted Almond & Cranberry Mix", category: "snacks", price: 120, stock: 30, is_available: true },
+    { id: 15, name: "Baked Sweet Potato Crisps", category: "snacks", price: 95, stock: 0, is_available: false },
 ];
 
 const CLUB_MEMBERS = [
@@ -291,7 +291,7 @@ export class BarPOSPage extends Component {
     // Product Add to Cart
     addToCart(product) {
         if (!product.is_available || product.stock <= 0) {
-            this.state.error = `⚠ ${product.name} is currently out of stock.`;
+            this.state.error = `${product.name} is currently out of stock.`;
             return;
         }
 
@@ -299,7 +299,7 @@ export class BarPOSPage extends Component {
         const currentQty = existing ? existing.qty : 0;
 
         if (currentQty + 1 > product.stock) {
-            this.state.error = `⚠ Insufficient stock: only ${product.stock} units of ${product.name} available.`;
+            this.state.error = `Insufficient stock: only ${product.stock} units of ${product.name} available.`;
             return;
         }
 
@@ -320,7 +320,7 @@ export class BarPOSPage extends Component {
 
         if (delta > 0) {
             if (item.qty + 1 > item.product.stock) {
-                this.state.error = `⚠ Only ${item.product.stock} units available in stock.`;
+                this.state.error = `Only ${item.product.stock} units available in stock.`;
                 return;
             }
             item.qty += 1;

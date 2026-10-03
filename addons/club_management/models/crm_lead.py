@@ -299,6 +299,7 @@ class CrmLead(models.Model):
             lead.member_activated = True
             lead.message_post(body="Member created: %s, %s plan, ID %s, valid until %s." % (
                 partner.name, plan.name, partner.member_id, partner.expiry_date))
+            partner._club_ensure_portal_login()    # first: the welcome e-mail mentions the login
             template = self.env.ref('club_management.mail_template_member_welcome', raise_if_not_found=False)
             if template and partner.email:
                 template.sudo().send_mail(partner.id)

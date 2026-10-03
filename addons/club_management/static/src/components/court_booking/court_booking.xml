@@ -84,10 +84,10 @@
                     <t t-if="state.error">
                         <div class="cc-error-banner">
                             <div class="cc-error-content">
-                                <span class="cc-error-icon">⚠</span>
+                                <span class="cc-error-icon"><i class="fa fa-exclamation-triangle"/></span>
                                 <span><t t-esc="state.error"/></span>
                             </div>
-                            <button class="cc-error-dismiss" t-on-click="() => this.state.error = null">✕</button>
+                            <button class="cc-error-dismiss" t-on-click="() => this.state.error = null"><i class="fa fa-times"/></button>
                         </div>
                     </t>
 
@@ -153,7 +153,7 @@
                                              t-att-title="court.name + ' at ' + time">
                                             
                                             <t t-if="isSlotSelected(court.id, time)">
-                                                <span class="cc-slot-indicator selected">✓</span>
+                                                <span class="cc-slot-indicator selected"><i class="fa fa-check"/></span>
                                             </t>
                                             <t t-elif="isSlotBooked(court.id, time)">
                                                 <span class="cc-slot-indicator booked">Booked</span>
@@ -172,7 +172,7 @@
                     <t t-if="state.selectedCourt and state.selectedSlot">
                         <div class="cc-selection-bar">
                             <div class="cc-selection-details">
-                                <div class="cc-selection-icon">🎾</div>
+                                <div class="cc-selection-icon"><i class="fa fa-calendar-check-o"/></div>
                                 <div class="cc-selection-text">
                                     <div class="cc-selection-title">
                                         <t t-esc="state.selectedCourt.name"/>
@@ -229,7 +229,7 @@
                         <!-- Bookings Cards List -->
                         <t t-if="filteredMyBookings.length === 0">
                             <div class="cc-empty-state">
-                                <span class="cc-empty-icon">📅</span>
+                                <span class="cc-empty-icon"><i class="fa fa-calendar"/></span>
                                 <h3>No <t t-esc="state.bookingsTab"/> bookings found</h3>
                                 <p>You have no reservations under this category.</p>
                                 <button class="cc-btn-primary" t-on-click="() => this.setView('grid')">
@@ -255,7 +255,7 @@
 
                                         <div class="cc-booking-time-details">
                                             <div class="cc-b-detail-row">
-                                                <span class="cc-b-icon">🗓️</span>
+                                                <span class="cc-b-icon"><i class="fa fa-calendar-o"/></span>
                                                 <span><t t-esc="formatDateDisplay(b.date)"/></span>
                                             </div>
                                             <div class="cc-b-detail-row">
@@ -263,7 +263,7 @@
                                                 <span><t t-esc="formatTimeDisplay(b.start_time)"/> – <t t-esc="formatTimeDisplay(b.end_time)"/></span>
                                             </div>
                                             <div class="cc-b-detail-row">
-                                                <span class="cc-b-icon">💳</span>
+                                                <span class="cc-b-icon"><i class="fa fa-credit-card"/></span>
                                                 <span>Fee: <strong><t t-esc="b.price"/></strong> (<t t-esc="b.plan_name"/>)</span>
                                             </div>
                                         </div>
@@ -289,7 +289,7 @@
                 <t t-if="state.isModalOpen">
                     <div class="cc-modal-backdrop" t-on-click="closeModal">
                         <div class="cc-modal-dialog" t-on-click.stop="">
-                            <button class="cc-modal-close" t-on-click="closeModal">✕</button>
+                            <button class="cc-modal-close" t-on-click="closeModal"><i class="fa fa-times"/></button>
 
                             <div class="cc-modal-header">
                                 <h3 class="cc-modal-title">Confirm Court Reservation</h3>
@@ -338,7 +338,7 @@
                 <t t-if="state.isConfirmationOpen">
                     <div class="cc-modal-backdrop">
                         <div class="cc-modal-dialog cc-confirmed-dialog">
-                            <div class="cc-confirmed-badge">✓</div>
+                            <div class="cc-confirmed-badge"><i class="fa fa-check"/></div>
                             <h3 class="cc-confirmed-title">Booking Confirmed</h3>
                             
                             <div class="cc-confirmed-card">

@@ -1,11 +1,14 @@
 import base64
+import logging
 from datetime import timedelta
 
-from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo import Command, api, fields, models
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools import email_normalize
 
 from .booking import club_today
+
+_logger = logging.getLogger(__name__)
 
 JUNIOR_AGE_LIMIT = 18
 DEFAULT_REMINDER_DAYS = 14
@@ -171,6 +174,64 @@ class ResPartner(models.Model):
                 'expiry_date': today + timedelta(days=partner.plan_id.validity_days),
             })
 
+    # ------------------------------------------------------------------
+    # Website login ("My Club")
+    # ------------------------------------------------------------------
+    def _club_grant_portal_access(self):
+        """Give each member a website login: a portal user (never staff) whose login is their
+        e-mail address. Members who already have a user, or no e-mail, are skipped.
+        Returns the users created; the sign-in invitation is sent separately."""
+        Users = self.env['res.users'].sudo()
+        portal = self.env.ref('base.group_portal')
+        created = Users
+        for partner in self.sudo():
+            login = email_normalize(partner.email or '')
+            if not partner.is_member or not login or partner.user_ids:
+                continue
+            if Users.with_context(active_test=False).search_count([('login', '=', login)]):
+                continue
+            created |= Users.with_context(no_reset_password=True).create({
+                'name': partner.name,
+                'login': login,
+                'email': partner.email,
+                'partner_id': partner.id,
+                'groups_id': [Command.set([portal.id])],
+            })
+        return created
+
+    def _club_ensure_portal_login(self):
+        """Create the website login and e-mail the invitation, without ever failing the
+        membership sign-up behind it."""
+        for partner in self:
+            try:
+                with self.env.cr.savepoint():
+                    partner._club_grant_portal_access()._club_send_invitation()
+            except Exception:    # noqa: BLE001 - the member exists; staff can resend the invitation
+                _logger.exception("Could not set up the website login of %s", partner.display_name)
+                partner.message_post(
+                    body="The website login could not be set up. Use Send Sign-in Invitation to retry.",
+                    subtype_xmlid='mail.mt_note')
+
+    def action_send_portal_invitation(self):
+        """Button on the member form: create the login if missing and (re)send the invitation."""
+        self.ensure_one()
+        if not self.is_member:
+            raise UserError("Only club members can have a website login.")
+        if not email_normalize(self.email or ''):
+            raise UserError("Add an e-mail address to %s first: it is the login." % self.name)
+        self._club_grant_portal_access()
+        sent = self.user_ids.filtered('share')._club_send_invitation()
+        if sent:
+            title, kind = "Invitation sent", 'success'
+            message = "%s can choose a password and sign in with %s." % (self.name, self.email)
+        else:
+            title, kind = "Login created, e-mail not sent", 'warning'
+            message = ("%s can sign in with %s once a password is set, but the outgoing mail server "
+                       "did not accept the invitation. Check Settings > Technical > Outgoing Mail Servers."
+                       % (self.name, self.email))
+        return {'type': 'ir.actions.client', 'tag': 'display_notification',
+                'params': {'title': title, 'type': kind, 'sticky': not sent, 'message': message}}
+
     @api.model
     def _club_verify_member(self, member_ref, email):
         """The member for an online booking or order: the member ID plus the e-mail on file.
@@ -270,4 +331,5 @@ class ResPartner(models.Model):
             raise ValidationError(f"Unknown membership tier: {plan_code}")
         partner.plan_id = plan.id
         partner.action_activate_membership()
+        partner._club_ensure_portal_login()
         return partner.get_current_member()

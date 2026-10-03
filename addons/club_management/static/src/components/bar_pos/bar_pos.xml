@@ -5,7 +5,7 @@
             <!-- Topbar Navigation -->
             <header class="cc-pos-topbar">
                 <div class="cc-pos-brand">
-                    <div class="cc-pos-emblem">☕</div>
+                    <div class="cc-pos-emblem"><i class="fa fa-coffee"/></div>
                     <h1 class="cc-pos-title">Champions Club Bar &amp; POS</h1>
                     <span class="cc-pos-badge">Club POS</span>
                 </div>
@@ -20,24 +20,24 @@
 
                 <div class="cc-pos-top-actions">
                     <button class="cc-top-btn" t-att-class="{ 'active': state.currentView === 'pos' }" t-on-click="() => this.setView('pos')">
-                        <span>🛒 POS Register</span>
+                        <span><i class="fa fa-shopping-cart"/> POS Register</span>
                     </button>
 
                     <button class="cc-top-btn" t-att-class="{ 'active': state.currentView === 'tables' }" t-on-click="() => this.setView('tables')">
-                        <span>🪑 Floor &amp; Tables</span>
+                        <span><i class="fa fa-th-large"/> Floor &amp; Tables</span>
                     </button>
 
                     <button class="cc-top-btn" t-att-class="{ 'active': state.currentView === 'history' }" t-on-click="() => this.setView('history')">
-                        <span>📜 Orders</span>
+                        <span><i class="fa fa-file-text-o"/> Orders</span>
                     </button>
 
                     <button class="cc-top-btn" t-on-click="openTabsDrawer">
-                        <span>📑 Open Tabs</span>
+                        <span><i class="fa fa-files-o"/> Open Tabs</span>
                         <span class="cc-pill-badge" t-esc="openTabsCount"/>
                     </button>
 
                     <button class="cc-top-btn" t-on-click="openShiftPanel">
-                        <span>⏱️ Shift</span>
+                        <span><i class="fa fa-clock-o"/> Shift</span>
                     </button>
 
                     <div class="cc-staff-profile">
@@ -54,7 +54,7 @@
             <t t-if="state.error">
                 <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #FCA5A5; padding: 0.75rem 1.25rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; z-index: 90;">
                     <span><t t-esc="state.error"/></span>
-                    <button type="button" style="background: transparent; border: none; color: inherit; cursor: pointer;" t-on-click="dismissError">✕</button>
+                    <button type="button" style="background: transparent; border: none; color: inherit; cursor: pointer;" t-on-click="dismissError"><i class="fa fa-times"/></button>
                 </div>
             </t>
 
@@ -66,10 +66,10 @@
                         <!-- Search & Filter Controls -->
                         <div class="cc-catalog-header-bar">
                             <div class="cc-pos-search-box">
-                                <span class="cc-search-icon">🔍</span>
+                                <span class="cc-search-icon"><i class="fa fa-search"/></span>
                                 <input type="text" class="cc-pos-search-input" placeholder="Search food, drinks, coffee..." t-att-value="state.searchQuery" t-on-input="handleSearchInput" />
                                 <t t-if="state.searchQuery">
-                                    <button class="cc-search-clear" t-on-click="clearSearch">✕</button>
+                                    <button class="cc-search-clear" t-on-click="clearSearch"><i class="fa fa-times"/></button>
                                 </t>
                             </div>
 
@@ -82,7 +82,7 @@
                         <div class="cc-category-tabs-bar">
                             <t t-foreach="state.categories" t-as="cat" t-key="cat.id">
                                 <button class="cc-cat-tab" t-att-class="{ 'active': state.selectedCategory === cat.id }" t-on-click="() => this.setCategory(cat.id)">
-                                    <span><t t-esc="cat.icon"/></span>
+                                    <i t-att-class="'fa ' + cat.icon"/>
                                     <span><t t-esc="cat.label"/></span>
                                 </button>
                             </t>
@@ -94,7 +94,7 @@
                                 <t t-foreach="filteredProducts" t-as="product" t-key="product.id">
                                     <div class="cc-pos-product-card" t-att-class="{ 'out-of-stock': !product.is_available }" t-on-click="() => this.addToCart(product)">
                                         <div class="cc-product-media">
-                                            <span><t t-esc="product.image_icon"/></span>
+                                            <img t-if="product.image_url" t-att-src="product.image_url" t-att-alt="product.name"/><i t-else="" class="fa fa-cube"/>
                                         </div>
                                         <span class="cc-product-cat"><t t-esc="product.category"/></span>
                                         <h3 class="cc-product-name"><t t-esc="product.name"/></h3>
@@ -128,7 +128,7 @@
                             <!-- Member Selector Box -->
                             <div class="cc-member-selector-box" t-on-click="openMemberSelector" title="Click to assign club member">
                                 <div class="cc-member-info-left">
-                                    <div class="cc-mem-avatar">👤</div>
+                                    <div class="cc-mem-avatar"><i class="fa fa-user"/></div>
                                     <div class="cc-mem-text">
                                         <span class="cc-mem-name"><t t-esc="state.selectedMember.name"/></span>
                                         <span class="cc-mem-tier"><t t-esc="state.selectedMember.plan"/> Member Privilege</span>
@@ -142,7 +142,7 @@
                         <div class="cc-order-items-list">
                             <t t-if="state.cart.length === 0">
                                 <div class="cc-empty-order-state">
-                                    <span class="cc-empty-icon">🍽️</span>
+                                    <span class="cc-empty-icon"><i class="fa fa-cutlery"/></span>
                                     <h4>Order is Empty</h4>
                                     <p>Select items from the catalog or tap a category to add products.</p>
                                 </div>
@@ -151,7 +151,7 @@
                                 <t t-foreach="state.cart" t-as="item" t-key="item.product.id">
                                     <div class="cc-order-item-row">
                                         <div class="cc-order-item-icon">
-                                            <t t-esc="item.product.image_icon"/>
+                                            <img t-if="item.product.image_url" t-att-src="item.product.image_url" t-att-alt="item.product.name"/><i t-else="" class="fa fa-cube"/>
                                         </div>
                                         <div class="cc-order-item-details">
                                             <h4 class="cc-item-title"><t t-esc="item.product.name"/></h4>
@@ -166,7 +166,7 @@
 
                                         <span class="cc-item-line-total">₹<t t-esc="item.product.price * item.qty"/></span>
 
-                                        <button class="cc-btn-remove-line" t-on-click="() => this.removeCartItem(item.product.id)" title="Remove item">✕</button>
+                                        <button class="cc-btn-remove-line" t-on-click="() => this.removeCartItem(item.product.id)" title="Remove item"><i class="fa fa-times"/></button>
                                     </div>
                                 </t>
                             </t>
@@ -296,7 +296,7 @@
                                         <td style="padding: 0.85rem 1.25rem; font-weight: 700; color: #10B981;"><t t-esc="ord.amount"/></td>
                                         <td style="padding: 0.85rem 1.25rem;"><span style="background: #1E293B; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.76rem;"><t t-esc="ord.method"/></span></td>
                                         <td style="padding: 0.85rem 1.25rem; color: #94A3B8;"><t t-esc="ord.time"/></td>
-                                        <td style="padding: 0.85rem 1.25rem;"><span style="color: #10B981; font-weight: 600;">✓ <t t-esc="ord.status"/></span></td>
+                                        <td style="padding: 0.85rem 1.25rem;"><span style="color: #10B981; font-weight: 600;"><i class="fa fa-check"/> <t t-esc="ord.status"/></span></td>
                                     </tr>
                                 </t>
                             </tbody>
@@ -313,7 +313,7 @@
                     <div class="cc-pos-modal-dialog cc-payment-modal">
                         <div class="cc-modal-head">
                             <h3>Settle Table Bill — <t t-esc="state.currentTable.name"/></h3>
-                            <button class="cc-modal-close" t-on-click="closePaymentModal">✕</button>
+                            <button class="cc-modal-close" t-on-click="closePaymentModal"><i class="fa fa-times"/></button>
                         </div>
 
                         <div class="cc-modal-body">
@@ -331,15 +331,15 @@
 
                             <div class="cc-payment-methods-grid">
                                 <div class="cc-pay-method-btn" t-att-class="{ 'selected': state.paymentMethod === 'cash' }" t-on-click="() => this.setPaymentMethod('cash')">
-                                    <span class="cc-pay-icon">💵</span>
+                                    <span class="cc-pay-icon"><i class="fa fa-money"/></span>
                                     <span class="cc-pay-method-title">Cash</span>
                                 </div>
                                 <div class="cc-pay-method-btn" t-att-class="{ 'selected': state.paymentMethod === 'card' }" t-on-click="() => this.setPaymentMethod('card')">
-                                    <span class="cc-pay-icon">💳</span>
+                                    <span class="cc-pay-icon"><i class="fa fa-credit-card"/></span>
                                     <span class="cc-pay-method-title">Card</span>
                                 </div>
                                 <div class="cc-pay-method-btn" t-att-class="{ 'selected': state.paymentMethod === 'upi' }" t-on-click="() => this.setPaymentMethod('upi')">
-                                    <span class="cc-pay-icon">📱</span>
+                                    <span class="cc-pay-icon"><i class="fa fa-mobile"/></span>
                                     <span class="cc-pay-method-title">UPI / QR</span>
                                 </div>
                             </div>
@@ -362,7 +362,7 @@
                 <div class="cc-pos-modal-backdrop">
                     <div class="cc-pos-modal-dialog">
                         <div class="cc-modal-body cc-success-screen">
-                            <div class="cc-success-badge-icon">✓</div>
+                            <div class="cc-success-badge-icon"><i class="fa fa-check"/></div>
                             <h2 class="cc-success-headline">Payment Successful</h2>
                             <p style="font-size: 0.84rem; color: #94A3B8; margin: 0;">Commercial POS receipt recorded in Odoo database.</p>
 
@@ -404,7 +404,7 @@
                     <div class="cc-pos-modal-dialog">
                         <div class="cc-modal-head">
                             <h3>Current POS Shift Metrics</h3>
-                            <button class="cc-modal-close" t-on-click="closeShiftPanel">✕</button>
+                            <button class="cc-modal-close" t-on-click="closeShiftPanel"><i class="fa fa-times"/></button>
                         </div>
 
                         <div class="cc-modal-body cc-shift-panel-content">
@@ -461,7 +461,7 @@
                     <div class="cc-pos-modal-dialog">
                         <div class="cc-modal-head">
                             <h3>Assign Member to Tab</h3>
-                            <button class="cc-modal-close" t-on-click="closeMemberSelector">✕</button>
+                            <button class="cc-modal-close" t-on-click="closeMemberSelector"><i class="fa fa-times"/></button>
                         </div>
 
                         <div class="cc-modal-body">
@@ -498,7 +498,7 @@
                     <div class="cc-pos-modal-dialog">
                         <div class="cc-modal-head">
                             <h3>Currently Open Bar Tabs (<t t-esc="openTabsCount"/>)</h3>
-                            <button class="cc-modal-close" t-on-click="closeTabsDrawer">✕</button>
+                            <button class="cc-modal-close" t-on-click="closeTabsDrawer"><i class="fa fa-times"/></button>
                         </div>
 
                         <div class="cc-modal-body">

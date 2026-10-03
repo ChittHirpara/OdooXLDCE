@@ -116,6 +116,12 @@
         As a member you get your tier court rate and your shop and bar discounts automatically:
         just give your member ID at the front desk, the shop or the bar.
     </p>
+    <t t-if="object.user_ids">
+        <p>
+            You can also sign in on our website with <strong><t t-out="object.email or ''"/></strong> to see your
+            membership, bookings and orders. A separate email lets you choose your password.
+        </p>
+    </t>
     <p>See you on the court!<br/>The Champions Club</p>
 </div>
         </field>

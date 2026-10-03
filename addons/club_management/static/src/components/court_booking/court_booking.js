@@ -305,7 +305,7 @@ export class CourtBookingPage extends Component {
         if (sameDayCount >= 2) {
             this.state.loading = false;
             this.state.isModalOpen = false;
-            this.state.error = "⚠ You have reached your maximum of 2 bookings for today.";
+            this.state.error = "You have reached your maximum of 2 bookings for today.";
             return;
         }
 
@@ -313,7 +313,7 @@ export class CourtBookingPage extends Component {
         if (this.isSlotBooked(this.state.selectedCourt.id, this.state.selectedSlot)) {
             this.state.loading = false;
             this.state.isModalOpen = false;
-            this.state.error = "⚠ This court is no longer available.";
+            this.state.error = "This court is no longer available.";
             return;
         }
 

@@ -147,8 +147,13 @@
                                         <tbody>
                                             <tr t-foreach="lines" t-as="line">
                                                 <td>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="club-thumb"><t t-set="product" t-value="line['product']"/><t t-call="club_website.product_image"/></div>
+                                                        <div>
                                                     <a t-attf-href="/club-shop/#{line['product']['id']}" t-esc="line['product']['name']"/>
                                                     <div class="club-muted small" t-esc="site.stock_label(line['product']['stock'])"/>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td>₹<t t-esc="'{:,.0f}'.format(line['product']['price'])"/></td>
                                                 <td><input type="number" min="0" t-att-max="min(line['product']['stock'], 20)"

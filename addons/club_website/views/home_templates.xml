@@ -23,12 +23,12 @@
                     <div class="container">
                         <h2 class="club-section-title">Everything under one roof</h2>
                         <div class="row g-3 club-features">
-                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>🎾</span><h5>Tennis</h5></div></div>
-                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>🏓</span><h5>Padel</h5></div></div>
-                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>🏸</span><h5>Badminton</h5></div></div>
-                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>🏏</span><h5>Cricket nets</h5></div></div>
-                            <div class="col-6 col-md-4 col-lg-2"><a href="/club-shop" class="club-feature"><span>🛍️</span><h5>Pro-Shop</h5></a></div>
-                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>☕</span><h5>Bar &amp; Cafeteria</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'tennis'"/></t></span><h5>Tennis</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'padel'"/></t></span><h5>Padel</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'badminton'"/></t></span><h5>Badminton</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'cricket'"/></t></span><h5>Cricket nets</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><a href="/club-shop" class="club-feature"><span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'shop'"/></t></span><h5>Pro-Shop</h5></a></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'cafe'"/></t></span><h5>Bar &amp; Cafeteria</h5></div></div>
                         </div>
                     </div>
                 </section>

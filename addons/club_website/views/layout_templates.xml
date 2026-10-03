@@ -52,10 +52,18 @@
         </div>
     </template>
 
+    <!-- A product picture, or a neutral icon while the product has none. Param: product (dict) -->
+    <template id="product_image" name="Club product image">
+        <img t-if="product['has_image']" t-att-src="'/club-shop/image/%d' % product['id']"
+             t-att-alt="product['name']" loading="lazy"/>
+        <span class="club-no-image" t-else=""><t t-call="club_website.icon">
+            <t t-set="name" t-value="'box'"/><t t-set="size" t-value="48"/></t></span>
+    </template>
+
     <!-- One shop product. Params: product (dict), site (club.website.data) -->
     <template id="product_card" name="Club product card">
         <a t-attf-href="/club-shop/#{product['id']}" class="club-product text-decoration-none">
-            <div class="club-product-icon" t-esc="product['image_icon']"/>
+            <div class="club-product-img"><t t-call="club_website.product_image"/></div>
             <span class="club-product-cat" t-esc="product['category_label']"/>
             <h4 class="club-product-name" t-esc="product['name']"/>
             <div class="club-product-foot">

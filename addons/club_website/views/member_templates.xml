@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- My Club: the signed-in member's page -->
+    <template id="my_club_page" name="My Club">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_my_club'"/>
+            <div id="wrap" class="club-site club-my">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'My Club'"/>
+                    <t t-set="title" t-value="'Welcome, %s' % (partner.name or '').split(' ')[0]"/>
+                    <t t-set="subtitle" t-value="'Your membership, bookings and orders in one place.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container">
+                        <div class="row g-4">
+                            <div class="col-lg-5">
+                                <div class="club-member-card" t-if="is_member">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <p class="club-eyebrow mb-1">The Champions Club</p>
+                                            <h3 class="mb-1" t-esc="plan.name or 'Member'"/>
+                                            <span t-attf-class="club-status #{active and 'club-status-ok' or 'club-status-off'}"
+                                                  t-esc="active and 'Active' or 'Expired'"/>
+                                        </div>
+                                        <img t-if="qr" t-att-src="qr" class="club-qr" alt="Membership QR code"/>
+                                    </div>
+                                    <dl class="club-facts">
+                                        <dt>Member</dt><dd t-esc="partner.name"/>
+                                        <dt>Member ID</dt><dd><span class="club-ref" t-esc="partner.member_id"/></dd>
+                                        <dt>Valid until</dt><dd t-esc="partner.expiry_date and partner.expiry_date.strftime('%d %B %Y') or '-'"/>
+                                    </dl>
+                                    <ul class="club-benefits" t-if="plan">
+                                        <li t-if="plan.court_rate">Courts at ₹<t t-esc="'{:,.0f}'.format(plan.court_rate)"/> per hour</li>
+                                        <li t-else="">Court bookings included</li>
+                                        <li><t t-esc="'{:g}'.format(plan.shop_discount)"/>% off in the Pro-Shop</li>
+                                        <li t-if="plan.bar_discount"><t t-esc="'{:g}'.format(plan.bar_discount)"/>% off at the bar and cafeteria</li>
+                                    </ul>
+                                    <div class="alert alert-warning" t-if="not active">
+                                        Your membership has ended, so court, shop and bar prices are at the standard rate.
+                                    </div>
+                                    <div class="alert alert-warning" t-elif="expiring">
+                                        Your membership ends in <t t-esc="days_left"/> day<t t-if="days_left != 1">s</t>.
+                                    </div>
+                                    <a t-if="expiring or not active"
+                                       t-attf-href="/join?type=membership&amp;plan=#{plan.code or ''}"
+                                       class="btn btn-club-primary w-100">Renew my membership</a>
+                                </div>
+                                <div class="club-summary" t-else="">
+                                    <h4>You are not a member yet</h4>
+                                    <p>Join to get your court rate and your shop and bar discounts.</p>
+                                    <a href="/membership" class="btn btn-club-primary">See the plans</a>
+                                </div>
+                                <p class="mt-3"><a href="/my/account">Edit my contact details</a></p>
+                            </div>
+                            <div class="col-lg-7">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h4 class="mb-0">Upcoming bookings</h4>
+                                    <a href="/courts" class="btn btn-club-outline btn-sm">Book a court</a>
+                                </div>
+                                <table class="table club-compare" t-if="upcoming">
+                                    <tbody>
+                                        <tr t-foreach="upcoming" t-as="row">
+                                            <td><strong t-esc="row['court']"/><div class="club-muted small" t-esc="row['name']"/></td>
+                                            <td><t t-esc="row['when']"/><div class="club-muted small" t-esc="row['time']"/></td>
+                                            <td><t t-esc="row['state']"/></td>
+                                            <td class="text-end"><a t-att-href="row['url']">View</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p class="club-muted" t-else="">No upcoming bookings. <a href="/courts">Find a free court</a>.</p>
+
+                                <h4 class="mt-4">Recent sessions</h4>
+                                <table class="table club-compare" t-if="recent">
+                                    <tbody>
+                                        <tr t-foreach="recent" t-as="row">
+                                            <td t-esc="row['court']"/>
+                                            <td><t t-esc="row['when']"/> <span class="club-muted small" t-esc="row['time']"/></td>
+                                            <td t-esc="row['state']"/>
+                                            <td class="text-end">₹<t t-esc="'{:,.0f}'.format(row['price'])"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p class="club-muted" t-else="">Nothing yet.</p>
+
+                                <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+                                    <h4 class="mb-0">Shop orders</h4>
+                                    <a href="/club-shop" class="btn btn-club-outline btn-sm">Visit the shop</a>
+                                </div>
+                                <table class="table club-compare" t-if="orders">
+                                    <tbody>
+                                        <tr t-foreach="orders" t-as="order">
+                                            <td t-esc="order['name']"/>
+                                            <td t-esc="order['when']"/>
+                                            <td class="text-end">₹<t t-esc="'{:,.0f}'.format(order['total'])"/></td>
+                                            <td class="text-end"><a t-att-href="order['url']">View</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p class="club-muted" t-else="">No orders yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Entry points: the portal home card and the user menu in the header -->
+    <template id="portal_my_home_club" inherit_id="portal.portal_my_home" name="My Club card">
+        <xpath expr="//div[@id='portal_common_category']" position="before">
+            <div class="o_portal_category row g-2 mt-3" id="portal_club_category">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">My Club</t>
+                    <t t-set="text">Your membership, bookings and orders</t>
+                    <t t-set="url" t-value="'/my/club'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="user_dropdown_club" inherit_id="portal.user_dropdown" name="My Club in the user menu">
+        <xpath expr="//div[@id='o_logout_divider']" position="before">
+            <a href="/my/club" role="menuitem" class="dropdown-item ps-3">
+                <i class="fa fa-fw fa-id-card-o me-1 small text-primary"/> My Club
+            </a>
+        </xpath>
+    </template>
+</odoo>

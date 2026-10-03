@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 from odoo import http
 from odoo.addons.club_management.models.booking import to_club_time
+from odoo.addons.club_website.controllers.member import signed_in_defaults
 from odoo.exceptions import ValidationError
 from odoo.http import request
 
@@ -48,6 +49,7 @@ class ClubOnline(http.Controller):
                 window_error = exc.args[0]
         local = to_club_time(start) if start else None
         values = {'name': '', 'phone': '', 'email': '', 'players': '1', 'member_ref': '', 'member_email': ''}
+        values.update(signed_in_defaults())
         values.update({key: (value or '') for key, value in (form or {}).items()})
         return {
             'court': court, 'book_date': date or '', 'book_time': time or '', 'form': values,
@@ -174,6 +176,7 @@ class ClubOnline(http.Controller):
     def _checkout_form(self, **overrides):
         form = {'name': '', 'phone': '', 'email': '', 'fulfillment': 'collect', 'address': '',
                 'member_ref': '', 'member_email': ''}
+        form.update(signed_in_defaults())
         form.update({key: (value or '') for key, value in overrides.items()})
         return form
 

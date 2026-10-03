@@ -53,7 +53,7 @@
                     <div class="container">
                         <p><a href="/club-shop">← Back to the shop</a></p>
                         <div class="row g-4">
-                            <div class="col-md-5"><div class="club-product-hero" t-esc="product['image_icon']"/></div>
+                            <div class="col-md-5"><div class="club-product-hero"><t t-call="club_website.product_image"/></div></div>
                             <div class="col-md-7">
                                 <span class="club-product-cat" t-esc="product['category_label']"/>
                                 <h1 t-esc="product['name']"/>

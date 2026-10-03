@@ -73,7 +73,13 @@ class ProductProduct(models.Model):
         ('snacks', 'Snacks')
     ], string='Club Subcategory')
 
-    image_icon = fields.Char(string='Emoji Icon', default='🎾')
+    def _club_image_url(self):
+        """The product picture for staff screens, with the write date so a new picture shows at once."""
+        self.ensure_one()
+        if not self.image_128:
+            return ''
+        return '/web/image/product.product/%d/image_512?unique=%s' % (
+            self.id, fields.Datetime.to_string(self.write_date) if self.write_date else '')
 
     def _club_stock(self):
         """Real units on hand for stock-tracked products; a fixed 'available' number otherwise."""
@@ -111,7 +117,8 @@ class ProductProduct(models.Model):
                 'member_price': round(member_price, 2),
                 'stock': p._club_stock(),
                 'description': p.description_sale or p.name,
-                'image_icon': p.image_icon or '🎾',
+                'has_image': bool(p.image_128),
+                'image_url': p._club_image_url(),
             })
         return result
 
@@ -130,7 +137,8 @@ class ProductProduct(models.Model):
                 'price': p.list_price,
                 'stock': stock,
                 'is_available': stock > 0,
-                'image_icon': p.image_icon or '☕',
+                'has_image': bool(p.image_128),
+                'image_url': p._club_image_url(),
             })
         return result
 
