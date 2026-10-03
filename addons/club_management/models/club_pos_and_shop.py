@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
+import re
+import uuid
 from datetime import datetime, time, timedelta
 
 import pytz
 
 from odoo import Command, api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.tools import email_normalize
 
 from .booking import CLUB_TZ, club_today, to_club_time
 
 # Stock shown for products that are not stock-tracked (services, consumables).
 UNTRACKED_STOCK = 99
+MAX_ONLINE_QTY = 20     # most of one product in an online order
 
 
 def money(amount, sign=''):
@@ -258,6 +262,58 @@ class ClubOrderService(models.AbstractModel):
             'discount': money(order.discount, '-') if order.discount else "₹0.00",
             'date': to_club_time(fields.Datetime.now()).strftime('%H:%M'),
         }
+
+    @api.model
+    def place_public_order(self, items, name, phone=None, email=None, fulfillment='collect',
+                           address=None, member_ref=None, member_email=None):
+        """A website visitor's pro-shop order: priced on the server, stock deducted, paid at the
+        club (collect) or on delivery. A member who gives their member ID and the e-mail on file
+        gets their tier price. Only products sold in the public shop can be ordered this way.
+        Raises ValidationError with a message the visitor can act on."""
+        svc = self.sudo()
+        name = (name or '').strip()
+        phone = re.sub(r'[^\d+]', '', phone or '')
+        email = email_normalize((email or '').strip()) or False
+        partner = self.env['res.partner']
+        if member_ref:
+            partner = self.env['res.partner']._club_verify_member(member_ref, member_email)
+            name = partner.name
+        else:
+            if not name:
+                raise ValidationError("Please tell us your name.")
+            if not phone and not email:
+                raise ValidationError("Please give a phone number or an e-mail address, so we can reach you.")
+        if fulfillment not in ('collect', 'delivery'):
+            raise ValidationError("Choose collect at the club or home delivery.")
+        address = (address or '').strip()
+        if fulfillment == 'delivery' and len(address) < 8:
+            raise ValidationError("Please enter the full delivery address.")
+
+        shop = self.env.ref('club_management.product_category_shop')
+        clean = []
+        for item in items or []:
+            product = svc.env['product.product'].browse(int(item.get('product_id') or 0)).exists()
+            qty = int(item.get('qty') or 0)
+            if not (product and product.sale_ok and product.categ_id.parent_path.startswith(
+                    shop.parent_path)):
+                raise ValidationError("One of the products in your cart is not available online.")
+            if not 1 <= qty <= MAX_ONLINE_QTY:
+                raise ValidationError("Choose between 1 and %d of each product." % MAX_ONLINE_QTY)
+            clean.append({'product_id': product.id, 'qty': qty})
+        if not clean:
+            raise ValidationError("Your cart is empty.")
+
+        plan = partner._get_active_plan() if partner else self.env['club.membership.plan']
+        lines = svc._price_items(clean, plan)
+        with self.env.cr.savepoint():       # a refused order (for example no stock) leaves nothing behind
+            order = svc._create_order(
+                'shop', lines, plan, partner, customer_name=name[:100],
+                customer_phone=phone[:30] or False, customer_email=email,
+                fulfillment='Home Delivery' if fulfillment == 'delivery' else 'Collect at Club',
+                delivery_address=address if fulfillment == 'delivery' else False,
+                source='website', access_token=uuid.uuid4().hex)
+        order._send_confirmation()
+        return order
 
     @api.model
     def process_shop_checkout(self, vals):

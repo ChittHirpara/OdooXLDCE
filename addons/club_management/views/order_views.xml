@@ -9,6 +9,7 @@
                 <field name="create_date" string="Date"/>
                 <field name="channel"/>
                 <field name="customer_name"/>
+                <field name="source" optional="show"/>
                 <field name="plan_id"/>
                 <field name="table_id" optional="hide"/>
                 <field name="payment_method" optional="show"/>
@@ -38,6 +39,9 @@
                             <field name="table_id" invisible="channel != 'bar'"/>
                             <field name="payment_method" invisible="channel != 'bar'"/>
                             <field name="fulfillment" invisible="channel != 'shop'"/>
+                            <field name="customer_phone" invisible="not customer_phone"/>
+                            <field name="customer_email" invisible="not customer_email"/>
+                            <field name="source"/>
                             <field name="delivery_address" invisible="channel != 'shop'"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
@@ -71,6 +75,7 @@
                 <field name="customer_name"/>
                 <filter name="bar" string="Bar &amp; Cafeteria" domain="[('channel', '=', 'bar')]"/>
                 <filter name="shop" string="Pro-Shop" domain="[('channel', '=', 'shop')]"/>
+                <filter name="from_website" string="Ordered Online" domain="[('source', '=', 'website')]"/>
                 <group expand="0" string="Group By">
                     <filter name="group_channel" string="Channel" context="{'group_by': 'channel'}"/>
                     <filter name="group_plan" string="Tier" context="{'group_by': 'plan_id'}"/>

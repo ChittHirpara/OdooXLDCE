@@ -10,3 +10,5 @@ from . import test_demo
 from . import test_frontend_api
 from . import test_crm_flow
 from . import test_currency
+from . import test_public_booking
+from . import test_public_order

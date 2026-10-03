@@ -7,7 +7,7 @@
                 <t t-call="club_website.page_header">
                     <t t-set="eyebrow" t-value="'Courts'"/>
                     <t t-set="title" t-value="'Court availability'"/>
-                    <t t-set="subtitle" t-value="'Pick a day and a sport, then request the slot you want. Sessions are one hour and start every 30 minutes.'"/>
+                    <t t-set="subtitle" t-value="'Pick a day and a sport, then click a free slot to book it. It is confirmed instantly. Sessions are one hour and start every 30 minutes.'"/>
                 </t>
 
                 <section class="club-section">
@@ -18,7 +18,7 @@
                                 <div class="col-sm-4 col-md-3">
                                     <label class="form-label" for="club-date">Date</label>
                                     <input id="club-date" type="date" class="form-control js-date"
-                                           t-att-value="today" t-att-min="today"/>
+                                           t-att-value="today" t-att-min="today" t-att-max="max_date"/>
                                 </div>
                                 <div class="col-sm-4 col-md-3">
                                     <label class="form-label" for="club-sport">Sport</label>

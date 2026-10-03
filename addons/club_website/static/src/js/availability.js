@@ -78,11 +78,9 @@ publicWidget.registry.ClubCourtAvailability = publicWidget.Widget.extend({
                     return `<span class="club-slot club-slot-booked" title="Booked">${escapeHtml(slot.start)}</span>`;
                 }
                 const message = `${court.court} on ${date} at ${slot.start}`;
-                const href =
-                    `/join?type=court&sport=${encodeURIComponent(court.sport)}` +
-                    `&message=${encodeURIComponent("I would like to request " + message + ".")}`;
+                const href = `/book?court_id=${encodeURIComponent(court.court_id)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(slot.start)}`;
                 const left = court.is_social ? `<small>${slot.places_left} left</small>` : "";
-                return `<a class="club-slot club-slot-free" href="${href}" title="Request ${escapeHtml(message)}">` +
+                return `<a class="club-slot club-slot-free" href="${href}" title="Book ${escapeHtml(message)}">` +
                     `${escapeHtml(slot.start)}${left}</a>`;
             })
             .join("");

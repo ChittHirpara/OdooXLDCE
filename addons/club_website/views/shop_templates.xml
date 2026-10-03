@@ -11,6 +11,8 @@
                 </t>
                 <section class="club-section">
                     <div class="container">
+                        <div class="alert alert-info" t-if="flash" t-esc="flash"/>
+                        <p class="text-end"><a href="/club-shop/cart" class="btn btn-club-outline">Cart<t t-if="cart_count"> (<t t-esc="cart_count"/>)</t></a></p>
                         <form action="/club-shop" method="get" class="row g-2 club-shop-search">
                             <div class="col-md-8">
                                 <input type="search" name="q" class="form-control" placeholder="Search the shop"
@@ -71,10 +73,21 @@
                                         </tbody>
                                     </table>
                                 </t>
-                                <a t-att-href="reserve_url" class="btn btn-club-primary btn-lg"
-                                   t-if="product['stock'] &gt; 0">Reserve for pickup</a>
-                                <a href="/join?type=shop" class="btn btn-club-outline btn-lg" t-else="">Ask when it is back</a>
-                                <p class="club-muted mt-3">Pay and collect at the club. Members get their discount at the till.</p>
+                                <div class="alert alert-info" t-if="flash" t-esc="flash"/>
+                                <form action="/club-shop/cart/add" method="post" class="club-add-form" t-if="product['stock'] &gt; 0">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="product_id" t-att-value="product['id']"/>
+                                    <label class="form-label" for="add-qty">Quantity</label>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <input id="add-qty" type="number" name="qty" value="1" min="1"
+                                               t-att-max="min(product['stock'], 20)" class="form-control club-qty"/>
+                                        <button type="submit" class="btn btn-club-primary btn-lg">Add to cart</button>
+                                        <a href="/club-shop/cart" class="btn btn-club-outline btn-lg">Cart<t t-if="cart_count"> (<t t-esc="cart_count"/>)</t></a>
+                                    </div>
+                                </form>
+                                <a t-att-href="reserve_url" class="btn btn-club-outline btn-lg" t-else="">Ask when it is back</a>
+                                <p class="club-muted mt-3">Pay at the club when you collect, or on delivery. Members enter their
+                                    member ID at checkout to get their discount.</p>
                             </div>
                         </div>
                     </div>

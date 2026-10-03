@@ -135,3 +135,11 @@ a.nav-link[href="/join"] {
     .club-cta { background: $club-navy; color: #fff; padding: 4rem 0; h2 { font-weight: 800; } p { color: #cbd5e1; margin-bottom: 1.5rem; } }
     .club-footer-strip { background: $club-navy-2; color: #cbd5e1; padding: 2.5rem 0; h5 { color: #fff; font-weight: 700; } a { color: $club-green; } p { margin: 0; } }
 }
+
+// Online booking, cart, checkout and order pages
+.club-site {
+    .club-summary { background: $club-soft; border: 1px solid $club-line; border-radius: 1rem; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; h3, h4 { font-weight: 800; } p:last-child { margin-bottom: 0; } }
+    .club-member-box { border: 1px dashed $club-line; border-radius: .75rem; padding: .75rem 1rem; summary { cursor: pointer; font-weight: 600; color: $club-green-dark; } }
+    .club-qty { width: 6rem; }
+    .club-cart .club-compare td, .club-cart .club-compare th { vertical-align: middle; }
+}

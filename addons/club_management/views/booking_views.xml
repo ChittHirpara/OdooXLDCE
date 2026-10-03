@@ -9,6 +9,7 @@
                 <field name="court_id"/>
                 <field name="partner_id"/>
                 <field name="walkin_name"/>
+                <field name="booking_source" optional="show"/>
                 <field name="start_datetime"/>
                 <field name="end_datetime"/>
                 <field name="players"/>
@@ -52,6 +53,9 @@
                             <field name="court_id"/>
                             <field name="partner_id"/>
                             <field name="walkin_name" invisible="partner_id"/>
+                            <field name="guest_phone" invisible="partner_id or not guest_phone"/>
+                            <field name="guest_email" invisible="partner_id or not guest_email"/>
+                            <field name="booking_source"/>
                             <field name="players"/>
                             <field name="company_id" invisible="1"/>
                             <field name="currency_id" invisible="1"/>
@@ -99,6 +103,7 @@
                 <filter name="active_bookings" string="Not Cancelled" domain="[('state', '!=', 'cancelled')]"/>
                 <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]"/>
                 <filter name="social" string="Friday Social" domain="[('is_social', '=', True)]"/>
+                <filter name="from_website" string="Booked Online" domain="[('booking_source', '=', 'website')]"/>
                 <group expand="0" string="Group By">
                     <filter name="group_court" string="Court" context="{'group_by': 'court_id'}"/>
                     <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>

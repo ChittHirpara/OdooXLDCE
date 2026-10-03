@@ -546,3 +546,15 @@ Judges respect candour. These are true today:
 ---
 
 *Where to look in the code:* `addons/club_management/models/` (all logic), `addons/club_management/tests/` (proof), `addons/club_website/` (public site), `scripts/create_demo_db.sh` (setup), `CLAUDE.md` (developer notes), `addons/club_management/tests/e2e/README.md` (browser checks).
+
+---
+
+## Addendum: instant booking and ordering (no enquiry needed)
+
+Visitors no longer have to send an enquiry to book a court or buy from the shop.
+
+- **Book a court**: `/courts` free slot → `/book` → `POST /book/submit` → `club.booking.create_public_booking()`. Same overlap, 30-minute slot, 2-per-day and Friday social-capacity rules as staff. Confirmed instantly, source `website`, private link `/booking/<token>` (view and cancel). Guests pay the court's list price; members enter member ID + e-mail (verified together) for their tier rate. Guest 2/day limit is by phone or e-mail. Window: today to 14 days ahead.
+- **Order from the shop**: product page → cart (session) → `/club-shop/checkout` → `club.order.service.place_public_order()` → `club.order` (source `website`), stock deducted, member discount applied server-side, confirmation page `/club-shop/order/<token>`. Collect at club or home delivery (address required). Payment is at the club or on delivery.
+- **Safety**: CSRF, honeypot, secret tokens, savepoints (a refused request leaves nothing), prices never read from the browser, one vague member-verification error.
+- **Staff view**: Club > Bookings and Bar & Shop Orders show a Source column and "Booked/Ordered Online" filters. Guest bookings also file a follow-up lead so the club can offer a membership.
+- **Tests**: 401 Python tests, plus `tests/e2e/flow_online.js` (34 browser checks).

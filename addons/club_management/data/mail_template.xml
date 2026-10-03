@@ -44,6 +44,59 @@
         </field>
     </record>
 
+    <record id="mail_template_booking_confirmed" model="mail.template">
+        <field name="name">Club: court booking confirmed</field>
+        <field name="model_id" ref="model_club_booking"/>
+        <field name="subject">Court booked: {{ object.court_id.name }}, {{ format_datetime(object.start_datetime, tz='Asia/Kolkata', dt_format='EEE d MMM, HH:mm') }} ({{ object.name }})</field>
+        <field name="email_to">{{ object.partner_id.email or object.guest_email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.partner_id.name or object.walkin_name or ''"/>,</p>
+    <p>Your court is booked.</p>
+    <table cellpadding="4" style="border-collapse:collapse">
+        <tr><td><strong>Reference</strong></td><td><t t-out="object.name"/></td></tr>
+        <tr><td><strong>Court</strong></td><td><t t-out="object.court_id.name"/></td></tr>
+        <tr><td><strong>When</strong></td><td><t t-out="format_datetime(object.start_datetime, tz='Asia/Kolkata', dt_format='EEEE d MMMM y, HH:mm')"/>
+            to <t t-out="format_datetime(object.end_datetime, tz='Asia/Kolkata', dt_format='HH:mm')"/></td></tr>
+        <tr><td><strong>Price</strong></td><td>₹<t t-out="'{:,.0f}'.format(object.price)"/>, paid at the club</td></tr>
+    </table>
+    <t t-if="object.access_token">
+        <p>Need to change your plans? <a t-attf-href="{{ object.get_base_url() }}/booking/{{ object.access_token }}">View or cancel this booking</a>.</p>
+    </t>
+    <p>See you on the court!<br/>The Champions Club</p>
+</div>
+        </field>
+    </record>
+
+    <record id="mail_template_order_confirmed" model="mail.template">
+        <field name="name">Club: shop order confirmed</field>
+        <field name="model_id" ref="model_club_order"/>
+        <field name="subject">Your Champions Club order {{ object.name }}</field>
+        <field name="email_to">{{ object.partner_id.email or object.customer_email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.customer_name or ''"/>,</p>
+    <p>Thank you for your order <strong><t t-out="object.name"/></strong>.</p>
+    <table cellpadding="4" style="border-collapse:collapse">
+        <tr t-foreach="object.line_ids" t-as="line">
+            <td><t t-out="line.product_id.name"/> x <t t-out="line.qty"/></td>
+            <td style="text-align:right">₹<t t-out="'{:,.2f}'.format(line.line_total)"/></td>
+        </tr>
+        <tr t-if="object.discount"><td>Member discount</td><td style="text-align:right">-₹<t t-out="'{:,.2f}'.format(object.discount)"/></td></tr>
+        <tr><td><strong>Total</strong></td><td style="text-align:right"><strong>₹<t t-out="'{:,.2f}'.format(object.total)"/></strong></td></tr>
+    </table>
+    <p><t t-out="object.fulfillment"/><t t-if="object.delivery_address"> to <t t-out="object.delivery_address"/></t>.
+       Pay at the club or on delivery.</p>
+    <t t-if="object.access_token">
+        <p><a t-attf-href="{{ object.get_base_url() }}/club-shop/order/{{ object.access_token }}">View your order</a></p>
+    </t>
+    <p>The Champions Club</p>
+</div>
+        </field>
+    </record>
+
     <record id="mail_template_member_welcome" model="mail.template">
         <field name="name">Club: welcome new member</field>
         <field name="model_id" ref="base.model_res_partner"/>

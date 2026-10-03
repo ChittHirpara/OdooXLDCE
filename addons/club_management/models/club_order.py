@@ -19,6 +19,12 @@ class ClubOrder(models.Model):
         [('cash', 'Cash'), ('card', 'Card'), ('upi', 'UPI')], readonly=True)
     fulfillment = fields.Char(readonly=True)
     delivery_address = fields.Char(readonly=True)
+    customer_phone = fields.Char(readonly=True)
+    customer_email = fields.Char(readonly=True)
+    source = fields.Selection(
+        [('staff', 'Front desk / screens'), ('website', 'Website')], default='staff', readonly=True)
+    access_token = fields.Char(copy=False, readonly=True, index=True,
+                               help="Secret in the visitor's order link.")
     state = fields.Selection([('paid', 'Paid')], default='paid', readonly=True)
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company, required=True)
     currency_id = fields.Many2one(related='company_id.currency_id')
@@ -40,6 +46,17 @@ class ClubOrder(models.Model):
             if vals.get('name', 'New') == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code('club.order') or 'New'
         return super().create(vals_list)
+
+    @api.model
+    def get_by_token(self, token):
+        token = (token or '').strip()
+        return self.sudo().search([('access_token', '=', token)], limit=1) if len(token) >= 16 else self.browse()
+
+    def _send_confirmation(self):
+        template = self.env.ref('club_management.mail_template_order_confirmed', raise_if_not_found=False)
+        for order in self:
+            if template and (order.partner_id.email or order.customer_email):
+                template.sudo().send_mail(order.id)
 
 
 class ClubOrderLine(models.Model):

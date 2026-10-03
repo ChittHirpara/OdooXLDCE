@@ -212,19 +212,17 @@ class TestShopPages(WebsiteCase):
         self.assertIn('₹285', html)        # Junior 5%
         self.assertIn('Only 3 left', html)
 
-    def test_reserve_link_prefills_the_enquiry_form(self):
+    def test_in_stock_products_have_an_add_to_cart_form(self):
         html = self.get('/club-shop/%s' % self.grip.id)
-        href = re.search(r'href="(/join\?[^"]+)"', html).group(1).replace('&amp;', '&')
-        query = parse_qs(urlparse(href).query)
-        self.assertEqual(query['type'], ['shop'])
-        self.assertEqual(query['message'], ['I would like to reserve: Webtest Grip'])
-        form = self.get(href)
-        self.assertIn('I would like to reserve: Webtest Grip', form)
+        self.assertIn('action="/club-shop/cart/add"', html)
+        self.assertIn('name="product_id"', html)
+        self.assertIn('Add to cart', html)
+        self.assertNotIn('Reserve for pickup', html)
 
     def test_sold_out_product_offers_a_notify_enquiry_instead(self):
         html = self.get('/club-shop/%s' % self.sold_out.id)
         self.assertIn('Out of stock', html)
-        self.assertNotIn('Reserve for pickup', html)
+        self.assertNotIn('Add to cart', html)
         self.assertIn('Ask when it is back', html)
 
     def test_products_not_for_the_public_shop_are_404(self):

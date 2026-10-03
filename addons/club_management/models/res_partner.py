@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.tools import email_normalize
 
 from .booking import club_today
 
@@ -169,6 +170,21 @@ class ResPartner(models.Model):
                 'join_date': partner.join_date or today,
                 'expiry_date': today + timedelta(days=partner.plan_id.validity_days),
             })
+
+    @api.model
+    def _club_verify_member(self, member_ref, email):
+        """The member for an online booking or order: the member ID plus the e-mail on file.
+
+        The same message is given for every failure, so it cannot be used to find out
+        which member IDs exist. A lapsed member still verifies (they pay full price).
+        """
+        ref = (member_ref or '').strip().upper()
+        wanted = email_normalize((email or '').strip())
+        partner = self.sudo().search([('member_id', '=', ref), ('is_member', '=', True)], limit=1) if ref else None
+        if not partner or not wanted or email_normalize(partner.email or '') != wanted:
+            raise ValidationError("We could not verify that member ID and e-mail address. "
+                                  "Check them, or continue as a guest.")
+        return partner
 
     def _get_active_plan(self, on=None):
         """The membership plan in force on ``on`` (club today by default), else an empty recordset.

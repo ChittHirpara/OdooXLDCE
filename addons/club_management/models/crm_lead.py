@@ -79,7 +79,7 @@ class CrmLead(models.Model):
 
     @api.model
     def create_club_enquiry(self, name, email=None, phone=None, message=None, plan=None,
-                            sport=None, enquiry_type='membership', source='website'):
+                            sport=None, enquiry_type='membership', source='website', notify=True):
         """Create (or extend) the CRM lead for a public enquiry.
 
         Runs with elevated rights because website visitors are anonymous. Raises
@@ -153,7 +153,7 @@ class CrmLead(models.Model):
                 summary="Contact new enquiry",
                 note="Call or email %s about %s." % (name, plan_rec.name if plan_rec else "their enquiry"),
                 user_id=assignee.id)
-        if lead.email_from:
+        if lead.email_from and notify:      # not for the follow-up lead behind an online booking
             template = self.env.ref('club_management.mail_template_enquiry_received', raise_if_not_found=False)
             if template:
                 template.sudo().send_mail(lead.id)

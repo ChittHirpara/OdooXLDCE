@@ -1,8 +1,10 @@
+from datetime import timedelta
+
 from werkzeug.urls import url_encode as urlencode
 
 from odoo import http
 from odoo.addons.club_management.controllers.main import ClubController
-from odoo.addons.club_management.models.booking import club_today
+from odoo.addons.club_management.models.booking import WEBSITE_BOOKING_DAYS, club_today
 from odoo.addons.club_management.models.crm_lead import ENQUIRY_TYPES, SPORTS
 from odoo.exceptions import ValidationError
 from odoo.http import request
@@ -34,7 +36,12 @@ class ClubWebsite(http.Controller):
     def courts(self, **kw):
         return request.render('club_website.courts_page', {
             'courts': self.site.courts(), 'sports': SPORTS, 'sport_labels': dict(SPORTS),
-            'today': club_today().isoformat()})
+            'today': club_today().isoformat(),
+            'max_date': (club_today() + timedelta(days=WEBSITE_BOOKING_DAYS)).isoformat()})
+
+    def _cart_count(self):
+        lines = self.site.cart_lines(request.session.get('club_cart') or {})
+        return sum(line['qty'] for line in lines)
 
     @http.route('/club-shop', type='http', auth='public', website=True, sitemap=True)
     def shop(self, q=None, category=None, **kw):
@@ -43,7 +50,8 @@ class ClubWebsite(http.Controller):
         return request.render('club_website.shop_page', {
             'products': self.site.shop_products(category or None, q),
             'categories': categories, 'category': category, 'query': q or '',
-            'site': self.site, 'max_shop_discount': self.site.max_shop_discount()})
+            'site': self.site, 'max_shop_discount': self.site.max_shop_discount(),
+            'cart_count': self._cart_count(), 'flash': request.session.pop('club_flash', None)})
 
     @http.route('/club-shop/<int:product_id>', type='http', auth='public', website=True, sitemap=False)
     def shop_product(self, product_id, **kw):
@@ -54,7 +62,8 @@ class ClubWebsite(http.Controller):
             'type': 'shop', 'message': 'I would like to reserve: %s' % product['name']})
         return request.render('club_website.shop_product_page', {
             'product': product, 'stock_label': self.site.stock_label(product['stock']),
-            'reserve_url': reserve_url})
+            'reserve_url': reserve_url, 'cart_count': self._cart_count(),
+            'flash': request.session.pop('club_flash', None)})
 
     @http.route('/join', type='http', auth='public', website=True, sitemap=True)
     def join(self, type=None, plan=None, sport=None, message=None, **kw):

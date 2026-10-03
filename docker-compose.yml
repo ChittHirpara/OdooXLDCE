@@ -10,6 +10,10 @@ services:
       - db-data:/var/lib/postgresql/data
   odoo:
     image: odoo:17.0
+    # The web server shows the club database (built by scripts/create_demo_db.sh), so that
+    # http://localhost:8069/ is the club website. `docker compose run ... odoo -d <db>` (tests,
+    # setup) replaces this command, so those runs are not filtered.
+    command: odoo -d club --db-filter=^club$$
     depends_on:
       - db
     ports:

@@ -1,5 +1,6 @@
 from odoo import api, models
 from odoo.addons.club_management.models.booking import club_today
+from odoo.addons.club_management.models.club_pos_and_shop import MAX_ONLINE_QTY
 
 LOW_STOCK = 5
 
@@ -57,6 +58,24 @@ class ClubWebsiteData(models.AbstractModel):
                 'price': plan.pricelist_id._get_product_price(product, 1.0),
             } for plan in self.plans() if plan.shop_discount]
         return item
+
+    @api.model
+    def cart_lines(self, cart):
+        """The visitor's cart ({product id: quantity}) as display lines at today's list prices.
+
+        Products that are no longer for sale or are sold out drop out; quantities are held to
+        the stock and to the online maximum. The real price (member discount, stock check) is
+        decided again by the server when the order is placed.
+        """
+        products = {p['id']: p for p in self.shop_products()}
+        lines = []
+        for product_id, qty in (cart or {}).items():
+            product = products.get(int(product_id))
+            if not product or product['stock'] <= 0:
+                continue
+            qty = max(1, min(int(qty), product['stock'], MAX_ONLINE_QTY))
+            lines.append({'product': product, 'qty': qty, 'total': product['price'] * qty})
+        return lines
 
     @api.model
     def stock_label(self, stock):

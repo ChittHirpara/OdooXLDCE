@@ -17,6 +17,7 @@ becomes a CRM lead there.
         'views/membership_templates.xml',
         'views/court_templates.xml',
         'views/shop_templates.xml',
+        'views/online_templates.xml',
         'views/join_templates.xml',
         'views/page_templates.xml',
         'data/website_data.xml',
