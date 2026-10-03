@@ -1,0 +1,58 @@
+/* Champions Club Design System Tokens (Odoo 19 OWL Compatible) */
+:root {
+  --cc-font-sans: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --cc-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Surfaces & Backgrounds (Modern Athletic Luxury) */
+  --cc-bg-canvas: #090D14;
+  --cc-bg-surface: #0F172A;
+  --cc-bg-card: #151F32;
+  --cc-bg-card-hover: #1A2740;
+  --cc-bg-elevated: #1E293B;
+  --cc-bg-glass: rgba(21, 31, 50, 0.85);
+
+  /* Border Tokens */
+  --cc-border-subtle: #1E293B;
+  --cc-border-default: #2A3950;
+  --cc-border-hover: #3B4E6C;
+  --cc-border-accent: #10B981;
+
+  /* Athletic & Tier Accent Tokens */
+  --cc-emerald: #10B981;
+  --cc-emerald-dark: #059669;
+  --cc-emerald-light: #34D399;
+  --cc-emerald-glow: rgba(16, 185, 129, 0.15);
+
+  --cc-gold: #F59E0B;
+  --cc-gold-dark: #D97706;
+  --cc-gold-light: #FCD34D;
+  --cc-gold-glow: rgba(245, 158, 11, 0.18);
+
+  --cc-silver: #94A3B8;
+  --cc-silver-glow: rgba(148, 163, 184, 0.12);
+
+  --cc-junior: #06B6D4;
+  --cc-junior-glow: rgba(6, 182, 212, 0.15);
+
+  /* Text & Readability */
+  --cc-text-primary: #F8FAFC;
+  --cc-text-secondary: #94A3B8;
+  --cc-text-muted: #64748B;
+  --cc-text-inverse: #090D14;
+
+  /* Geometry & Shadows */
+  --cc-radius-sm: 8px;
+  --cc-radius-md: 12px;
+  --cc-radius-lg: 18px;
+  --cc-radius-xl: 24px;
+  --cc-radius-pill: 9999px;
+
+  --cc-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --cc-shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35);
+  --cc-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --cc-shadow-gold: 0 10px 30px rgba(245, 158, 11, 0.15);
+  --cc-shadow-emerald: 0 10px 30px rgba(16, 185, 129, 0.15);
+
+  --cc-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --cc-transition-base: 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}

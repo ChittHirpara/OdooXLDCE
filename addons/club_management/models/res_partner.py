@@ -159,3 +159,78 @@ class ResPartner(models.Model):
                 'join_date': partner.join_date or today,
                 'expiry_date': today + timedelta(days=partner.plan_id.validity_days),
             })
+
+    @api.model
+    def get_current_member(self):
+        """Return the current user's member profile or default active demo member."""
+        user = self.env.user
+        partner = user.partner_id
+        if not partner.is_member:
+            partner = self.search([('is_member', '=', True), ('member_state', '=', 'active')], limit=1)
+            if not partner:
+                partner = user.partner_id
+        plan = partner.plan_id
+        return {
+            'id': partner.id,
+            'name': partner.name,
+            'member_id': partner.member_id or "CC-00001",
+            'email': partner.email or "",
+            'phone': partner.phone or "",
+            'plan': plan.name if plan else "Guest",
+            'plan_code': plan.code if plan else "none",
+            'status': partner.member_state,
+            'is_junior': partner.is_junior,
+            'shop_discount': plan.shop_discount if plan else 0.0,
+            'bar_discount': plan.bar_discount if plan else 0.0,
+            'court_rate': plan.court_rate if plan else 0.0,
+            'expiry_date': partner.expiry_date.isoformat() if partner.expiry_date else None,
+        }
+
+    @api.model
+    def get_members_list(self):
+        """Return all members for POS, Booking and Shop selectors."""
+        members = self.search([('is_member', '=', True)], order='name asc')
+        result = []
+        for m in members:
+            plan = m.plan_id
+            result.append({
+                'id': m.id,
+                'name': m.name,
+                'member_id': m.member_id or f"CC-{m.id:04d}",
+                'plan': plan.name if plan else "Guest",
+                'plan_code': plan.code if plan else "none",
+                'planCode': plan.code if plan else "none",
+                'status': m.member_state,
+                'is_active': m.member_state == 'active',
+                'discountPct': plan.bar_discount if plan else 0.0,
+                'shopDiscountPct': plan.shop_discount if plan else 0.0,
+                'expiry_date': m.expiry_date.isoformat() if m.expiry_date else None,
+            })
+        # Always include walk-in guest option
+        result.append({
+            'id': 0,
+            'name': "Walk-in Guest",
+            'member_id': "GUEST-001",
+            'plan': "Guest",
+            'plan_code': "none",
+            'planCode': "none",
+            'status': "none",
+            'is_active': True,
+            'discountPct': 0,
+            'shopDiscountPct': 0,
+            'expiry_date': None,
+        })
+        return result
+
+    @api.model
+    def register_or_renew_member(self, partner_id, plan_code):
+        """Register or renew a club membership for a partner."""
+        partner = self.browse(partner_id)
+        if not partner.exists():
+            raise ValidationError("Partner not found.")
+        plan = self.env['club.membership.plan'].search([('code', '=', plan_code)], limit=1)
+        if not plan:
+            raise ValidationError(f"Unknown membership tier: {plan_code}")
+        partner.plan_id = plan.id
+        partner.action_activate_membership()
+        return partner.get_current_member()

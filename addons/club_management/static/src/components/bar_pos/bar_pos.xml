@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.BarPOSPage">
+        <div class="cc-pos-app">
+            <!-- Topbar Navigation -->
+            <header class="cc-pos-topbar">
+                <div class="cc-pos-brand">
+                    <div class="cc-pos-emblem">☕</div>
+                    <h1 class="cc-pos-title">Champions Club Bar &amp; POS</h1>
+                    <span class="cc-pos-badge">Odoo 19 POS</span>
+                </div>
+
+                <div class="cc-pos-top-center">
+                    <div class="cc-top-table-badge" t-on-click="() => this.setView('tables')">
+                        <span class="cc-table-indicator"></span>
+                        <span><t t-esc="state.currentTable.name"/></span>
+                        <span style="font-size: 0.72rem; color: #94A3B8;">(Click to change)</span>
+                    </div>
+                </div>
+
+                <div class="cc-pos-top-actions">
+                    <button class="cc-top-btn" t-att-class="{ 'active': state.currentView === 'pos' }" t-on-click="() => this.setView('pos')">
+                        <span>🛒 POS Register</span>
+                    </button>
+
+                    <button class="cc-top-btn" t-att-class="{ 'active': state.currentView === 'tables' }" t-on-click="() => this.setView('tables')">
+                        <span>🪑 Floor &amp; Tables</span>
+                    </button>
+
+                    <button class="cc-top-btn" t-att-class="{ 'active': state.currentView === 'history' }" t-on-click="() => this.setView('history')">
+                        <span>📜 Orders</span>
+                    </button>
+
+                    <button class="cc-top-btn" t-on-click="openTabsDrawer">
+                        <span>📑 Open Tabs</span>
+                        <span class="cc-pill-badge" t-esc="openTabsCount"/>
+                    </button>
+
+                    <button class="cc-top-btn" t-on-click="openShiftPanel">
+                        <span>⏱️ Shift</span>
+                    </button>
+
+                    <div class="cc-staff-profile">
+                        <div class="cc-staff-avatar">RV</div>
+                        <div class="cc-staff-info">
+                            <span class="cc-staff-name"><t t-esc="state.shiftData.staff_name"/></span>
+                            <span class="cc-staff-role">POS Cashier</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Global Error Banner -->
+            <t t-if="state.error">
+                <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #FCA5A5; padding: 0.75rem 1.25rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; z-index: 90;">
+                    <span><t t-esc="state.error"/></span>
+                    <button type="button" style="background: transparent; border: none; color: inherit; cursor: pointer;" t-on-click="dismissError">✕</button>
+                </div>
+            </t>
+
+            <!-- 1. MAIN POS VIEW -->
+            <t t-if="state.currentView === 'pos'">
+                <div class="cc-pos-workspace">
+                    <!-- Left: Catalog & Products -->
+                    <div class="cc-pos-catalog-panel">
+                        <!-- Search & Filter Controls -->
+                        <div class="cc-catalog-header-bar">
+                            <div class="cc-pos-search-box">
+                                <span class="cc-search-icon">🔍</span>
+                                <input type="text" class="cc-pos-search-input" placeholder="Search food, drinks, coffee..." t-att-value="state.searchQuery" t-on-input="handleSearchInput" />
+                                <t t-if="state.searchQuery">
+                                    <button class="cc-search-clear" t-on-click="clearSearch">✕</button>
+                                </t>
+                            </div>
+
+                            <div style="font-size: 0.8rem; color: #94A3B8;">
+                                Showing <strong style="color: #FFFFFF;"><t t-esc="filteredProducts.length"/></strong> items
+                            </div>
+                        </div>
+
+                        <!-- Category Tabs -->
+                        <div class="cc-category-tabs-bar">
+                            <t t-foreach="state.categories" t-as="cat" t-key="cat.id">
+                                <button class="cc-cat-tab" t-att-class="{ 'active': state.selectedCategory === cat.id }" t-on-click="() => this.setCategory(cat.id)">
+                                    <span><t t-esc="cat.icon"/></span>
+                                    <span><t t-esc="cat.label"/></span>
+                                </button>
+                            </t>
+                        </div>
+
+                        <!-- Products Grid -->
+                        <div class="cc-pos-grid-container">
+                            <div class="cc-pos-products-grid">
+                                <t t-foreach="filteredProducts" t-as="product" t-key="product.id">
+                                    <div class="cc-pos-product-card" t-att-class="{ 'out-of-stock': !product.is_available }" t-on-click="() => this.addToCart(product)">
+                                        <div class="cc-product-media">
+                                            <span><t t-esc="product.image_icon"/></span>
+                                        </div>
+                                        <span class="cc-product-cat"><t t-esc="product.category"/></span>
+                                        <h3 class="cc-product-name"><t t-esc="product.name"/></h3>
+
+                                        <div class="cc-product-footer">
+                                            <span class="cc-product-price">₹<t t-esc="product.price"/></span>
+                                            <t t-if="product.is_available">
+                                                <button class="cc-btn-add-item">+ ADD</button>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="font-size: 0.7rem; color: #EF4444; font-weight: 700;">OUT OF STOCK</span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Order Panel -->
+                    <div class="cc-pos-order-panel">
+                        <div class="cc-order-header">
+                            <div class="cc-order-title-row">
+                                <h2 class="cc-order-table-label"><t t-esc="state.currentTable.name"/></h2>
+                                <div class="cc-order-actions-top">
+                                    <button class="cc-btn-ghost-sm" t-on-click="() => this.setView('tables')">Switch Table</button>
+                                    <button class="cc-btn-ghost-sm" t-on-click="clearOrder">Clear</button>
+                                </div>
+                            </div>
+
+                            <!-- Member Selector Box -->
+                            <div class="cc-member-selector-box" t-on-click="openMemberSelector" title="Click to assign club member">
+                                <div class="cc-member-info-left">
+                                    <div class="cc-mem-avatar">👤</div>
+                                    <div class="cc-mem-text">
+                                        <span class="cc-mem-name"><t t-esc="state.selectedMember.name"/></span>
+                                        <span class="cc-mem-tier"><t t-esc="state.selectedMember.plan"/> Member Privilege</span>
+                                    </div>
+                                </div>
+                                <span class="cc-btn-change-member">Change Member ▾</span>
+                            </div>
+                        </div>
+
+                        <!-- Order Items List -->
+                        <div class="cc-order-items-list">
+                            <t t-if="state.cart.length === 0">
+                                <div class="cc-empty-order-state">
+                                    <span class="cc-empty-icon">🍽️</span>
+                                    <h4>Order is Empty</h4>
+                                    <p>Select items from the catalog or tap a category to add products.</p>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <t t-foreach="state.cart" t-as="item" t-key="item.product.id">
+                                    <div class="cc-order-item-row">
+                                        <div class="cc-order-item-icon">
+                                            <t t-esc="item.product.image_icon"/>
+                                        </div>
+                                        <div class="cc-order-item-details">
+                                            <h4 class="cc-item-title"><t t-esc="item.product.name"/></h4>
+                                            <span class="cc-item-unit-price">₹<t t-esc="item.product.price"/> each</span>
+                                        </div>
+
+                                        <div class="cc-order-qty-ctrl">
+                                            <button class="cc-qty-btn" t-on-click="() => this.updateCartItemQty(item.product.id, -1)">−</button>
+                                            <span class="cc-qty-number"><t t-esc="item.qty"/></span>
+                                            <button class="cc-qty-btn" t-on-click="() => this.updateCartItemQty(item.product.id, 1)">+</button>
+                                        </div>
+
+                                        <span class="cc-item-line-total">₹<t t-esc="item.product.price * item.qty"/></span>
+
+                                        <button class="cc-btn-remove-line" t-on-click="() => this.removeCartItem(item.product.id)" title="Remove item">✕</button>
+                                    </div>
+                                </t>
+                            </t>
+                        </div>
+
+                        <!-- Order Footer & Backend Pricing Summary -->
+                        <div class="cc-order-footer">
+                            <div class="cc-order-calc-breakdown">
+                                <div class="cc-calc-row">
+                                    <span>Subtotal</span>
+                                    <span><t t-esc="state.pricing.formatted_subtotal"/></span>
+                                </div>
+                                <div class="cc-calc-row discount">
+                                    <span><t t-esc="state.pricing.discount_label"/></span>
+                                    <span><t t-esc="state.pricing.formatted_discount"/></span>
+                                </div>
+                                <div class="cc-calc-row total">
+                                    <span>Total Amount</span>
+                                    <span class="cc-total-num"><t t-esc="state.pricing.formatted_total"/></span>
+                                </div>
+                            </div>
+
+                            <div class="cc-order-footer-actions">
+                                <button class="cc-btn-tab-save" t-on-click="saveCurrentAsTab">Keep Tab Open</button>
+                                <button class="cc-btn-pay-now" t-att-disabled="state.cart.length === 0" t-on-click="openPaymentModal">Pay Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- 2. FLOOR & TABLES VIEW -->
+            <t t-if="state.currentView === 'tables'">
+                <div class="cc-tables-grid-view">
+                    <div class="cc-tables-grid-header">
+                        <div>
+                            <h3>Clubhouse Floor &amp; Table Layout</h3>
+                            <p style="font-size: 0.84rem; color: #94A3B8; margin: 0.25rem 0 0 0;">
+                                Select an available table to begin a new order, or tap an occupied table to reopen its tab.
+                            </p>
+                        </div>
+                        <div class="cc-table-legend">
+                            <div class="cc-legend-pill">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+                                <span>Available</span>
+                            </div>
+                            <div class="cc-legend-pill">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; display: inline-block;"></span>
+                                <span>Occupied (Open Tab)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cc-tables-cards-grid">
+                        <t t-foreach="state.tables" t-as="table" t-key="table.id">
+                            <div class="cc-table-card" t-att-class="{
+                                'status-available': table.status === 'available',
+                                'status-occupied': table.status === 'occupied',
+                                'selected-table': state.currentTable.id === table.id
+                            }" t-on-click="() => this.selectTable(table)">
+                                <div class="cc-table-header">
+                                    <h4 class="cc-table-name"><t t-esc="table.name"/></h4>
+                                    <span class="cc-table-status-badge"><t t-esc="table.status"/></span>
+                                </div>
+
+                                <div class="cc-table-body">
+                                    <div class="cc-table-meta-row">
+                                        <span>Capacity:</span>
+                                        <span><t t-esc="table.capacity"/> Seats</span>
+                                    </div>
+
+                                    <t t-if="table.status === 'occupied' and table.active_order">
+                                        <div class="cc-table-meta-row">
+                                            <span>Guest:</span>
+                                            <strong style="color: #FFFFFF;"><t t-esc="table.active_order.member_name"/></strong>
+                                        </div>
+                                        <div class="cc-table-meta-row">
+                                            <span>Tab Ref:</span>
+                                            <span><t t-esc="table.active_order.order_ref"/></span>
+                                        </div>
+                                        <div class="cc-tab-amount">
+                                            Total: ₹<t t-esc="table.active_order.amount"/>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div style="font-size: 0.78rem; color: #10B981; margin-top: 0.5rem;">
+                                            Ready for seating
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <!-- 3. ORDER HISTORY VIEW -->
+            <t t-if="state.currentView === 'history'">
+                <div style="padding: 1.5rem; overflow-y: auto; flex-grow: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                        <div>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; margin: 0; color: #FFFFFF;">Shift POS Order History</h3>
+                            <p style="font-size: 0.84rem; color: #94A3B8; margin: 0.2rem 0 0 0;">Commercial register transactions completed in this session.</p>
+                        </div>
+                        <button class="cc-top-btn" t-on-click="() => this.setView('pos')">Back to POS</button>
+                    </div>
+
+                    <div style="background: #141B26; border: 1px solid #232D40; border-radius: 8px; overflow: hidden;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.86rem;">
+                            <thead style="background: #0E131C; border-bottom: 1px solid #222C3D; color: #94A3B8;">
+                                <tr>
+                                    <th style="padding: 0.85rem 1.25rem;">Order Ref</th>
+                                    <th style="padding: 0.85rem 1.25rem;">Table</th>
+                                    <th style="padding: 0.85rem 1.25rem;">Member</th>
+                                    <th style="padding: 0.85rem 1.25rem;">Amount</th>
+                                    <th style="padding: 0.85rem 1.25rem;">Payment Method</th>
+                                    <th style="padding: 0.85rem 1.25rem;">Time</th>
+                                    <th style="padding: 0.85rem 1.25rem;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.orderHistory" t-as="ord" t-key="ord.order_ref">
+                                    <tr style="border-bottom: 1px solid #1A2332;">
+                                        <td style="padding: 0.85rem 1.25rem; font-weight: 700; color: #FFFFFF;"><t t-esc="ord.order_ref"/></td>
+                                        <td style="padding: 0.85rem 1.25rem;"><t t-esc="ord.table"/></td>
+                                        <td style="padding: 0.85rem 1.25rem; color: #D4A347;"><t t-esc="ord.member"/></td>
+                                        <td style="padding: 0.85rem 1.25rem; font-weight: 700; color: #10B981;"><t t-esc="ord.amount"/></td>
+                                        <td style="padding: 0.85rem 1.25rem;"><span style="background: #1E293B; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.76rem;"><t t-esc="ord.method"/></span></td>
+                                        <td style="padding: 0.85rem 1.25rem; color: #94A3B8;"><t t-esc="ord.time"/></td>
+                                        <td style="padding: 0.85rem 1.25rem;"><span style="color: #10B981; font-weight: 600;">✓ <t t-esc="ord.status"/></span></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+
+            <!-- MODALS -->
+
+            <!-- Payment Modal -->
+            <t t-if="state.isPaymentModalOpen">
+                <div class="cc-pos-modal-backdrop">
+                    <div class="cc-pos-modal-dialog cc-payment-modal">
+                        <div class="cc-modal-head">
+                            <h3>Settle Table Bill — <t t-esc="state.currentTable.name"/></h3>
+                            <button class="cc-modal-close" t-on-click="closePaymentModal">✕</button>
+                        </div>
+
+                        <div class="cc-modal-body">
+                            <div class="cc-payment-total-box">
+                                <div class="cc-pay-label">Total Amount Due</div>
+                                <div class="cc-pay-total-val"><t t-esc="state.pricing.formatted_total"/></div>
+                                <div class="cc-pay-member-pill">
+                                    <t t-esc="state.selectedMember.name"/> • <t t-esc="state.pricing.discount_label"/>
+                                </div>
+                            </div>
+
+                            <div style="font-size: 0.82rem; font-weight: 600; color: #94A3B8; margin-bottom: 0.65rem;">
+                                Select Payment Method:
+                            </div>
+
+                            <div class="cc-payment-methods-grid">
+                                <div class="cc-pay-method-btn" t-att-class="{ 'selected': state.paymentMethod === 'cash' }" t-on-click="() => this.setPaymentMethod('cash')">
+                                    <span class="cc-pay-icon">💵</span>
+                                    <span class="cc-pay-method-title">Cash</span>
+                                </div>
+                                <div class="cc-pay-method-btn" t-att-class="{ 'selected': state.paymentMethod === 'card' }" t-on-click="() => this.setPaymentMethod('card')">
+                                    <span class="cc-pay-icon">💳</span>
+                                    <span class="cc-pay-method-title">Card</span>
+                                </div>
+                                <div class="cc-pay-method-btn" t-att-class="{ 'selected': state.paymentMethod === 'upi' }" t-on-click="() => this.setPaymentMethod('upi')">
+                                    <span class="cc-pay-icon">📱</span>
+                                    <span class="cc-pay-method-title">UPI / QR</span>
+                                </div>
+                            </div>
+
+                            <button class="cc-btn-confirm-payment" t-att-disabled="state.isProcessingPayment" t-on-click="processPayment">
+                                <t t-if="state.isProcessingPayment">
+                                    <span>Processing payment...</span>
+                                </t>
+                                <t t-else="">
+                                    <span>Confirm &amp; Complete Payment</span>
+                                </t>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Success Screen Modal -->
+            <t t-if="state.isSuccessOpen and state.lastPaymentResult">
+                <div class="cc-pos-modal-backdrop">
+                    <div class="cc-pos-modal-dialog">
+                        <div class="cc-modal-body cc-success-screen">
+                            <div class="cc-success-badge-icon">✓</div>
+                            <h2 class="cc-success-headline">Payment Successful</h2>
+                            <p style="font-size: 0.84rem; color: #94A3B8; margin: 0;">Commercial POS receipt recorded in Odoo database.</p>
+
+                            <div class="cc-receipt-card">
+                                <div class="cc-receipt-row">
+                                    <span>Order Reference:</span>
+                                    <strong><t t-esc="state.lastPaymentResult.order_ref"/></strong>
+                                </div>
+                                <div class="cc-receipt-row">
+                                    <span>Table:</span>
+                                    <strong><t t-esc="state.lastPaymentResult.table_name"/></strong>
+                                </div>
+                                <div class="cc-receipt-row">
+                                    <span>Member / Customer:</span>
+                                    <strong><t t-esc="state.lastPaymentResult.member_name"/></strong>
+                                </div>
+                                <div class="cc-receipt-row">
+                                    <span>Payment Method:</span>
+                                    <strong><t t-esc="state.lastPaymentResult.payment_method"/></strong>
+                                </div>
+                                <div class="cc-receipt-row highlight">
+                                    <span>Amount Paid:</span>
+                                    <strong class="cc-amt"><t t-esc="state.lastPaymentResult.amount"/></strong>
+                                </div>
+                            </div>
+
+                            <div class="cc-success-actions">
+                                <button class="cc-btn-new-order" t-on-click="startNewOrder">New Order</button>
+                                <button class="cc-btn-receipt" t-on-click="printReceipt">View Receipt</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Shift Panel Modal -->
+            <t t-if="state.isShiftModalOpen">
+                <div class="cc-pos-modal-backdrop">
+                    <div class="cc-pos-modal-dialog">
+                        <div class="cc-modal-head">
+                            <h3>Current POS Shift Metrics</h3>
+                            <button class="cc-modal-close" t-on-click="closeShiftPanel">✕</button>
+                        </div>
+
+                        <div class="cc-modal-body cc-shift-panel-content">
+                            <div class="cc-shift-grid">
+                                <div class="cc-shift-stat-box">
+                                    <div class="cc-stat-lbl">Active Cashier</div>
+                                    <div class="cc-stat-val"><t t-esc="state.shiftData.staff_name"/></div>
+                                </div>
+                                <div class="cc-shift-stat-box">
+                                    <div class="cc-stat-lbl">Session Started</div>
+                                    <div class="cc-stat-val" style="font-size: 0.95rem;"><t t-esc="state.shiftData.start_time"/></div>
+                                </div>
+                                <div class="cc-shift-stat-box">
+                                    <div class="cc-stat-lbl">Completed Orders</div>
+                                    <div class="cc-stat-val" style="color: #10B981;"><t t-esc="state.shiftData.orders_count"/></div>
+                                </div>
+                                <div class="cc-shift-stat-box">
+                                    <div class="cc-stat-lbl">Total Shift Sales</div>
+                                    <div class="cc-stat-val" style="color: #10B981;"><t t-esc="state.shiftData.formatted_total"/></div>
+                                </div>
+                            </div>
+
+                            <div class="cc-shift-payment-split">
+                                <div style="font-size: 0.78rem; text-transform: uppercase; color: #64748B; margin-bottom: 0.4rem; font-weight: 700;">
+                                    Tender Breakdown:
+                                </div>
+                                <div class="cc-split-row">
+                                    <span>Cash Register:</span>
+                                    <strong><t t-esc="state.shiftData.formatted_cash"/></strong>
+                                </div>
+                                <div class="cc-split-row">
+                                    <span>Card Terminal:</span>
+                                    <strong><t t-esc="state.shiftData.formatted_card"/></strong>
+                                </div>
+                                <div class="cc-split-row">
+                                    <span>UPI QR Gateway:</span>
+                                    <strong><t t-esc="state.shiftData.formatted_upi"/></strong>
+                                </div>
+                                <div class="cc-split-row total">
+                                    <span>Shift Revenue:</span>
+                                    <strong style="color: #10B981;"><t t-esc="state.shiftData.formatted_total"/></strong>
+                                </div>
+                            </div>
+
+                            <button class="cc-btn-close-shift" t-on-click="closeCurrentShift">Close POS Shift (Z-Report)</button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Member Selector Modal -->
+            <t t-if="state.isMemberSelectorOpen">
+                <div class="cc-pos-modal-backdrop">
+                    <div class="cc-pos-modal-dialog">
+                        <div class="cc-modal-head">
+                            <h3>Assign Member to Tab</h3>
+                            <button class="cc-modal-close" t-on-click="closeMemberSelector">✕</button>
+                        </div>
+
+                        <div class="cc-modal-body">
+                            <p style="font-size: 0.84rem; color: #94A3B8; margin: 0 0 1rem 0;">
+                                Membership discounts will be retrieved and calculated directly by the Odoo backend.
+                            </p>
+
+                            <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+                                <div class="cc-member-selector-box" style="padding: 0.85rem;" t-on-click="() => this.selectMember({ id: 101, name: 'Chitt Hirpara', plan: 'Gold', planCode: 'gold', discountPct: 15 })">
+                                    <div class="cc-member-info-left">
+                                        <div class="cc-mem-avatar">CH</div>
+                                        <div class="cc-mem-text">
+                                            <span class="cc-mem-name">Chitt Hirpara</span>
+                                            <span class="cc-mem-tier">Gold Member (15% Bar Discount)</span>
+                                        </div>
+                                    </div>
+                                    <span class="cc-btn-change-member">Select</span>
+                                </div>
+
+                                <div class="cc-member-selector-box" style="padding: 0.85rem;" t-on-click="() => this.selectMember({ id: 102, name: 'Aarav Patel', plan: 'Silver', planCode: 'silver', discountPct: 10 })">
+                                    <div class="cc-member-info-left">
+                                        <div class="cc-mem-avatar">AP</div>
+                                        <div class="cc-mem-text">
+                                            <span class="cc-mem-name">Aarav Patel</span>
+                                            <span class="cc-mem-tier" style="color: #94A3B8;">Silver Member (10% Bar Discount)</span>
+                                        </div>
+                                    </div>
+                                    <span class="cc-btn-change-member">Select</span>
+                                </div>
+
+                                <div class="cc-member-selector-box" style="padding: 0.85rem;" t-on-click="() => this.selectMember({ id: 103, name: 'Rohan Shah', plan: 'Junior', planCode: 'junior', discountPct: 5 })">
+                                    <div class="cc-member-info-left">
+                                        <div class="cc-mem-avatar">RS</div>
+                                        <div class="cc-mem-text">
+                                            <span class="cc-mem-name">Rohan Shah</span>
+                                            <span class="cc-mem-tier" style="color: #06B6D4;">Junior Member (5% Bar Discount)</span>
+                                        </div>
+                                    </div>
+                                    <span class="cc-btn-change-member">Select</span>
+                                </div>
+
+                                <div class="cc-member-selector-box" style="padding: 0.85rem;" t-on-click="() => this.selectMember({ id: 0, name: 'Walk-in Guest', plan: 'Guest', planCode: 'none', discountPct: 0 })">
+                                    <div class="cc-member-info-left">
+                                        <div class="cc-mem-avatar">G</div>
+                                        <div class="cc-mem-text">
+                                            <span class="cc-mem-name">Walk-in Guest</span>
+                                            <span class="cc-mem-tier" style="color: #64748B;">Standard Retail (No Discount)</span>
+                                        </div>
+                                    </div>
+                                    <span class="cc-btn-change-member">Select</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Open Tabs Drawer Modal -->
+            <t t-if="state.isOpenTabsOpen">
+                <div class="cc-pos-modal-backdrop">
+                    <div class="cc-pos-modal-dialog">
+                        <div class="cc-modal-head">
+                            <h3>Currently Open Bar Tabs (<t t-esc="openTabsCount"/>)</h3>
+                            <button class="cc-modal-close" t-on-click="closeTabsDrawer">✕</button>
+                        </div>
+
+                        <div class="cc-modal-body">
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <t t-foreach="state.tables" t-as="tbl" t-key="tbl.id">
+                                    <t t-if="tbl.status === 'occupied' and tbl.active_order">
+                                        <div class="cc-member-card-box" style="padding: 0.85rem 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" t-on-click="() => { this.selectTable(tbl); this.closeTabsDrawer(); }">
+                                            <div>
+                                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #FFFFFF;"><t t-esc="tbl.name"/></h4>
+                                                <span style="font-size: 0.78rem; color: #94A3B8;"><t t-esc="tbl.active_order.member_name"/> • <t t-esc="tbl.active_order.order_ref"/></span>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <div style="font-size: 1.05rem; font-weight: 700; color: #10B981;">₹<t t-esc="tbl.active_order.amount"/></div>
+                                                <span style="font-size: 0.72rem; color: #D4A347;">Open Tab</span>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytz
 
@@ -253,3 +253,133 @@ class Booking(models.Model):
             if booking.state not in states:
                 raise UserError("Booking %s is %s; this action needs it to be %s."
                                 % (booking.name, booking.state, " or ".join(states)))
+
+    # ------------------------------------------------------------------
+    # Frontend RPC & Integration APIs
+    # ------------------------------------------------------------------
+    @api.model
+    def calculate_booking_price(self, court_id, date_str, time_str, partner_id=None):
+        """Authoritative backend price calculation for court booking."""
+        court = self.env['club.court'].browse(int(court_id))
+        if not court.exists():
+            raise ValidationError("Court not found.")
+
+        try:
+            booking_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            booking_date = club_today()
+
+        plan = None
+        if partner_id:
+            partner = self.env['res.partner'].browse(int(partner_id))
+            if partner.exists() and partner.is_member and partner.plan_id and partner.expiry_date:
+                if partner.expiry_date >= booking_date:
+                    plan = partner.plan_id
+
+        price = plan.court_rate if plan else court.list_price
+        tier = plan.code if plan else 'guest'
+        plan_name = plan.name if plan else 'Walk-in / Guest'
+
+        return {
+            'price': price,
+            'formatted_price': f"₹{int(price)}",
+            'tier': tier,
+            'plan_name': plan_name,
+            'court_name': court.name,
+            'court_rate': court.list_price,
+        }
+
+    @api.model
+    def create_member_booking(self, court_id, date_str, time_str, partner_id=None, walkin_name=None, players=1):
+        """Create and confirm a booking directly from frontend or client action."""
+        court = self.env['club.court'].browse(int(court_id))
+        if not court.exists():
+            raise ValidationError("Court not found.")
+
+        try:
+            b_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            h, m = [int(x) for x in time_str.split(':')]
+            local_dt = CLUB_TZ.localize(datetime.combine(b_date, datetime.min.time())).replace(hour=h, minute=m)
+            utc_dt = local_dt.astimezone(pytz.utc).replace(tzinfo=None)
+        except Exception as e:
+            raise ValidationError(f"Invalid date/time format: {e}")
+
+        vals = {
+            'court_id': court.id,
+            'start_datetime': utc_dt,
+            'players': max(1, int(players)),
+        }
+
+        if partner_id and int(partner_id) > 0:
+            partner = self.env['res.partner'].browse(int(partner_id))
+            if partner.exists():
+                vals['partner_id'] = partner.id
+        elif walkin_name:
+            vals['walkin_name'] = walkin_name
+        else:
+            # Fallback to current user partner or demo member
+            partner = self.env.user.partner_id
+            vals['partner_id'] = partner.id
+
+        booking = self.create(vals)
+        booking.action_confirm()
+
+        local_start = to_club_time(booking.start_datetime)
+        local_end = to_club_time(booking.end_datetime)
+
+        return {
+            'id': booking.id,
+            'name': booking.name,
+            'court_id': court.id,
+            'court_name': court.name,
+            'date': local_start.strftime('%Y-%m-%d'),
+            'start_time': local_start.strftime('%H:%M'),
+            'end_time': local_end.strftime('%H:%M'),
+            'price': f"₹{int(booking.price)}",
+            'member_name': booking.partner_id.name if booking.partner_id else booking.walkin_name,
+            'plan_name': f"{booking.tier.capitalize()} Member" if booking.tier != 'guest' else "Non-member",
+            'state': booking.state,
+        }
+
+    @api.model
+    def cancel_member_booking(self, booking_id, partner_id=None):
+        """Cancel an existing court reservation."""
+        domain = [('id', '=', int(booking_id))]
+        if partner_id:
+            domain.append(('partner_id', '=', int(partner_id)))
+        booking = self.search(domain, limit=1)
+        if not booking:
+            # Check by reference name
+            booking = self.search([('name', '=', str(booking_id))], limit=1)
+        if not booking:
+            raise ValidationError("Booking record not found.")
+
+        booking.action_cancel()
+        return {'success': True, 'booking_id': booking.id, 'name': booking.name}
+
+    @api.model
+    def get_partner_bookings(self, partner_id=None):
+        """Retrieve booking history for a member."""
+        domain = []
+        if partner_id and int(partner_id) > 0:
+            domain.append(('partner_id', '=', int(partner_id)))
+        bookings = self.search(domain, order='start_datetime desc', limit=50)
+
+        result = []
+        for b in bookings:
+            start_local = to_club_time(b.start_datetime)
+            end_local = to_club_time(b.end_datetime)
+            result.append({
+                'id': b.id,
+                'name': b.name,
+                'court_id': b.court_id.id,
+                'court_name': b.court_id.name,
+                'date': start_local.strftime('%Y-%m-%d'),
+                'start_time': start_local.strftime('%H:%M'),
+                'end_time': end_local.strftime('%H:%M'),
+                'price': f"₹{int(b.price)}",
+                'member_name': b.partner_id.name if b.partner_id else b.walkin_name,
+                'plan_name': f"{b.tier.capitalize()} Member" if b.tier != 'guest' else "Guest",
+                'state': b.state,
+            })
+        return result

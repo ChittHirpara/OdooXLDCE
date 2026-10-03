@@ -17,6 +17,8 @@ class MembershipPlan(models.Model):
     shop_discount = fields.Float(string='Shop Discount %')
     bar_discount = fields.Float(string='Bar Discount %')
     validity_days = fields.Integer(default=365, required=True)
+    price = fields.Float(string='Annual Fee', default=5000.0)
+    description = fields.Text(string='Description')
     active = fields.Boolean(default=True)
     pricelist_id = fields.Many2one(
         'product.pricelist', string='Pricelist', readonly=True, copy=False, ondelete='set null',
@@ -72,3 +74,48 @@ class MembershipPlan(models.Model):
             ]
             plan.pricelist_id.item_ids = [Command.clear()] + items
         self.env['pos.config'].sudo().search([])._enable_club_pricelists()
+
+    @api.model
+    def get_frontend_plans(self):
+        """Format membership plans for frontend OWL client actions and APIs."""
+        plans = self.search([('active', '=', True)], order='sequence, id')
+        result = []
+        for p in plans:
+            badge = "MOST POPULAR" if p.code == "gold" else ("UNDER 18" if p.code == "junior" else None)
+            features = {
+                'club_access': "Full club access (All facilities & lounges)" if p.code == "gold" else (
+                    "Standard club access (Courts & locker room)" if p.code == "silver" else "Junior access (Academy & off-peak hours)"),
+                'court_benefits': "Priority prime-time booking & 7 days advance (Rate: ₹0/hr)" if p.code == "gold" else (
+                    f"Standard booking window (Rate: ₹{int(p.court_rate)}/hr)" if p.code == "silver" else f"Discounted court rates (Rate: ₹{int(p.court_rate)}/hr)"),
+                'shop_benefits': f"{int(p.shop_discount)}% member discount on gear",
+                'bar_discount': f"{int(p.bar_discount)}% discount at cafeteria & sports bar" if p.bar_discount > 0 else "Standard member rates (No discount)",
+                'membership_type': "Premium / Full Access VIP" if p.code == "gold" else (
+                    "Standard Adult Membership" if p.code == "silver" else "Youth & Academy (< 18 yrs)"),
+            }
+            benefits = [
+                features['club_access'],
+                features['court_benefits'],
+                features['shop_benefits'],
+                features['bar_discount'],
+            ]
+            result.append({
+                'id': p.code,
+                'db_id': p.id,
+                'name': p.name.upper(),
+                'code': p.code,
+                'badge': badge,
+                'description': p.description or (
+                    "Premium access for members who want the complete club experience." if p.code == "gold" else (
+                        "Standard membership for regular club users." if p.code == "silver" else "Discounted membership for members under 18.")),
+                'price': p.price or (5000 if p.code == "gold" else (3000 if p.code == "silver" else 1500)),
+                'currency': "₹",
+                'billing_period': "year",
+                'is_featured': p.code == "gold",
+                'court_rate': p.court_rate,
+                'shop_discount': p.shop_discount,
+                'bar_discount': p.bar_discount,
+                'benefits': benefits,
+                'features': features,
+                'active': p.active,
+            })
+        return result

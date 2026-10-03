@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <menuitem id="menu_club_root" name="Club" sequence="50" groups="group_club_staff"/>
+
+    <!-- Interactive Frontend OWL Portals -->
+    <menuitem id="menu_club_court_booking_ui" name="Court Booking (Live Grid)" parent="menu_club_root"
+              action="action_club_court_booking_ui" sequence="5"/>
+    <menuitem id="menu_club_membership_plans_ui" name="Membership Plans (UI)" parent="menu_club_root"
+              action="action_club_membership_plans_ui" sequence="6"/>
+    <menuitem id="menu_club_shop_ui" name="Pro-Shop" parent="menu_club_root"
+              action="action_club_shop_ui" sequence="7"/>
+    <menuitem id="menu_club_bar_pos_ui" name="Bar &amp; POS" parent="menu_club_root"
+              action="action_club_bar_pos_ui" sequence="8"/>
+
+    <!-- Backend Operational Records -->
     <menuitem id="menu_club_bookings" name="Bookings" parent="menu_club_root"
               action="action_club_booking" sequence="10"/>
     <menuitem id="menu_club_members" name="Members" parent="menu_club_root"

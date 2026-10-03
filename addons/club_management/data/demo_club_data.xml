@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Demo Courts -->
+    <record id="court_1" model="club.court">
+        <field name="name">Court 1</field>
+        <field name="sport">padel</field>
+        <field name="surface">Panoramic Glass</field>
+        <field name="is_indoor" eval="False"/>
+        <field name="list_price">800.0</field>
+        <field name="social_capacity">8</field>
+        <field name="open_hour">6.0</field>
+        <field name="close_hour">22.0</field>
+    </record>
+
+    <record id="court_2" model="club.court">
+        <field name="name">Court 2</field>
+        <field name="sport">tennis</field>
+        <field name="surface">Red Clay</field>
+        <field name="is_indoor" eval="False"/>
+        <field name="list_price">600.0</field>
+        <field name="social_capacity">8</field>
+        <field name="open_hour">6.0</field>
+        <field name="close_hour">22.0</field>
+    </record>
+
+    <record id="court_3" model="club.court">
+        <field name="name">Court 3</field>
+        <field name="sport">tennis</field>
+        <field name="surface">DecoTurf Hard Court</field>
+        <field name="is_indoor" eval="True"/>
+        <field name="list_price">600.0</field>
+        <field name="social_capacity">8</field>
+        <field name="open_hour">6.0</field>
+        <field name="close_hour">22.0</field>
+    </record>
+
+    <record id="court_4" model="club.court">
+        <field name="name">Court 4</field>
+        <field name="sport">badminton</field>
+        <field name="surface">Sprung Hardwood</field>
+        <field name="is_indoor" eval="True"/>
+        <field name="list_price">400.0</field>
+        <field name="social_capacity">8</field>
+        <field name="open_hour">6.0</field>
+        <field name="close_hour">22.0</field>
+    </record>
+
+    <!-- Demo Members -->
+    <record id="partner_member_chitt" model="res.partner">
+        <field name="name">Chitt Hirpara</field>
+        <field name="email">chitt@championsclub.com</field>
+        <field name="phone">+91 98765 43210</field>
+        <field name="is_member" eval="True"/>
+        <field name="member_id">CC-MEM-00142</field>
+        <field name="plan_id" ref="club_management.plan_gold"/>
+        <field name="join_date">2026-01-01</field>
+        <field name="expiry_date">2027-01-01</field>
+    </record>
+
+    <record id="partner_member_aarav" model="res.partner">
+        <field name="name">Aarav Patel</field>
+        <field name="email">aarav@championsclub.com</field>
+        <field name="phone">+91 98765 43211</field>
+        <field name="is_member" eval="True"/>
+        <field name="member_id">CC-MEM-00143</field>
+        <field name="plan_id" ref="club_management.plan_silver"/>
+        <field name="join_date">2026-02-15</field>
+        <field name="expiry_date">2027-02-15</field>
+    </record>
+
+    <record id="partner_member_rohan" model="res.partner">
+        <field name="name">Rohan Shah</field>
+        <field name="email">rohan@championsclub.com</field>
+        <field name="phone">+91 98765 43212</field>
+        <field name="is_member" eval="True"/>
+        <field name="member_id">CC-MEM-00144</field>
+        <field name="date_of_birth">2010-06-15</field>
+        <field name="plan_id" ref="club_management.plan_junior"/>
+        <field name="join_date">2026-03-01</field>
+        <field name="expiry_date">2027-03-01</field>
+    </record>
+
+    <!-- Pro-Shop Equipment Products -->
+    <record id="product_racket_padel_1" model="product.product">
+        <field name="name">Wilson Carbon Force Pro Padel Racket</field>
+        <field name="categ_id" ref="club_management.product_category_shop"/>
+        <field name="club_category">rackets</field>
+        <field name="list_price">12500.0</field>
+        <field name="image_icon">🏓</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_racket_tennis_1" model="product.product">
+        <field name="name">Head Speed MP Tennis Racket (300g)</field>
+        <field name="categ_id" ref="club_management.product_category_shop"/>
+        <field name="club_category">rackets</field>
+        <field name="list_price">14200.0</field>
+        <field name="image_icon">🎾</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_racket_badminton_1" model="product.product">
+        <field name="name">Yonex Astrox 88D Pro Badminton Racket</field>
+        <field name="categ_id" ref="club_management.product_category_shop"/>
+        <field name="club_category">rackets</field>
+        <field name="list_price">8900.0</field>
+        <field name="image_icon">🏸</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_balls_tennis_can" model="product.product">
+        <field name="name">Wilson US Open Extra Duty Tennis Balls (Can of 4)</field>
+        <field name="categ_id" ref="club_management.product_category_shop"/>
+        <field name="club_category">balls</field>
+        <field name="list_price">550.0</field>
+        <field name="image_icon">🎾</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_balls_padel_can" model="product.product">
+        <field name="name">Bullpadel Premium Pro Padel Balls (Can of 3)</field>
+        <field name="categ_id" ref="club_management.product_category_shop"/>
+        <field name="club_category">balls</field>
+        <field name="list_price">620.0</field>
+        <field name="image_icon">🏓</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_shuttlecocks_doz" model="product.product">
+        <field name="name">Yonex Aerosensa 50 Tournament Shuttlecocks (Doz)</field>
+        <field name="categ_id" ref="club_management.product_category_shop"/>
+        <field name="club_category">balls</field>
+        <field name="list_price">1850.0</field>
+        <field name="image_icon">🏸</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <!-- Bar & Cafeteria Products -->
+    <record id="product_bar_espresso" model="product.product">
+        <field name="name">Espresso Single Origin</field>
+        <field name="categ_id" ref="club_management.product_category_bar"/>
+        <field name="club_category">coffee</field>
+        <field name="list_price">80.0</field>
+        <field name="image_icon">☕</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_bar_cappuccino" model="product.product">
+        <field name="name">Artisanal Cappuccino</field>
+        <field name="categ_id" ref="club_management.product_category_bar"/>
+        <field name="club_category">coffee</field>
+        <field name="list_price">140.0</field>
+        <field name="image_icon">☕</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_bar_shake" model="product.product">
+        <field name="name">Whey Gold Recovery Shake</field>
+        <field name="categ_id" ref="club_management.product_category_bar"/>
+        <field name="club_category">shakes</field>
+        <field name="list_price">220.0</field>
+        <field name="image_icon">🥤</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_bar_water" model="product.product">
+        <field name="name">Sparkling Mineral Water (500ml)</field>
+        <field name="categ_id" ref="club_management.product_category_bar"/>
+        <field name="club_category">drinks</field>
+        <field name="list_price">60.0</field>
+        <field name="image_icon">💧</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_bar_burger" model="product.product">
+        <field name="name">Champions Classic Smash Burger</field>
+        <field name="categ_id" ref="club_management.product_category_bar"/>
+        <field name="club_category">food</field>
+        <field name="list_price">250.0</field>
+        <field name="image_icon">🍔</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <record id="product_bar_wrap" model="product.product">
+        <field name="name">Clubhouse Grilled Chicken Wrap</field>
+        <field name="categ_id" ref="club_management.product_category_bar"/>
+        <field name="club_category">food</field>
+        <field name="list_price">210.0</field>
+        <field name="image_icon">🌯</field>
+        <field name="detailed_type">consu</field>
+        <field name="sale_ok" eval="True"/>
+    </record>
+
+    <!-- Clubhouse POS Tables -->
+    <record id="pos_table_1" model="club.pos.table">
+        <field name="name">Table 01</field>
+        <field name="capacity">4</field>
+        <field name="status">occupied</field>
+        <field name="active_order_ref">POS-00121</field>
+        <field name="active_order_amount">420.0</field>
+        <field name="member_name">Aarav Patel</field>
+    </record>
+
+    <record id="pos_table_2" model="club.pos.table">
+        <field name="name">Table 02</field>
+        <field name="capacity">2</field>
+        <field name="status">available</field>
+    </record>
+
+    <record id="pos_table_3" model="club.pos.table">
+        <field name="name">Table 03</field>
+        <field name="capacity">4</field>
+        <field name="status">occupied</field>
+        <field name="active_order_ref">POS-00123</field>
+        <field name="active_order_amount">780.0</field>
+        <field name="member_name">Chitt Hirpara</field>
+    </record>
+
+    <record id="pos_table_4" model="club.pos.table">
+        <field name="name">Table 04</field>
+        <field name="capacity">6</field>
+        <field name="status">available</field>
+    </record>
+</odoo>

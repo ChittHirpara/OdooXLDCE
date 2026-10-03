@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Membership Plans OWL Client Action -->
+    <record id="action_club_membership_plans_ui" model="ir.actions.client">
+        <field name="name">Membership Plans (UI)</field>
+        <field name="tag">club_management.membership_plans</field>
+        <field name="target">main</field>
+    </record>
+
+    <!-- Court Booking Engine OWL Client Action -->
+    <record id="action_club_court_booking_ui" model="ir.actions.client">
+        <field name="name">Court Booking Engine</field>
+        <field name="tag">club_management.court_booking</field>
+        <field name="target">main</field>
+    </record>
+
+    <!-- Pro-Shop & Equipment OWL Client Action -->
+    <record id="action_club_shop_ui" model="ir.actions.client">
+        <field name="name">Pro-Shop &amp; Equipment</field>
+        <field name="tag">club_management.shop</field>
+        <field name="target">main</field>
+    </record>
+
+    <!-- Bar & Cafeteria POS OWL Client Action -->
+    <record id="action_club_bar_pos_ui" model="ir.actions.client">
+        <field name="name">Bar &amp; Cafeteria POS</field>
+        <field name="tag">club_management.bar_pos</field>
+        <field name="target">main</field>
+    </record>
+</odoo>
