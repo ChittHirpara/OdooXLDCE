@@ -2,7 +2,7 @@
 <odoo>
     <!-- Membership Plans OWL Client Action -->
     <record id="action_club_membership_plans_ui" model="ir.actions.client">
-        <field name="name">Membership Plans (UI)</field>
+        <field name="name">Membership Plans</field>
         <field name="tag">club_management.membership_plans</field>
         <field name="target">main</field>
     </record>

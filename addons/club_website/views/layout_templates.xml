@@ -112,6 +112,11 @@
         </section>
     </template>
 
+    <!-- No "Powered by Odoo / Create a free website" promotion in the club's footer -->
+    <template id="no_brand_promotion" inherit_id="website.brand_promotion" name="Club: no Odoo promotion">
+        <xpath expr="//t[@t-call='web.brand_promotion_message']" position="replace"/>
+    </template>
+
     <template id="footer" inherit_id="website.footer_custom" name="Club footer (site-wide)">
         <xpath expr="//div[@id='footer']" position="replace">
             <div id="footer" t-ignore="true" t-if="not no_footer">

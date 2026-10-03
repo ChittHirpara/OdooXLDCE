@@ -31,6 +31,7 @@
         'views/crm_lead_views.xml',
         'views/admin_views.xml',
         'views/support_views.xml',
+        'views/menu_tidy.xml',
     ],
     'demo': [
         'demo/demo_courts.xml',

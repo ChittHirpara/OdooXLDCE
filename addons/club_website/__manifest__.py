@@ -24,6 +24,7 @@ becomes a CRM lead there.
         'views/join_templates.xml',
         'views/page_templates.xml',
         'data/website_data.xml',
+        'data/website_cleanup.xml',
     ],
     'assets': {
         'web.assets_frontend': [

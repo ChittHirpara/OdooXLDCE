@@ -43,7 +43,7 @@ One Odoo 17 platform for a sports club: **court bookings, memberships, a pro-sho
 | 2 | **Membership** | Gold ₹5,000 / Silver ₹3,000 / Junior ₹1,500, benefits, comparison | Plans come from the database, not hard-coded |
 | 3 | **Courts**: pick tomorrow | A grid with the busy evening struck through; pick a Friday and see "N left" | Live availability, Friday social play |
 | 4 | Click a free slot, then **Send enquiry** | "Thank you" and a reference `ENQ-000xx` | Website to CRM |
-| 5 | Log in at `/web` (admin / admin), **Club, Enquiries (CRM)** | The new lead in **New**, with a follow-up call task | CRM pipeline, automatic assignment |
+| 5 | Log in at `/web` (admin / admin), **Club, Enquiries** | The new lead in **New**, with a follow-up call task | CRM pipeline, automatic assignment |
 | 6 | Click **Contacted**, then **Interested**; refresh the visitor's status link | The visitor's status page follows each stage | Visitor-facing transparency |
 | 7 | **Create Membership Quote**, then **Confirm** | Quotation from the plan's product, then lead turns **Won** | CRM to Sales to member |
 | 8 | Open the lead's **Member** button | A Gold member with ID `CC-000xx`, QR code, welcome e-mail queued | Lead to member automatically |
