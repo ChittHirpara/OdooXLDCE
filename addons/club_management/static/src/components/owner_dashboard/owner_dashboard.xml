@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.OwnerDashboard">
+        <div class="o_club_dashboard p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="m-0">Owner Dashboard</h2>
+                <div class="btn-group">
+                    <t t-foreach="periods" t-as="p" t-key="p.key">
+                        <button class="btn"
+                                t-att-class="state.period === p.key ? 'btn-primary' : 'btn-outline-primary'"
+                                t-on-click="() => this.setPeriod(p.key)" t-esc="p.label"/>
+                    </t>
+                </div>
+            </div>
+            <t t-if="state.data">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Total revenue</div>
+                        <div class="fs-2 fw-bold" t-esc="money(state.data.total_revenue)"/>
+                    </div></div>
+                    <div class="col-md-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Active memberships</div>
+                        <div class="fs-2 fw-bold" t-esc="state.data.active_members"/>
+                        <div class="small text-muted">
+                            <t t-foreach="state.data.members_by_plan" t-as="plan" t-key="plan.name">
+                                <span class="me-2"><t t-esc="plan.name"/>: <t t-esc="plan.count"/></span>
+                            </t>
+                        </div>
+                    </div></div>
+                    <div class="col-md-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Court utilization</div>
+                        <div class="fs-2 fw-bold"><t t-esc="state.data.court_utilization"/>%</div>
+                        <div class="small text-muted"><t t-esc="state.data.court_bookings"/> bookings</div>
+                    </div></div>
+                    <div class="col-md-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Outstanding payments</div>
+                        <div class="fs-2 fw-bold text-danger" t-esc="money(state.data.outstanding_amount)"/>
+                        <div class="small text-muted"><t t-esc="state.data.outstanding_count"/> unpaid invoices</div>
+                    </div></div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6"><div class="card p-3">
+                        <h5>Revenue by source</h5>
+                        <t t-foreach="state.data.by_source" t-as="src" t-key="src.key">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span t-esc="src.label"/>
+                                    <span><t t-esc="money(src.amount)"/> (<t t-esc="src.share"/>%)</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar" t-att-style="'width:' + src.share + '%'"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div></div>
+                    <div class="col-md-6"><div class="card p-3">
+                        <h5>Shop and bar sales</h5>
+                        <div class="d-flex justify-content-between"><span>Pro-Shop</span><b t-esc="money(state.data.shop_sales)"/></div>
+                        <div class="d-flex justify-content-between"><span>Bar &amp; Cafeteria</span><b t-esc="money(state.data.bar_sales)"/></div>
+                    </div></div>
+                </div>
+            </t>
+            <div t-elif="state.loading" class="text-muted">Loading...</div>
+        </div>
+    </t>
+</templates>

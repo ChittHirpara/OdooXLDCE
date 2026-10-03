@@ -21,6 +21,13 @@
         <field name="target">main</field>
     </record>
 
+    <!-- Owner dashboard OWL Client Action -->
+    <record id="action_club_owner_dashboard" model="ir.actions.client">
+        <field name="name">Owner Dashboard</field>
+        <field name="tag">club_management.owner_dashboard</field>
+        <field name="target">main</field>
+    </record>
+
     <!-- Bar & Cafeteria POS OWL Client Action -->
     <record id="action_club_bar_pos_ui" model="ir.actions.client">
         <field name="name">Bar &amp; Cafeteria POS</field>

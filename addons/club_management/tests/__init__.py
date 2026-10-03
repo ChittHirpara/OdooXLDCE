@@ -13,3 +13,4 @@ from . import test_currency
 from . import test_public_booking
 from . import test_public_order
 from . import test_member_login
+from . import test_dashboard

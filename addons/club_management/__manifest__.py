@@ -51,6 +51,8 @@
             'club_management/static/src/components/bar_pos/bar_pos.scss',
             'club_management/static/src/components/bar_pos/bar_pos.xml',
             'club_management/static/src/components/bar_pos/bar_pos.js',
+            'club_management/static/src/components/owner_dashboard/owner_dashboard.xml',
+            'club_management/static/src/components/owner_dashboard/owner_dashboard.js',
         ],
     },
     'application': True,
