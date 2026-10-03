@@ -26,6 +26,7 @@ docker compose run --rm odoo odoo -d club -i club_management,club_website --stop
 # then open http://localhost:8069  (login admin / admin)
 ```
 
+For the full architecture, database tables, workflows and a judges Q&A, read `docs/ARCHITECTURE_AND_JUDGES_GUIDE.md`.
 Run commands, the CRM workflow, tests and the browser checks are documented in `CLAUDE.md` and
 `addons/club_management/tests/e2e/README.md`. The earlier standalone `champions_club/` module (Odoo 19)
 was retired: everything it held lives in `club_management`, wired to real data.
