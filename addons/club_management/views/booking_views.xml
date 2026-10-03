@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_club_booking_tree" model="ir.ui.view">
+        <field name="name">club.booking.tree</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state == 'cancelled'" decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="court_id"/>
+                <field name="partner_id"/>
+                <field name="walkin_name"/>
+                <field name="start_datetime"/>
+                <field name="end_datetime"/>
+                <field name="players"/>
+                <field name="is_social" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state in ('confirmed', 'done')"
+                       decoration-danger="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_club_booking_form" model="ir.ui.view">
+        <field name="name">club.booking.form</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_done" type="object" string="Mark Done"
+                            class="btn-primary" invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state not in ('draft', 'confirmed')"/>
+                    <button name="action_draft" type="object" string="Reset to Draft"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="court_id"/>
+                            <field name="partner_id"/>
+                            <field name="walkin_name" invisible="partner_id"/>
+                            <field name="players"/>
+                        </group>
+                        <group>
+                            <field name="start_datetime" readonly="state in ('cancelled', 'done')"/>
+                            <field name="end_datetime"/>
+                            <field name="booking_date"/>
+                            <field name="is_social"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_club_booking_calendar" model="ir.ui.view">
+        <field name="name">club.booking.calendar</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <calendar date_start="start_datetime" date_stop="end_datetime"
+                      string="Bookings" mode="week" color="court_id" quick_create="0">
+                <field name="court_id"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_club_booking_search" model="ir.ui.view">
+        <field name="name">club.booking.search</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="walkin_name"/>
+                <field name="court_id"/>
+                <filter name="active_bookings" string="Not Cancelled" domain="[('state', '!=', 'cancelled')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter name="social" string="Friday Social" domain="[('is_social', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_court" string="Court" context="{'group_by': 'court_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_day" string="Day" context="{'group_by': 'booking_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_club_booking" model="ir.actions.act_window">
+        <field name="name">Bookings</field>
+        <field name="res_model">club.booking</field>
+        <field name="view_mode">tree,calendar,form</field>
+        <field name="context">{'search_default_active_bookings': 1}</field>
+    </record>
+</odoo>

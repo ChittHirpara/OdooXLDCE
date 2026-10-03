@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_club_court_tree" model="ir.ui.view">
+        <field name="name">club.court.tree</field>
+        <field name="model">club.court</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="sport"/>
+                <field name="list_price"/>
+                <field name="social_capacity"/>
+                <field name="open_hour" widget="float_time"/>
+                <field name="close_hour" widget="float_time"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_club_court_form" model="ir.ui.view">
+        <field name="name">club.court.form</field>
+        <field name="model">club.court</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sport"/>
+                            <field name="list_price"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="open_hour" widget="float_time"/>
+                            <field name="close_hour" widget="float_time"/>
+                            <field name="social_capacity"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_club_court" model="ir.actions.act_window">
+        <field name="name">Courts</field>
+        <field name="res_model">club.court</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -13,6 +13,8 @@
         'data/plans.xml',
         'views/membership_plan_views.xml',
         'views/partner_views.xml',
+        'views/court_views.xml',
+        'views/booking_views.xml',
         'views/menus.xml',
     ],
     'application': True,
