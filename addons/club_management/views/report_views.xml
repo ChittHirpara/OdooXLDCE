@@ -55,7 +55,7 @@
                 <filter name="today" string="Today"
                         domain="[('booking_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter name="this_month" string="This Month"
-                        domain="[('booking_date', '&gt;=', context_today().replace(day=1).strftime('%Y-%m-%d'))]"/>
+                        domain="[('booking_date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <filter name="social" string="Friday Social" domain="[('is_social', '=', True)]"/>
                 <filter name="members" string="Members" domain="[('tier', '!=', 'guest')]"/>

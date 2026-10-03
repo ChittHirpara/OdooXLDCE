@@ -1,6 +1,7 @@
 from odoo import Command, api, fields, models
 
 PRICELIST_SYNC_FIELDS = {'name', 'shop_discount', 'bar_discount'}
+PRODUCT_SYNC_FIELDS = {'name', 'price', 'validity_days', 'active'}
 
 
 class MembershipPlan(models.Model):
@@ -24,6 +25,10 @@ class MembershipPlan(models.Model):
         'product.pricelist', string='Pricelist', readonly=True, copy=False, ondelete='set null',
         help="Generated automatically from the discounts. Active members get it, so POS and the "
              "website shop apply the tier discount.")
+    product_id = fields.Many2one(
+        'product.product', string='Membership Product', readonly=True, copy=False,
+        ondelete='set null',
+        help="Service product sold on a membership quotation. Generated from the annual fee.")
 
     _sql_constraints = [
         ('code_unique', 'unique(code)', 'Only one plan per tier is allowed.'),
@@ -39,13 +44,34 @@ class MembershipPlan(models.Model):
     def create(self, vals_list):
         plans = super().create(vals_list)
         plans._sync_pricelist()
+        plans._sync_product()
         return plans
 
     def write(self, vals):
         res = super().write(vals)
         if PRICELIST_SYNC_FIELDS & vals.keys():
             self._sync_pricelist()
+        if PRODUCT_SYNC_FIELDS & vals.keys():
+            self._sync_product()
         return res
+
+    def _sync_product(self):
+        """One service product per plan, priced at the annual fee, for membership quotations.
+        It sits outside the Club Shop / Bar categories, so it never shows in the shop or POS."""
+        for plan in self.sudo():
+            vals = {
+                'name': "%s Membership (%s days)" % (plan.name, plan.validity_days),
+                'detailed_type': 'service',
+                'list_price': plan.price,
+                'sale_ok': True,
+                'purchase_ok': False,
+                'available_in_pos': False,
+                'active': plan.active,
+            }
+            if plan.product_id:
+                plan.product_id.write(vals)
+            else:
+                plan.product_id = self.env['product.product'].create(vals)
 
     def _sync_pricelist(self):
         """Keep one pricelist per plan: shop % on the Club Shop category and

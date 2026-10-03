@@ -195,8 +195,28 @@ export class ShopPage extends Component {
         });
 
         onWillStart(async () => {
+            await this.loadMember();
             await this.loadCatalog();
         });
+    }
+
+    /** The logged-in member and their shop discount come from Odoo (constants are offline preview only). */
+    async loadMember() {
+        if (!this.orm) return;
+        try {
+            const member = await this.orm.call("res.partner", "get_current_member", []);
+            if (member && member.id) {
+                Object.assign(CURRENT_MEMBER, {
+                    id: member.id,
+                    name: member.name,
+                    plan: member.plan,
+                    planCode: member.plan_code,
+                    discountPct: member.shop_discount,
+                });
+            }
+        } catch (err) {
+            console.warn("[Shop OWL] Could not load the member profile:", err);
+        }
     }
 
     get member() {
@@ -236,12 +256,13 @@ export class ShopPage extends Component {
         if (this.orm) {
             try {
                 const res = await this.orm.call("club.shop.product", "get_shop_catalog", [
-                    this.state.selectedCategory,
-                    this.state.searchQuery
+                    "all",
+                    "",
+                    CURRENT_MEMBER.id,
                 ]);
-                if (res && res.length) {
-                    this.state.products = res;
-                }
+                // Always take the server's list, even if empty: the sample catalog is only
+                // for the offline preview.
+                this.state.products = res || [];
             } catch (err) {
                 console.warn("[Shop OWL] Using cached catalog:", err);
             }
@@ -377,7 +398,36 @@ export class ShopPage extends Component {
             }
         }
 
-        // Deduct inventory in products
+        if (this.orm) {
+            // Real order: the server re-prices the basket, checks and deducts stock.
+            let res;
+            try {
+                res = await this.orm.call("club.shop.order", "place_order", [{
+                    partner_id: CURRENT_MEMBER.id,
+                    items: this.state.cart.map((i) => ({ product_id: i.product.id, qty: i.qty })),
+                    fulfillment: this.state.fulfillment === "club_pickup" ? "Collect at Club" : "Home Delivery",
+                    delivery_address: this.state.deliveryAddress,
+                }]);
+            } catch (err) {
+                this.state.loading = false;
+                this.state.error = "Could not reach the club system. Please try again.";
+                return;
+            }
+            if (!res || !res.success) {
+                this.state.loading = false;
+                this.state.error = "⚠ " + (res?.message || "The order could not be placed.");
+                await this.loadCatalog();
+                return;
+            }
+            this.state.confirmedOrder = { ...res, items: [...this.state.cart] };
+            this.state.cart = [];
+            this.state.currentView = "order_confirmed";
+            this.state.loading = false;
+            await this.loadCatalog();    // refresh stock levels
+            return;
+        }
+
+        // Offline preview only: deduct inventory in products
         for (const item of this.state.cart) {
             item.product.stock = Math.max(0, item.product.stock - item.qty);
         }

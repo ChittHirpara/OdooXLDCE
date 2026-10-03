@@ -13,6 +13,8 @@
                             <field name="plan_id" invisible="not is_member"/>
                             <field name="member_id" invisible="not is_member"/>
                             <field name="member_state" invisible="not is_member"/>
+                            <field name="qr_code" widget="image" options="{'size': [150, 150]}"
+                                   invisible="not member_id"/>
                         </group>
                         <group>
                             <field name="date_of_birth"/>

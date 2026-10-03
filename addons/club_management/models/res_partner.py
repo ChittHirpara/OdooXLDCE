@@ -1,7 +1,9 @@
+import base64
 from datetime import timedelta
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.tools import email_normalize
 
 from .booking import club_today
 
@@ -21,6 +23,7 @@ class ResPartner(models.Model):
     expiry_reminder_for = fields.Date(
         copy=False, readonly=True,
         help="Expiry date for which the reminder email was already sent.")
+    qr_code = fields.Binary(compute='_compute_qr_code', string='Membership QR Code')
     is_junior = fields.Boolean(compute='_compute_is_junior')
     member_state = fields.Selection(
         [('none', 'Not a Member'), ('active', 'Active'), ('expired', 'Expired')],
@@ -29,6 +32,14 @@ class ResPartner(models.Model):
     _sql_constraints = [
         ('member_id_unique', 'unique(member_id)', 'Member ID must be unique.'),
     ]
+
+    @api.depends('member_id')
+    def _compute_qr_code(self):
+        """QR image of the member ID, for the membership card and front-desk scanning."""
+        Report = self.env['ir.actions.report']
+        for partner in self:
+            partner.qr_code = partner.member_id and base64.b64encode(
+                Report.barcode('QR', partner.member_id, width=256, height=256))
 
     @api.depends('date_of_birth')
     def _compute_is_junior(self):
@@ -161,15 +172,41 @@ class ResPartner(models.Model):
             })
 
     @api.model
+    def _club_verify_member(self, member_ref, email):
+        """The member for an online booking or order: the member ID plus the e-mail on file.
+
+        The same message is given for every failure, so it cannot be used to find out
+        which member IDs exist. A lapsed member still verifies (they pay full price).
+        """
+        ref = (member_ref or '').strip().upper()
+        wanted = email_normalize((email or '').strip())
+        partner = self.sudo().search([('member_id', '=', ref), ('is_member', '=', True)], limit=1) if ref else None
+        if not partner or not wanted or email_normalize(partner.email or '') != wanted:
+            raise ValidationError("We could not verify that member ID and e-mail address. "
+                                  "Check them, or continue as a guest.")
+        return partner
+
+    def _get_active_plan(self, on=None):
+        """The membership plan in force on ``on`` (club today by default), else an empty recordset.
+
+        Single rule used by court pricing, shop, bar and the frontend: a member whose
+        membership has ended gets no tier benefits.
+        """
+        self.ensure_one()
+        on = on or club_today()
+        if self.is_member and self.plan_id and self.expiry_date and self.expiry_date >= on:
+            return self.plan_id
+        return self.env['club.membership.plan']
+
+    @api.model
     def get_current_member(self):
         """Return the current user's member profile or default active demo member."""
         user = self.env.user
         partner = user.partner_id
         if not partner.is_member:
-            partner = self.search([('is_member', '=', True), ('member_state', '=', 'active')], limit=1)
-            if not partner:
-                partner = user.partner_id
-        plan = partner.plan_id
+            partner = self.search([('is_member', '=', True), ('member_state', '=', 'active')],
+                                  order='id', limit=1) or user.partner_id
+        plan = partner._get_active_plan()    # lapsed members get no tier benefits
         return {
             'id': partner.id,
             'name': partner.name,
@@ -192,7 +229,7 @@ class ResPartner(models.Model):
         members = self.search([('is_member', '=', True)], order='name asc')
         result = []
         for m in members:
-            plan = m.plan_id
+            plan = m._get_active_plan()    # lapsed members get no tier benefits
             result.append({
                 'id': m.id,
                 'name': m.name,

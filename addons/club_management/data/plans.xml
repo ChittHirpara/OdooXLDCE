@@ -3,6 +3,7 @@
     <record id="plan_gold" model="club.membership.plan">
         <field name="name">Gold</field>
         <field name="code">gold</field>
+        <field name="price">5000</field>
         <field name="court_rate">0.0</field>
         <field name="shop_discount">20.0</field>
         <field name="bar_discount">15.0</field>
@@ -11,6 +12,7 @@
     <record id="plan_silver" model="club.membership.plan">
         <field name="name">Silver</field>
         <field name="code">silver</field>
+        <field name="price">3000</field>
         <field name="court_rate">500.0</field>
         <field name="shop_discount">10.0</field>
         <field name="bar_discount">10.0</field>
@@ -19,6 +21,7 @@
     <record id="plan_junior" model="club.membership.plan">
         <field name="name">Junior</field>
         <field name="code">junior</field>
+        <field name="price">1500</field>
         <field name="court_rate">250.0</field>
         <field name="shop_discount">5.0</field>
         <field name="bar_discount">0.0</field>

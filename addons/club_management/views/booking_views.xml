@@ -9,9 +9,11 @@
                 <field name="court_id"/>
                 <field name="partner_id"/>
                 <field name="walkin_name"/>
+                <field name="booking_source" optional="show"/>
                 <field name="start_datetime"/>
                 <field name="end_datetime"/>
                 <field name="players"/>
+                <field name="currency_id" column_invisible="1"/>
                 <field name="price" sum="Total"/>
                 <field name="is_social" optional="hide"/>
                 <field name="state" widget="badge"
@@ -36,6 +38,8 @@
                             invisible="invoice_id or state == 'cancelled'"/>
                     <button name="action_view_invoice" type="object" string="View Invoice"
                             invisible="not invoice_id"/>
+                    <button name="action_open_reschedule" type="object" string="Reschedule"
+                            invisible="state not in ('draft', 'confirmed')"/>
                     <button name="action_cancel" type="object" string="Cancel"
                             invisible="state not in ('draft', 'confirmed')"/>
                     <button name="action_draft" type="object" string="Reset to Draft"
@@ -49,6 +53,9 @@
                             <field name="court_id"/>
                             <field name="partner_id"/>
                             <field name="walkin_name" invisible="partner_id"/>
+                            <field name="guest_phone" invisible="partner_id or not guest_phone"/>
+                            <field name="guest_email" invisible="partner_id or not guest_email"/>
+                            <field name="booking_source"/>
                             <field name="players"/>
                             <field name="company_id" invisible="1"/>
                             <field name="currency_id" invisible="1"/>
@@ -96,6 +103,7 @@
                 <filter name="active_bookings" string="Not Cancelled" domain="[('state', '!=', 'cancelled')]"/>
                 <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]"/>
                 <filter name="social" string="Friday Social" domain="[('is_social', '=', True)]"/>
+                <filter name="from_website" string="Booked Online" domain="[('booking_source', '=', 'website')]"/>
                 <group expand="0" string="Group By">
                     <filter name="group_court" string="Court" context="{'group_by': 'court_id'}"/>
                     <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>

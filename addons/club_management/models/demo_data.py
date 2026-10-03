@@ -11,6 +11,8 @@ import pytz
 
 from odoo import api, models
 from odoo.exceptions import ValidationError
+from odoo.modules.module import get_manifest
+from odoo.tools import convert_file
 
 from .booking import CLUB_TZ, FRIDAY, club_today
 
@@ -21,6 +23,10 @@ PARAM_SOCIAL_DAY = 'club_management.demo_social_day'
 MEMBERS = ['arjun', 'priya', 'rohan', 'sneha', 'vikram', 'meera', 'aarav', 'diya', 'karan']
 TENNIS = ['tennis_1', 'tennis_2', 'tennis_3']
 CRICKET = ['cricket_1', 'cricket_2']
+# Courts and members from data/demo_club_data.xml (added by the frontend work). They join
+# the generated bookings when present so every screen shows the same busy club.
+EXTRA_COURTS = ['court_1', 'court_2', 'court_3', 'court_4']
+EXTRA_MEMBERS = ['partner_member_chitt', 'partner_member_aarav', 'partner_member_rohan']
 WALKIN_NAMES = ['Imran Khan', 'Divya Menon', 'Suresh Rao', 'Neha Gupta', 'Tarun Joshi', 'Pooja Bhatt']
 
 # product xmlid suffix -> (stock on hand, reorder minimum, reorder maximum)
@@ -42,6 +48,20 @@ def utc(day, hour, minute=0):
 class ClubDemo(models.AbstractModel):
     _name = 'club.demo'
     _description = 'Club demo data loader'
+
+    @api.model
+    def install_demo_files(self):
+        """Load the club's demo files into a database created WITHOUT Odoo's demo data.
+
+        Odoo's accounting demo data creates journal entries, after which a company can no
+        longer change currency. scripts/create_demo_db.sh therefore installs without any
+        demo data, so the club can be set up in rupees, and then calls this to add only the
+        club's own demo (courts, members, products and the date-relative activity).
+        """
+        for filename in get_manifest('club_management')['demo']:
+            convert_file(self.env, 'club_management', filename, {}, mode='init',
+                         noupdate=True, kind='demo')
+        return True
 
     @api.model
     def load(self):
@@ -76,6 +96,16 @@ class ClubDemo(models.AbstractModel):
     def _court(self, key):
         return self.env.ref('club_management.demo_court_%s' % key)
 
+    def _ref_all(self, xmlids):
+        refs = (self.env.ref('club_management.%s' % x, raise_if_not_found=False) for x in xmlids)
+        return [rec for rec in refs if rec]
+
+    def _all_members(self):
+        return [self._member(key) for key in MEMBERS] + self._ref_all(EXTRA_MEMBERS)
+
+    def _all_courts(self):
+        return [self._court(key) for key in TENNIS + CRICKET] + self._ref_all(EXTRA_COURTS)
+
     def _book(self, court, start, partner=None, walkin=None, players=1, state='confirmed'):
         """Create a booking, skipping it if a booking rule rejects it."""
         Booking = self.env['club.booking'].with_context(tracking_disable=True, mail_create_nolog=True)
@@ -96,8 +126,8 @@ class ClubDemo(models.AbstractModel):
     def _load_history(self, today):
         """Two weeks of finished bookings so the revenue reports have shape."""
         rng = random.Random(2026)
-        members = [self._member(key) for key in MEMBERS]
-        courts = [self._court(key) for key in TENNIS + CRICKET]
+        members = self._all_members()
+        courts = self._all_courts()
         hours = [7, 8, 9, 10, 16, 17, 18, 18, 19, 19, 20, 20, 21]   # evenings are busiest
         cancelled = 0
         for offset in range(14, 0, -1):
@@ -123,12 +153,12 @@ class ClubDemo(models.AbstractModel):
 
     def _load_busy_evening(self, day):
         """Every court booked solid from 17:00/18:00 to 21:00: the 'busy evening'."""
-        pool = [self._member(key) for key in MEMBERS]
+        pool = self._all_members()
         used, walkins = {}, 0
-        slots = [(court, hour) for hour in (17, 18, 19, 20)
-                 for court in map(self._court, TENNIS)]
-        slots += [(court, hour) for hour in (18, 19, 20)
-                  for court in map(self._court, CRICKET)]
+        courts = self._all_courts()
+        # cricket nets start at 18:00, every other sport at 17:00
+        slots = [(court, hour) for hour in (17, 18, 19, 20) for court in courts
+                 if hour >= (18 if court.sport == 'cricket' else 17)]
         for index, (court, hour) in enumerate(slots):
             # every third slot goes to a walk-in, who pays the full court price
             partner = None if index % 3 == 2 else next(
@@ -161,16 +191,60 @@ class ClubDemo(models.AbstractModel):
     # CRM and stock
     # ------------------------------------------------------------------
     def _load_enquiries(self):
+        """A pipeline with a lead in every stage, so the CRM looks like a club mid-season."""
         Lead = self.env['crm.lead']
-        for name, email, plan, sport, message in [
-            ('Ananya Desai', 'ananya.desai@example.com', 'gold', 'tennis',
-             'Looking for a family membership. Do you offer coaching?'),
-            ('Rahul Verma', 'rahul.verma@example.com', 'silver', 'cricket',
-             'Interested in net practice on weekday evenings.'),
-            ('Kavita Shah', 'kavita.shah@example.com', 'junior', 'tennis',
-             'My daughter is 11 and wants to join the junior programme.'),
-        ]:
-            Lead.create_club_enquiry(name, email=email, plan=plan, sport=sport, message=message)
+        today = club_today()
+        stage = lambda xmlid: self.env.ref(xmlid)  # noqa: E731
+
+        def enquire(name, email, plan, sport, message):
+            return Lead.create_club_enquiry(name, email=email, plan=plan, sport=sport, message=message)
+
+        def follow_up_in(lead, days, summary):
+            lead.activity_ids.action_feedback()        # close the automatic first call
+            lead.activity_schedule('mail.mail_activity_data_call', summary=summary,
+                                   date_deadline=today + timedelta(days=days),
+                                   user_id=(lead.user_id or self.env.user).id)
+
+        # NEW, first call overdue
+        late = enquire('Ananya Desai', 'ananya.desai@example.com', 'gold', 'tennis',
+                       'Looking for a family membership. Do you offer coaching?')
+        late.activity_ids.date_deadline = today - timedelta(days=2)
+        # NEW, fresh
+        enquire('Meghna Joshi', 'meghna.joshi@example.com', 'silver', 'padel',
+                'Can I try a court before joining?')
+        # CONTACTED
+        contacted = enquire('Rahul Verma', 'rahul.verma@example.com', 'silver', 'cricket',
+                            'Interested in net practice on weekday evenings.')
+        contacted.stage_id = stage('crm.stage_lead2')
+        follow_up_in(contacted, 3, "Send the cricket net timetable")
+        # INTERESTED (Junior: birth date captured for the membership)
+        interested = enquire('Kavita Shah', 'kavita.shah@example.com', 'junior', 'tennis',
+                             'My daughter is 11 and wants to join the junior programme.')
+        interested.member_date_of_birth = today.replace(year=today.year - 11)
+        interested.stage_id = stage('crm.stage_lead3')
+        follow_up_in(interested, 2, "Confirm junior coaching slots")
+        # QUOTE SENT
+        quoted = enquire('Nikhil Rao', 'nikhil.rao@example.com', 'silver', 'badminton',
+                         'Looking for evening badminton and the gym discount.')
+        quoted.stage_id = stage('crm.stage_lead3')
+        quoted.action_create_membership_quote()
+        follow_up_in(quoted, 4, "Ask whether the quote works for them")
+        # NEGOTIATION
+        negotiating = enquire('Sana Qureshi', 'sana.qureshi@example.com', 'gold', 'tennis',
+                              'Corporate rate for 4 colleagues?')
+        negotiating.action_create_membership_quote()
+        negotiating.stage_id = stage('club_management.stage_negotiation')
+        follow_up_in(negotiating, 1, "Agree the group discount")
+        # LOST
+        lost = enquire('Dev Malhotra', 'dev.malhotra@example.com', 'silver', 'tennis',
+                       'Just looking at prices.')
+        lost.action_set_lost(lost_reason_id=self.env.ref('club_management.lost_competitor').id)
+        # WON: the quote is accepted, so a member is created
+        won = enquire('Isha Kulkarni', 'isha.kulkarni@example.com', 'silver', 'tennis',
+                      'Joined after a trial session.')
+        won.stage_id = stage('crm.stage_lead3')
+        won.action_create_membership_quote()
+        won.order_ids.filtered(lambda o: o.state in ('draft', 'sent')).action_confirm()
 
     def _load_stock(self):
         warehouse = self.env['stock.warehouse'].search([], limit=1)

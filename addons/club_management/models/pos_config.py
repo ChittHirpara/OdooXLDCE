@@ -19,8 +19,15 @@ class PosConfig(models.Model):
             return
         standard = self.env.ref('club_management.pricelist_standard', raise_if_not_found=False)
         for config in self.sudo():
-            base = config.pricelist_id or standard or self.env['product.pricelist']
-            wanted = config.available_pricelist_ids | club | base
+            # POS only accepts pricelists in its own currency (a company in another
+            # currency, in a multi-company database, simply does not get the club tiers).
+            usable = club.filtered(lambda p: p.currency_id == config.currency_id)
+            if not usable:
+                continue
+            base = config.pricelist_id or (
+                standard if standard and standard.currency_id == config.currency_id else None
+            ) or self.env['product.pricelist']
+            wanted = config.available_pricelist_ids | usable | base
             if config.use_pricelist and config.available_pricelist_ids == wanted:
                 continue
             # Full-set command: pos.config rejects 'link' commands while a session is open.

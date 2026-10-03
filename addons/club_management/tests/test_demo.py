@@ -74,6 +74,23 @@ class TestDemoData(TransactionCase):
                                  "%s free at %s:00" % (data['court'], hour))
             self.assertTrue(by_start['08:00'], "%s should be free in the morning" % data['court'])
 
+    def test_busy_evening_also_covers_the_frontend_demo_courts(self):
+        day = self._day(PARAM_BUSY_DAY)
+        for key in ('court_1', 'court_2', 'court_3', 'court_4'):
+            court = self.env.ref('club_management.%s' % key, raise_if_not_found=False)
+            if not court:
+                self.skipTest("frontend demo courts not installed")
+            by_start = {s['start']: s['available'] for s in court.get_availability(day)[0]['slots']}
+            for hour in range(17, 21):
+                self.assertFalse(by_start['%02d:00' % hour], "%s free at %s:00" % (court.name, hour))
+
+    def test_frontend_demo_products_get_tier_discounts(self):
+        product = self.env.ref('club_management.product_racket_tennis_1', raise_if_not_found=False)
+        if not product:
+            self.skipTest("frontend demo products not installed")
+        gold = self.env.ref('club_management.plan_gold').pricelist_id
+        self.assertAlmostEqual(gold._get_product_price(product, 1.0), product.list_price * 0.8)
+
     def test_busy_evening_mixes_members_and_walkins(self):
         day = self._day(PARAM_BUSY_DAY)
         bookings = self.env['club.booking'].search([
@@ -153,3 +170,27 @@ class TestDemoData(TransactionCase):
         before = self.env['club.booking'].search_count([])
         self.assertFalse(self.env['club.demo'].load())
         self.assertEqual(self.env['club.booking'].search_count([]), before)
+
+    # --- CRM pipeline -------------------------------------------------------
+    def _demo_leads(self):
+        return self.env['crm.lead'].with_context(active_test=False).search([
+            ('enquiry_ref', '!=', False), ('email_from', 'like', '@example.com')])
+
+    def test_demo_pipeline_has_a_lead_in_every_stage(self):
+        stages = set(self._demo_leads().filtered('active').stage_id.mapped('name'))
+        self.assertTrue({'New', 'Contacted', 'Interested', 'Quote Sent', 'Negotiation', 'Won'} <= stages, stages)
+        self.assertTrue(self._demo_leads().filtered(lambda lead: not lead.active), "no lost lead")
+
+    def test_demo_won_lead_is_a_real_member_with_a_confirmed_quote(self):
+        won = self._demo_leads().filtered(lambda lead: lead.stage_id.is_won)
+        self.assertTrue(won)
+        for lead in won:
+            self.assertTrue(lead.member_activated)
+            self.assertEqual(lead.partner_id.member_state, 'active')
+            self.assertIn('sale', lead.order_ids.mapped('state'))
+
+    def test_demo_has_open_quotes_and_an_overdue_follow_up(self):
+        leads = self._demo_leads()
+        self.assertGreaterEqual(len(leads.order_ids.filtered(lambda o: o.state == 'draft')), 2)
+        overdue = leads.filtered('active').activity_ids.filtered(lambda a: a.date_deadline < club_today())
+        self.assertTrue(overdue, "no overdue follow-up to demo")

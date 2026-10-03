@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="courts_page" name="Club Courts">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_courts'"/>
+            <div id="wrap" class="club-site club-courts">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'Courts'"/>
+                    <t t-set="title" t-value="'Court availability'"/>
+                    <t t-set="subtitle" t-value="'Pick a day and a sport, then click a free slot to book it. It is confirmed instantly. Sessions are one hour and start every 30 minutes.'"/>
+                </t>
+
+                <section class="club-section">
+                    <div class="container">
+                        <div class="club-availability" data-endpoint="/club/availability"
+                             t-att-data-today="today">
+                            <div class="row g-3 club-filters">
+                                <div class="col-sm-4 col-md-3">
+                                    <label class="form-label" for="club-date">Date</label>
+                                    <input id="club-date" type="date" class="form-control js-date"
+                                           t-att-value="today" t-att-min="today" t-att-max="max_date"/>
+                                </div>
+                                <div class="col-sm-4 col-md-3">
+                                    <label class="form-label" for="club-sport">Sport</label>
+                                    <select id="club-sport" class="form-select js-sport">
+                                        <option value="">All sports</option>
+                                        <t t-foreach="sports" t-as="sport">
+                                            <option t-att-value="sport[0]" t-esc="sport[1]"/>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="col-sm-4 col-md-6 club-legend align-self-end">
+                                    <span class="club-dot club-dot-free"/> Available
+                                    <span class="club-dot club-dot-booked"/> Booked
+                                    <span class="club-dot club-dot-off"/> Passed
+                                </div>
+                            </div>
+                            <div class="js-note club-note d-none"/>
+                            <div class="js-grid club-grid" aria-live="polite">
+                                <p class="club-muted">Loading availability…</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section club-section-alt">
+                    <div class="container">
+                        <h2 class="club-section-title">Our courts</h2>
+                        <div class="row g-3">
+                            <t t-foreach="courts" t-as="court">
+                                <div class="col-sm-6 col-lg-4">
+                                    <div class="club-court-card">
+                                        <h5 t-esc="court.name"/>
+                                        <p class="club-muted"><t t-esc="sport_labels[court.sport]"/>
+                                            <t t-if="court.surface"> · <t t-esc="court.surface"/></t>
+                                            <t t-if="court.is_indoor"> · Indoor</t></p>
+                                        <p>Walk-in rate <strong>₹<t t-esc="'{:,.0f}'.format(court.list_price)"/></strong> per hour.
+                                            Members pay their tier rate.</p>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+                <t t-call="club_website.cta_band"/>
+            </div>
+        </t>
+    </template>
+</odoo>

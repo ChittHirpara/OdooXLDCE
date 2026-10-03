@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- The enquiry form (Join the Club, Contact). Params: form, error, plans, types, sports -->
+    <template id="enquiry_form" name="Club enquiry form">
+        <form action="/join/submit" method="post" class="club-form" novalidate="novalidate">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+            <div class="alert alert-danger" role="alert" t-if="error" t-esc="error"/>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="enq-name">Your name *</label>
+                    <input id="enq-name" type="text" name="name" class="form-control" required="required"
+                           maxlength="100" t-att-value="form['name']"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="enq-email">Email</label>
+                    <input id="enq-email" type="email" name="email" class="form-control" t-att-value="form['email']"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="enq-phone">Phone</label>
+                    <input id="enq-phone" type="tel" name="phone" class="form-control" maxlength="30" t-att-value="form['phone']"/>
+                    <div class="form-text">Email or phone, so we can reach you.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="enq-type">I am interested in</label>
+                    <select id="enq-type" name="type" class="form-select">
+                        <t t-foreach="types" t-as="kind">
+                            <option t-att-value="kind[0]" t-esc="kind[1]"
+                                    t-att-selected="'selected' if form['type'] == kind[0] else None"/>
+                        </t>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="enq-plan">Membership plan</label>
+                    <select id="enq-plan" name="plan" class="form-select">
+                        <option value="">No preference yet</option>
+                        <t t-foreach="plans" t-as="plan">
+                            <option t-att-value="plan.code"
+                                    t-att-selected="'selected' if form['plan'] == plan.code else None">
+                                <t t-esc="plan.name"/> (₹<t t-esc="'{:,.0f}'.format(plan.price)"/> / year)
+                            </option>
+                        </t>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="enq-sport">Sport</label>
+                    <select id="enq-sport" name="sport" class="form-select">
+                        <option value="">Any</option>
+                        <t t-foreach="sports" t-as="sport">
+                            <option t-att-value="sport[0]" t-esc="sport[1]"
+                                    t-att-selected="'selected' if form['sport'] == sport[0] else None"/>
+                        </t>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="enq-message">Message</label>
+                    <textarea id="enq-message" name="message" rows="4" maxlength="2000" class="form-control"
+                              t-esc="form['message']"/>
+                </div>
+                <!-- Honeypot: invisible to people, tempting to bots. Anything in it is dropped. -->
+                <div class="club-hp" aria-hidden="true">
+                    <label for="enq-website">Leave this empty</label>
+                    <input id="enq-website" type="text" name="website_url" tabindex="-1" autocomplete="off"/>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-club-primary btn-lg">Send enquiry</button>
+                </div>
+            </div>
+        </form>
+    </template>
+
+    <template id="join_page" name="Join the Club">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_join'"/>
+            <div id="wrap" class="club-site club-join">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'Join the club'"/>
+                    <t t-set="title" t-value="'Tell us what you are after'"/>
+                    <t t-set="subtitle" t-value="'We will get back to you within a day: membership, a court, the shop or an event.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container club-form-wrap">
+                        <t t-call="club_website.enquiry_form"/>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="join_success_page" name="Enquiry sent">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_join_success'"/>
+            <div id="wrap" class="club-site club-join">
+                <section class="club-section">
+                    <div class="container club-form-wrap text-center club-success">
+                        <div class="club-check">✓</div>
+                        <h1>Thank you<t t-if="name">, <t t-esc="name"/></t>!</h1>
+                        <p class="club-lead-dark">We have your enquiry and a member of the team will contact you shortly.</p>
+                        <t t-if="reference">
+                            <p>Your reference is <strong class="club-ref" t-esc="reference"/>.</p>
+                            <p><a t-att-href="status_url" class="btn btn-club-outline">Check the status of my enquiry</a></p>
+                        </t>
+                        <p class="mt-4"><a href="/membership">See the memberships</a> · <a href="/courts">Court availability</a></p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

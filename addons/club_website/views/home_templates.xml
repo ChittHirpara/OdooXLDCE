@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Home: a gateway into membership, courts, shop and the join form -->
+    <template id="home_page" inherit_id="website.homepage" name="Club Home">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="club-site club-home">
+                <t t-set="site" t-value="request.env['club.website.data']"/>
+
+                <section class="club-hero">
+                    <div class="container">
+                        <p class="club-eyebrow">The Champions Club</p>
+                        <h1>Where champions train.</h1>
+                        <p class="club-lead">Tennis, padel, badminton and cricket nets. Book a court, shop the gear,
+                            relax at the bar: one membership covers it all.</p>
+                        <div class="club-hero-actions">
+                            <a href="/join" class="btn btn-club-primary btn-lg">Join the Club</a>
+                            <a href="/courts" class="btn btn-club-outline btn-lg">Check court availability</a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section">
+                    <div class="container">
+                        <h2 class="club-section-title">Everything under one roof</h2>
+                        <div class="row g-3 club-features">
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>🎾</span><h5>Tennis</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>🏓</span><h5>Padel</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>🏸</span><h5>Badminton</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>🏏</span><h5>Cricket nets</h5></div></div>
+                            <div class="col-6 col-md-4 col-lg-2"><a href="/club-shop" class="club-feature"><span>🛍️</span><h5>Pro-Shop</h5></a></div>
+                            <div class="col-6 col-md-4 col-lg-2"><div class="club-feature"><span>☕</span><h5>Bar &amp; Cafeteria</h5></div></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section club-section-alt">
+                    <div class="container">
+                        <h2 class="club-section-title">Membership</h2>
+                        <p class="club-section-sub">One member record gives you your court rate and your shop and bar discounts.</p>
+                        <div class="row g-4 club-plans">
+                            <t t-foreach="site.plans()" t-as="plan">
+                                <div class="col-md-4"><t t-call="club_website.plan_card"/></div>
+                            </t>
+                        </div>
+                        <p class="text-center mt-4"><a href="/membership">Compare the plans</a></p>
+                    </div>
+                </section>
+
+                <section class="club-section">
+                    <div class="container">
+                        <h2 class="club-section-title">Open courts today</h2>
+                        <div class="row g-3 club-open-courts">
+                            <t t-foreach="site.open_slots_today()" t-as="court">
+                                <div class="col-sm-6 col-lg-4">
+                                    <a href="/courts" class="club-court-card text-decoration-none">
+                                        <h5 t-esc="court['name']"/>
+                                        <p class="club-muted" t-esc="court['sport'].title()"/>
+                                        <strong t-if="court['free']"><t t-esc="court['free']"/> slots free
+                                            <small class="club-muted">next at <t t-esc="court['next']"/></small></strong>
+                                        <strong t-else="" class="club-stock-out">Fully booked today</strong>
+                                    </a>
+                                </div>
+                            </t>
+                        </div>
+                        <p class="text-center mt-4"><a href="/courts">See the full availability grid</a></p>
+                    </div>
+                </section>
+
+                <section class="club-section club-section-alt">
+                    <div class="container">
+                        <h2 class="club-section-title">From the Pro-Shop</h2>
+                        <div class="row g-3 club-products">
+                            <t t-foreach="site.shop_products()[:4]" t-as="product">
+                                <div class="col-6 col-lg-3"><t t-call="club_website.product_card"/></div>
+                            </t>
+                        </div>
+                        <p class="text-center mt-4"><a href="/club-shop">Browse the whole shop</a></p>
+                    </div>
+                </section>
+
+                <t t-call="club_website.cta_band"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

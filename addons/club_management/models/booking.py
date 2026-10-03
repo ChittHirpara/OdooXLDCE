@@ -1,15 +1,19 @@
+import re
+import uuid
 from datetime import datetime, timedelta
 
 import pytz
 
 from odoo import Command, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools import email_normalize
 
 CLUB_TZ = pytz.timezone('Asia/Kolkata')
 SLOT_MINUTES = 30
 BOOKING_DURATION = timedelta(hours=1)
 FRIDAY = 4
 MAX_BOOKINGS_PER_DAY = 2
+WEBSITE_BOOKING_DAYS = 14        # how far ahead a visitor may book online
 
 
 def to_club_time(dt):
@@ -32,6 +36,12 @@ class Booking(models.Model):
     court_id = fields.Many2one('club.court', required=True, tracking=True)
     partner_id = fields.Many2one('res.partner', string='Member / Customer', tracking=True)
     walkin_name = fields.Char(string='Walk-in Name')
+    guest_phone = fields.Char(string='Guest Phone', help="Contact of a guest who booked online.")
+    guest_email = fields.Char(string='Guest Email', help="Contact of a guest who booked online.")
+    booking_source = fields.Selection(
+        [('staff', 'Front desk / screens'), ('website', 'Website')], default='staff', required=True)
+    access_token = fields.Char(copy=False, readonly=True, index=True,
+                               help="Secret in the visitor's booking link (view and cancel).")
     start_datetime = fields.Datetime(string='Start', required=True, tracking=True)
     end_datetime = fields.Datetime(string='End', compute='_compute_times', store=True)
     booking_date = fields.Date(compute='_compute_times', store=True, string='Date (club time)')
@@ -162,6 +172,24 @@ class Booking(models.Model):
                     "%s already has %s bookings on %s (maximum per day)."
                     % (booking.partner_id.name, MAX_BOOKINGS_PER_DAY, booking.booking_date))
 
+    @api.constrains('guest_phone', 'guest_email', 'start_datetime', 'state')
+    def _check_guest_daily_limit(self):
+        """A guest who booked online (no member record) gets the same two-a-day limit,
+        counted by phone number or e-mail so changing the name does not get round it."""
+        for booking in self.filtered(lambda b: not b.partner_id and b.state != 'cancelled'
+                                     and (b.guest_phone or b.guest_email)):
+            contact = []
+            if booking.guest_phone:
+                contact.append(('guest_phone', '=', booking.guest_phone))
+            if booking.guest_email:
+                contact.append(('guest_email', '=', booking.guest_email))
+            domain = [('partner_id', '=', False), ('booking_date', '=', booking.booking_date),
+                      ('state', '!=', 'cancelled')] + ['|'] * (len(contact) - 1) + contact
+            if self.search_count(domain) > MAX_BOOKINGS_PER_DAY:
+                raise ValidationError(
+                    "You already have %s bookings on %s (maximum per day). "
+                    "Cancel one first, or choose another day." % (MAX_BOOKINGS_PER_DAY, booking.booking_date))
+
     # ------------------------------------------------------------------
     # Workflow
     # ------------------------------------------------------------------
@@ -237,16 +265,38 @@ class Booking(models.Model):
     def action_reschedule(self, new_start, court=None):
         """Move a booking to a new start time (and optionally another court).
 
-        All constraints are re-checked by the write.
+        All booking rules are re-checked by the write. An invoiced booking may
+        only move if its price stays the same.
         """
         self._require_state('draft', 'confirmed')
         for booking in self:
+            before = "%s, %s" % (
+                booking.court_id.name, to_club_time(booking.start_datetime).strftime('%a %d %b %H:%M'))
+            old_price = booking.price
             vals = {'start_datetime': new_start}
             if court:
                 vals['court_id'] = court.id
             booking.write(vals)
-            booking.message_post(body="Booking rescheduled.")
+            if booking.invoice_id and booking.price != old_price:
+                raise UserError(
+                    "Moving booking %s would change its price from %s to %s, but it is already "
+                    "invoiced (%s). Cancel the invoice or create a new booking instead."
+                    % (booking.name, old_price, booking.price, booking.invoice_id.name))
+            booking.message_post(body="Rescheduled from %s to %s, %s." % (
+                before, booking.court_id.name,
+                to_club_time(booking.start_datetime).strftime('%a %d %b %H:%M')))
         return True
+
+    def action_open_reschedule(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Reschedule Booking',
+            'res_model': 'club.booking.reschedule',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_booking_id': self.id},
+        }
 
     def _require_state(self, *states):
         for booking in self:
@@ -310,36 +360,55 @@ class Booking(models.Model):
             'players': max(1, int(players)),
         }
 
-        if partner_id and int(partner_id) > 0:
-            partner = self.env['res.partner'].browse(int(partner_id))
-            if partner.exists():
-                vals['partner_id'] = partner.id
-        elif walkin_name:
-            vals['walkin_name'] = walkin_name
-        else:
-            # Fallback to current user partner or demo member
-            partner = self.env.user.partner_id
+        if partner_id is not None and int(partner_id) > 0:
+            partner = self.env['res.partner'].browse(int(partner_id)).exists()
+            if not partner:
+                raise ValidationError("Member not found. Please reload the page and try again.")
             vals['partner_id'] = partner.id
+        elif walkin_name or partner_id is not None:
+            vals['walkin_name'] = walkin_name or 'Walk-in Guest'    # id 0 is the walk-in guest
+        else:
+            vals['partner_id'] = self.env.user.partner_id.id
 
         booking = self.create(vals)
         booking.action_confirm()
+        return booking._to_frontend()
 
-        local_start = to_club_time(booking.start_datetime)
-        local_end = to_club_time(booking.end_datetime)
-
+    def _to_frontend(self):
+        """Booking as the OWL screens expect it: ``id`` is the reference, ``odoo_id`` the record."""
+        self.ensure_one()
+        local_start = to_club_time(self.start_datetime)
+        local_end = to_club_time(self.end_datetime)
         return {
-            'id': booking.id,
-            'name': booking.name,
-            'court_id': court.id,
-            'court_name': court.name,
+            'id': self.name,
+            'odoo_id': self.id,
+            'name': self.name,
+            'court_id': self.court_id.id,
+            'court_name': self.court_id.name,
             'date': local_start.strftime('%Y-%m-%d'),
             'start_time': local_start.strftime('%H:%M'),
             'end_time': local_end.strftime('%H:%M'),
-            'price': f"₹{int(booking.price)}",
-            'member_name': booking.partner_id.name if booking.partner_id else booking.walkin_name,
-            'plan_name': f"{booking.tier.capitalize()} Member" if booking.tier != 'guest' else "Non-member",
-            'state': booking.state,
+            'price': f"₹{int(self.price)}",
+            'member_name': self.partner_id.name if self.partner_id else self.walkin_name,
+            'plan_name': f"{self.tier.capitalize()} Member" if self.tier != 'guest' else "Non-member",
+            'state': self.state,
         }
+
+    @api.model
+    def get_availability(self, date_str=None, court_id=None):
+        """Booked start times per court for a date: ``{court_id: ['10:00', ...]}``."""
+        return self.env['club.court'].get_availability_matrix(date_str, court_id)['availability_map']
+
+    @api.model
+    def create_booking_api(self, court_id, date_str, time_str, partner_id=None, walkin_name=None, players=1):
+        """Book from the court-booking screen. Rule violations come back as a message."""
+        try:
+            with self.env.cr.savepoint():
+                booking = self.create_member_booking(
+                    court_id, date_str, time_str, partner_id, walkin_name, players)
+        except (ValidationError, UserError) as error:
+            return {'success': False, 'message': error.args[0]}
+        return {'success': True, 'booking': booking}
 
     @api.model
     def cancel_member_booking(self, booking_id, partner_id=None):
@@ -365,21 +434,113 @@ class Booking(models.Model):
             domain.append(('partner_id', '=', int(partner_id)))
         bookings = self.search(domain, order='start_datetime desc', limit=50)
 
-        result = []
-        for b in bookings:
-            start_local = to_club_time(b.start_datetime)
-            end_local = to_club_time(b.end_datetime)
-            result.append({
-                'id': b.id,
-                'name': b.name,
-                'court_id': b.court_id.id,
-                'court_name': b.court_id.name,
-                'date': start_local.strftime('%Y-%m-%d'),
-                'start_time': start_local.strftime('%H:%M'),
-                'end_time': end_local.strftime('%H:%M'),
-                'price': f"₹{int(b.price)}",
-                'member_name': b.partner_id.name if b.partner_id else b.walkin_name,
-                'plan_name': f"{b.tier.capitalize()} Member" if b.tier != 'guest' else "Guest",
-                'state': b.state,
-            })
-        return result
+        return [b._to_frontend() for b in bookings]
+
+    # ------------------------------------------------------------------
+    # Online booking by website visitors (no staff involved)
+    # ------------------------------------------------------------------
+    @api.model
+    def _club_start_utc(self, date_str, time_str):
+        """Club-local date and time strings ('2026-10-05', '18:30') as a naive UTC datetime."""
+        try:
+            day = datetime.strptime(date_str, '%Y-%m-%d').date()
+            hour, minute = [int(x) for x in time_str.split(':')]
+            local = CLUB_TZ.localize(datetime.combine(day, datetime.min.time())).replace(hour=hour, minute=minute)
+        except (ValueError, TypeError, AttributeError):
+            raise ValidationError("That date or time is not valid.")
+        return local.astimezone(pytz.utc).replace(tzinfo=None)
+
+    @api.model
+    def _check_public_window(self, start):
+        """Online bookings: in the future, and no more than WEBSITE_BOOKING_DAYS ahead."""
+        if start <= fields.Datetime.now():
+            raise ValidationError("That time has already passed. Please pick a later slot.")
+        if to_club_time(start).date() > club_today() + timedelta(days=WEBSITE_BOOKING_DAYS):
+            raise ValidationError(
+                "Online booking opens %s days ahead. Please pick an earlier day." % WEBSITE_BOOKING_DAYS)
+
+    @api.model
+    def create_public_booking(self, court_id, date_str, time_str, name, phone=None, email=None,
+                              players=1, member_ref=None, member_email=None):
+        """Book a court online, instantly confirmed, for a website visitor.
+
+        A guest pays the court's list price. A member who gives their member ID and the
+        e-mail on file pays their tier price. Every booking rule still applies. A booking
+        made online can be viewed and cancelled with the private link in its e-mail.
+        Raises ValidationError with a message the visitor can act on.
+        """
+        name = (name or '').strip()
+        phone = re.sub(r'[^\d+]', '', phone or '')
+        email = email_normalize((email or '').strip()) or False
+        court = self.env['club.court'].sudo().browse(int(court_id or 0)).exists()
+        if not court:
+            raise ValidationError("That court does not exist.")
+        start = self._club_start_utc(date_str, time_str)
+        self._check_public_window(start)
+        partner = self.env['res.partner']
+        if member_ref:
+            partner = self.env['res.partner']._club_verify_member(member_ref, member_email)
+            name = partner.name
+        else:
+            if not name:
+                raise ValidationError("Please tell us your name.")
+            if not phone and not email:
+                raise ValidationError("Please give a phone number or an e-mail address, so we can reach you.")
+        try:
+            players = max(1, min(int(players or 1), court.social_capacity))
+        except (TypeError, ValueError):
+            players = 1
+
+        vals = {
+            'court_id': court.id, 'start_datetime': start, 'players': players,
+            'booking_source': 'website', 'access_token': uuid.uuid4().hex,
+        }
+        if partner:
+            vals['partner_id'] = partner.id
+        else:
+            vals.update(walkin_name=name[:100], guest_phone=phone[:30] or False, guest_email=email)
+        with self.env.cr.savepoint():       # a refused booking must leave nothing behind
+            booking = self.sudo().with_context(mail_create_nolog=True).create(vals)
+            booking.action_confirm()
+        booking._send_confirmation()
+        if not partner:
+            booking._offer_membership_follow_up()
+        return booking
+
+    def _send_confirmation(self):
+        template = self.env.ref('club_management.mail_template_booking_confirmed', raise_if_not_found=False)
+        for booking in self:
+            if template and (booking.partner_id.email or booking.guest_email):
+                template.sudo().send_mail(booking.id)
+
+    def _offer_membership_follow_up(self):
+        """A guest who books online is a prospect: give the front desk a lead to offer a membership."""
+        self.ensure_one()
+        local = to_club_time(self.start_datetime)
+        try:
+            self.env['crm.lead'].create_club_enquiry(
+                self.walkin_name, email=self.guest_email, phone=self.guest_phone,
+                message="Booked %s on %s at %s online as a guest (%s). Offer a membership." % (
+                    self.court_id.name, local.strftime('%a %d %b %Y'), local.strftime('%H:%M'), self.name),
+                enquiry_type='court', sport=self.court_id.sport if self.court_id.sport in dict(
+                    self.env['crm.lead']._fields['sport_interest'].selection) else None,
+                notify=False)
+        except ValidationError:
+            pass                            # the booking stands even if the follow-up cannot be filed
+
+    @api.model
+    def get_by_token(self, token):
+        token = (token or '').strip()
+        return self.sudo().search([('access_token', '=', token)], limit=1) if len(token) >= 16 else self.browse()
+
+    def cancel_by_visitor(self):
+        """Cancel from the private link: allowed until the session starts, never once invoiced."""
+        self.ensure_one()
+        if self.state not in ('draft', 'confirmed'):
+            raise ValidationError("This booking can no longer be cancelled.")
+        if self.start_datetime <= fields.Datetime.now():
+            raise ValidationError("This session has already started, so it cannot be cancelled online.")
+        if self.invoice_id:
+            raise ValidationError("This booking has been invoiced. Please contact the club to cancel it.")
+        self.sudo().action_cancel()
+        return True

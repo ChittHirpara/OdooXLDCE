@@ -7,3 +7,8 @@ access_club_booking_staff,club.booking staff,model_club_booking,group_club_staff
 access_club_booking_manager,club.booking manager,model_club_booking,group_club_manager,1,1,1,1
 access_club_pos_table_staff,club.pos.table staff,model_club_pos_table,group_club_staff,1,1,1,0
 access_club_pos_table_manager,club.pos.table manager,model_club_pos_table,group_club_manager,1,1,1,1
+access_club_order_staff,club.order staff,model_club_order,group_club_staff,1,0,1,0
+access_club_order_manager,club.order manager,model_club_order,group_club_manager,1,1,1,1
+access_club_order_line_staff,club.order.line staff,model_club_order_line,group_club_staff,1,0,1,0
+access_club_order_line_manager,club.order.line manager,model_club_order_line,group_club_manager,1,1,1,1
+access_club_booking_reschedule_staff,club.booking.reschedule staff,model_club_booking_reschedule,group_club_staff,1,1,1,1

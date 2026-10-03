@@ -112,8 +112,37 @@ export class CourtBookingPage extends Component {
         });
 
         onWillStart(async () => {
+            await this.loadMember();
             await this.loadCourtsAndAvailability();
         });
+    }
+
+    /**
+     * The logged-in member and their real bookings come from Odoo. The constants above
+     * are only the offline preview fallback.
+     */
+    async loadMember() {
+        if (!this.orm) return;
+        try {
+            const member = await this.orm.call("res.partner", "get_current_member", []);
+            if (!member || !member.id) return;
+            Object.assign(CURRENT_MEMBER, {
+                id: member.id,
+                name: member.name,
+                plan: member.plan,
+                planCode: member.plan_code,
+                status: member.status,
+                memberId: member.member_id,
+            });
+            const bookings = await this.orm.call("club.booking", "get_partner_bookings", [member.id]);
+            this.state.myBookings = bookings.map((b) => ({
+                ...b,
+                // backend "done" is shown on the Completed tab; a draft is still upcoming
+                state: b.state === "done" ? "completed" : b.state === "draft" ? "confirmed" : b.state,
+            }));
+        } catch (err) {
+            console.warn("[CourtBooking] Could not load the member profile:", err);
+        }
     }
 
     get todayDateStr() {
@@ -150,6 +179,7 @@ export class CourtBookingPage extends Component {
 
                 const avail = await this.orm.call("club.booking", "get_availability", [this.state.selectedDate]);
                 if (avail) this.state.availability = avail;
+                this.state.error = null;
             } catch (err) {
                 console.warn("[CourtBooking] Offline/mock mode:", err);
             }
@@ -298,7 +328,7 @@ export class CourtBookingPage extends Component {
                     CURRENT_MEMBER.id,
                 ]);
                 if (res.success) {
-                    newBooking = res.booking;
+                    newBooking = { ...res.booking, state: "confirmed" };
                 } else {
                     this.state.error = res.message || "Something went wrong. Please try again.";
                     this.state.isModalOpen = false;
@@ -372,7 +402,12 @@ export class CourtBookingPage extends Component {
             try {
                 await this.orm.call("club.booking", "action_cancel", [[b.odoo_id]]);
             } catch (err) {
+                // Do not pretend it worked: the booking is still active in Odoo.
                 console.warn("[Cancel booking RPC error]:", err);
+                this.state.loading = false;
+                this.closeCancelModal();
+                this.state.error = err?.data?.message || "The booking could not be cancelled.";
+                return;
             }
         }
 

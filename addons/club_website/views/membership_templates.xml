@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="membership_page" name="Club Membership">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_membership'"/>
+            <div id="wrap" class="club-site club-membership">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'Membership'"/>
+                    <t t-set="title" t-value="'Choose your membership'"/>
+                    <t t-set="subtitle" t-value="'Gold, Silver or Junior. Your tier sets your court rate and your shop and bar discounts, everywhere in the club.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container">
+                        <div class="row g-4 club-plans">
+                            <t t-foreach="plans" t-as="plan">
+                                <div class="col-md-4"><t t-call="club_website.plan_card"/></div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+                <section class="club-section club-section-alt">
+                    <div class="container">
+                        <h2 class="club-section-title">Compare the plans</h2>
+                        <div class="table-responsive">
+                            <table class="table club-compare">
+                                <thead>
+                                    <tr>
+                                        <th/>
+                                        <th t-foreach="plans" t-as="plan" t-esc="plan.name"/>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th>Annual fee</th>
+                                        <td t-foreach="plans" t-as="plan">₹<t t-esc="'{:,.0f}'.format(plan.price)"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Valid for</th>
+                                        <td t-foreach="plans" t-as="plan"><t t-esc="plan.validity_days"/> days</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Court rate per hour</th>
+                                        <td t-foreach="plans" t-as="plan">
+                                            <t t-if="plan.court_rate">₹<t t-esc="'{:,.0f}'.format(plan.court_rate)"/></t>
+                                            <t t-else="">Included</t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Pro-Shop discount</th>
+                                        <td t-foreach="plans" t-as="plan"><t t-esc="'{:g}'.format(plan.shop_discount)"/>%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bar and cafeteria discount</th>
+                                        <td t-foreach="plans" t-as="plan"><t t-esc="'{:g}'.format(plan.bar_discount)"/>%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Who it is for</th>
+                                        <td t-foreach="plans" t-as="plan">
+                                            <t t-if="plan.code == 'junior'">Members under 18</t>
+                                            <t t-else="">Adults</t>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <t t-call="club_website.cta_band"/>
+            </div>
+        </t>
+    </template>
+</odoo>

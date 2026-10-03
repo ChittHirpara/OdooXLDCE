@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Lead form: club fields, quote and member buttons -->
+    <record id="view_crm_lead_form_club" model="ir.ui.view">
+        <field name="name">crm.lead.form.club</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_join_club" type="object" string="Join the Club" class="btn-success"
+                        icon="fa-user-plus" invisible="member_activated or not active"
+                        confirm="Make this enquirer a club member now?"/>
+                <button name="action_create_membership_quote" type="object" string="Create Membership Quote"
+                        class="btn-primary"
+                        invisible="not interested_plan_id or member_activated or not active or probability == 100"/>
+                <button name="action_activate_membership" type="object" string="Activate Membership"
+                        class="btn-secondary"
+                        invisible="probability &lt; 100 or member_activated or not interested_plan_id"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_member" type="object" class="oe_stat_button" icon="fa-id-card"
+                        invisible="not member_activated">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="member_ref"/></span>
+                        <span class="o_stat_text">Member</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page string="Club Enquiry" name="club_enquiry">
+                    <group>
+                        <group string="Enquiry">
+                            <field name="enquiry_ref"/>
+                            <field name="enquiry_type"/>
+                            <field name="enquiry_source"/>
+                            <field name="sport_interest"/>
+                        </group>
+                        <group string="Membership">
+                            <field name="interested_plan_id"/>
+                            <field name="member_date_of_birth"/>
+                            <field name="follow_up_date"/>
+                            <field name="member_activated"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Pipeline kanban: show the plan on each card -->
+    <record id="view_crm_lead_kanban_club" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.club</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <xpath expr="//templates//field[@name='tag_ids']" position="before">
+                <field name="interested_plan_id" widget="badge" invisible="not interested_plan_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Pipeline list -->
+    <record id="view_crm_lead_tree_club" model="ir.ui.view">
+        <field name="name">crm.lead.tree.club</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="enquiry_ref" optional="show"/>
+                <field name="member_activated" column_invisible="1"/>
+                <field name="active" column_invisible="1"/>
+                <button name="action_join_club" type="object" string="Join" icon="fa-user-plus"
+                        invisible="member_activated or not active" title="Make this enquirer a member"/>
+                <field name="interested_plan_id" optional="show"/>
+                <field name="enquiry_source" optional="show"/>
+                <field name="follow_up_date" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search: club filters and grouping -->
+    <record id="view_crm_lead_search_club" model="ir.ui.view">
+        <field name="name">crm.lead.search.club</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="enquiry_ref"/>
+                <filter name="club_website" string="Website Enquiries"
+                        domain="[('enquiry_source', '=', 'website')]"/>
+                <filter name="club_membership" string="Membership Enquiries"
+                        domain="[('enquiry_type', '=', 'membership')]"/>
+                <filter name="club_members" string="Became Members"
+                        domain="[('member_activated', '=', True)]"/>
+                <group expand="0" string="Club">
+                    <filter name="group_plan" string="Interested Plan" context="{'group_by': 'interested_plan_id'}"/>
+                    <filter name="group_source" string="How They Reached Us" context="{'group_by': 'enquiry_source'}"/>
+                    <filter name="group_enquiry_type" string="Enquiry Type" context="{'group_by': 'enquiry_type'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Funnel reporting -->
+    <record id="view_crm_lead_pivot_club" model="ir.ui.view">
+        <field name="name">crm.lead.pivot.club</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <pivot string="Enquiry Funnel" sample="1">
+                <field name="stage_id" type="row"/>
+                <field name="interested_plan_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="view_crm_lead_graph_club" model="ir.ui.view">
+        <field name="name">crm.lead.graph.club</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <graph string="Enquiry Funnel" type="bar" sample="1">
+                <field name="stage_id"/>
+                <field name="interested_plan_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_club_enquiries" model="ir.actions.act_window">
+        <field name="name">Enquiries (CRM)</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('enquiry_ref', '!=', False)]</field>
+        <field name="context">{'default_type': 'opportunity', 'default_enquiry_source': 'phone'}</field>
+        <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('crm.crm_case_kanban_view_leads')}),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('crm.crm_case_tree_view_oppor')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('crm.crm_lead_view_form')})]"/>
+    </record>
+
+    <record id="action_club_enquiry_funnel" model="ir.actions.act_window">
+        <field name="name">Enquiry Funnel</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="domain">[('enquiry_ref', '!=', False)]</field>
+        <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_crm_lead_pivot_club')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_crm_lead_graph_club')})]"/>
+    </record>
+
+    <menuitem id="menu_club_enquiries" name="Enquiries (CRM)" parent="menu_club_root"
+              action="action_club_enquiries" sequence="25"/>
+    <menuitem id="menu_club_report_funnel" name="Enquiry Funnel" parent="menu_club_reporting"
+              action="action_club_enquiry_funnel" sequence="30"/>
+</odoo>

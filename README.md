@@ -1,7 +1,7 @@
 # 🏆 Champions Club — Sports Club Management System
 > **Odoo Hackathon 2026** | Unified Racket & Athletic Club Operating Platform
 
-Champions Club is a unified sports club operating system built for **Odoo 19**, designed to eliminate fragmented workflows (Excel sheets, WhatsApp court groups, paper chits, phone reservations) and replace them with a cohesive, premium SaaS platform for:
+Champions Club is a unified sports club operating system built on **Odoo 17**, designed to eliminate fragmented workflows (Excel sheets, WhatsApp court groups, paper chits, phone reservations) and replace them with a cohesive, premium SaaS platform for:
 - 🎾 **Tennis, Padel & Badminton Court Management**
 - 💳 **Membership Management (Gold, Silver, Junior)**
 - 📅 **Court Bookings & Peak Scheduling**
@@ -11,9 +11,31 @@ Champions Club is a unified sports club operating system built for **Odoo 19**, 
 
 ---
 
+## 🧭 Project layout and how to run
+
+| Where | What |
+|---|---|
+| `addons/club_management/` | The platform: memberships, courts, bookings, pricing, shop and bar orders, CRM, reports, and the OWL screens described below. **Odoo 17.** |
+| `addons/club_website/` | The public website (Home, Membership, Courts, Shop, Join, status page). Depends on `club_management`. |
+| `preview/` | An offline, mock-data preview of the OWL screens (no Odoo needed). See "Running the Unified SPA Frontend Preview". |
+| `docker-compose.yml`, `docker/` | Odoo 17 and Postgres. |
+
+```bash
+docker compose build db && docker compose up -d
+docker compose run --rm odoo odoo -d club -i club_management,club_website --stop-after-init
+# then open http://localhost:8069  (login admin / admin)
+```
+
+For the full architecture, database tables, workflows and a judges Q&A, read `docs/ARCHITECTURE_AND_JUDGES_GUIDE.md`.
+Run commands, the CRM workflow, tests and the browser checks are documented in `CLAUDE.md` and
+`addons/club_management/tests/e2e/README.md`. The earlier standalone `champions_club/` module (Odoo 19)
+was retired: everything it held lives in `club_management`, wired to real data.
+
+---
+
 ## 🛍️ Module 3: Pro-Shop & Equipment eCommerce (Odoo OWL)
 
-The Pro-Shop delivers a state-of-the-art sports club eCommerce experience integrated directly with **Odoo 19 Inventory, Sales, and eCommerce**:
+The Pro-Shop delivers a state-of-the-art sports club eCommerce experience integrated directly with **Odoo Inventory, Sales, and the club's member pricing**:
 
 ### 1. Key Capabilities
 - **Catalog Browsing**: 4-column responsive product grid (Desktop: 4 columns, Tablet: 2–3 columns, Mobile: 1–2 columns).
@@ -81,20 +103,19 @@ ShopPage (Root Orchestrator & State Coordinator)
 ```
 OWL Component (ShopPage)
        ↓
-Odoo RPC Service (`club.shop.product`)
+Odoo RPC Service (`club.shop.product`, `club.shop.order`)
        ↓
-Odoo Sales / eCommerce (`sale.order`, `sale.order.line`)
+Member tier pricelist (one pricing rule for shop, bar and POS)
        ↓
-Odoo Inventory (`stock.quant`, `product.template`)
+Club order (`club.order`) + Odoo Inventory (`stock.quant`)
        ↓
 PostgreSQL Database
 ```
 
-- **Model**: `club.shop.product` (`champions_club/models/club_shop.py`)
+- **Models**: `club.shop.product`, `club.shop.order` (`addons/club_management/models/frontend_api.py`); pricing, orders and stock in `models/club_pos_and_shop.py`
 - **Key Methods**:
-  - `@api.model def get_shop_catalog(category, search_query)`
-  - `@api.model def calculate_cart_pricing(cart_items, partner_id)`
-  - `@api.model def place_order_api(cart_items, fulfillment_type, delivery_address, partner_id)`
+  - `get_shop_catalog(category, search_query, partner_id)`: live stock and the member's price
+  - `place_order(vals)`: the server re-prices the basket, checks and deducts stock, and creates the order (`ORD/00001`)
 
 ---
 
@@ -270,51 +291,27 @@ The frontend runs locally as a **Single Page Application (SPA)** with **client-s
 
 ---
 
-## 🔌 Backend Integration Contract (For Odoo / Python Teammate)
+## 🔌 Backend Integration Contract
 
-Located in `champions_club/`:
+The OWL screens call the server with `orm.call("model", "method", ...)`. Each of these exists in
+`addons/club_management` (`tests/test_frontend_api.py` fails if a screen calls one that does not):
 
-### 1. `club.pos.table` (`champions_club/models/club_pos.py`)
-- `name`: Table 01, Table 02, etc.
-- `capacity`: Integer (Seats)
-- `status`: Selection (`available`, `occupied`)
-- `current_order_id`: Many2one `club.pos.order`
-- `@api.model def get_tables_data()`
+| Screen | Model | Methods |
+|---|---|---|
+| Court Booking | `club.court` | `get_courts_list` |
+| | `club.booking` | `get_availability(date)`, `calculate_booking_price`, `create_booking_api`, `get_partner_bookings`, `action_cancel` |
+| Memberships | `club.membership.plan` | `get_frontend_plans` |
+| Members (all screens) | `res.partner` | `get_current_member`, `get_members_list`, `register_or_renew_member` |
+| Pro-Shop | `club.shop.product` | `get_shop_catalog(category, search, partner_id)` |
+| | `club.shop.order` | `calculate_order_pricing`, `place_order` |
+| Bar + POS | `club.pos.table` | `get_tables_data` |
+| | `club.pos.product` | `get_products_data(category, search)` |
+| | `club.pos.order` | `calculate_order_pricing(items, plan_code, partner_id)`, `process_payment_api`, `get_recent_orders` |
+| | `club.pos.session` | `get_current_shift` |
 
-### 2. `club.pos.product` (`champions_club/models/club_pos.py`)
-- `name`: Espresso, Protein Shake, Sandwich, etc.
-- `category`: drinks, food, snacks, coffee, shakes
-- `price`: Float
-- `stock`: Integer
-- `image_icon`: Char (Emoji or icon reference)
-- `is_available`: Boolean
-- `@api.model def get_products_data(category, search_query)`
+Prices, discounts and stock are always computed on the server from the member's tier pricelist;
+the screens never calculate them. Bar tabs and shop orders are saved as `club.order` records
+(Club > Bar & Shop Orders).
 
-### 3. `club.pos.order` (`champions_club/models/club_pos.py`)
-- `name`: POS-00125
-- `table_id`: Many2one `club.pos.table`
-- `partner_id`: Many2one `res.partner`
-- `state`: draft, paid, cancelled
-- `line_ids`: One2many `club.pos.order.line`
-- `subtotal`, `discount_amount`, `total`: Float
-- `payment_method`: cash, card, upi
-- `@api.model def calculate_order_pricing(order_items, member_plan_code)`
-- `@api.model def process_payment_api(order_data)`
-
-### 4. `club.pos.session` (`champions_club/models/club_pos.py`)
-- `staff_name`: Char
-- `start_time`: Datetime
-- `state`: open, closed
-- `@api.model def get_current_shift()`
-
-### 5. `club.court` & `club.booking` (`champions_club/models/`)
-- Court availability, slot reservation, and member booking rate calculation.
-
-### 6. `club.shop.product` (`champions_club/models/club_shop.py`)
-- Pro-shop equipment inventory, cart pricing calculation, and order placement.
-
-### 7. Registered OWL Client Actions
-- `champions_club.membership_plans`
-- `champions_club.court_booking`
-- `champions_club.shop`
-- `champions_club.bar_pos`
+Registered OWL client actions: `club_management.membership_plans`, `club_management.court_booking`,
+`club_management.shop`, `club_management.bar_pos`.

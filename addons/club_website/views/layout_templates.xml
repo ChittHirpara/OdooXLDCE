@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Hero banner for inner pages. Params: eyebrow, title, subtitle -->
+    <template id="page_header" name="Club page header">
+        <section class="club-hero club-hero-small">
+            <div class="container">
+                <p class="club-eyebrow" t-esc="eyebrow"/>
+                <h1 t-esc="title"/>
+                <p class="club-lead" t-if="subtitle" t-esc="subtitle"/>
+            </div>
+        </section>
+    </template>
+
+    <!-- Closing call to action -->
+    <template id="cta_band" name="Club call to action">
+        <section class="club-cta">
+            <div class="container text-center">
+                <h2>Ready to join the club?</h2>
+                <p>Tell us what you are looking for and we will get back to you within a day.</p>
+                <a href="/join" class="btn btn-club-primary btn-lg">Join the Club</a>
+            </div>
+        </section>
+    </template>
+
+    <!-- One membership plan. Param: plan (club.membership.plan) -->
+    <template id="plan_card" name="Club membership card">
+        <div t-attf-class="club-plan #{plan.code == 'gold' and 'club-plan-featured' or ''}"
+             t-att-data-plan="plan.code">
+            <span class="club-badge" t-if="plan.code == 'gold'">Most popular</span>
+            <span class="club-badge club-badge-alt" t-elif="plan.code == 'junior'">Under 18</span>
+            <h3 class="club-plan-name" t-esc="plan.name"/>
+            <p class="club-plan-desc" t-if="plan.description" t-esc="plan.description"/>
+            <div class="club-price">
+                <span class="club-currency">₹</span><span class="club-amount" t-esc="'{:,.0f}'.format(plan.price)"/>
+                <small> / <t t-esc="plan.validity_days"/> days</small>
+            </div>
+            <ul class="club-benefits">
+                <li>
+                    <t t-if="plan.court_rate">Courts at ₹<t t-esc="'{:,.0f}'.format(plan.court_rate)"/> per hour</t>
+                    <t t-else="">Court bookings included</t>
+                </li>
+                <li><t t-esc="'{:g}'.format(plan.shop_discount)"/>% off in the Pro-Shop</li>
+                <li>
+                    <t t-if="plan.bar_discount"><t t-esc="'{:g}'.format(plan.bar_discount)"/>% off at the bar and cafeteria</t>
+                    <t t-else="">Bar and cafeteria at standard prices</t>
+                </li>
+            </ul>
+            <a t-attf-href="/join?type=membership&amp;plan=#{plan.code}"
+               t-attf-class="btn #{plan.code == 'gold' and 'btn-club-primary' or 'btn-club-outline'} w-100">
+                Join <t t-esc="plan.name"/>
+            </a>
+        </div>
+    </template>
+
+    <!-- One shop product. Params: product (dict), site (club.website.data) -->
+    <template id="product_card" name="Club product card">
+        <a t-attf-href="/club-shop/#{product['id']}" class="club-product text-decoration-none">
+            <div class="club-product-icon" t-esc="product['image_icon']"/>
+            <span class="club-product-cat" t-esc="product['category_label']"/>
+            <h4 class="club-product-name" t-esc="product['name']"/>
+            <div class="club-product-foot">
+                <strong>₹<t t-esc="'{:,.0f}'.format(product['price'])"/></strong>
+                <span t-attf-class="club-stock #{product['stock'] &lt;= 0 and 'club-stock-out' or ''}"
+                      t-esc="site.stock_label(product['stock'])"/>
+            </div>
+        </a>
+    </template>
+
+    <!-- The club footer: replaces Odoo's stock sample footer on every page of the site -->
+    <template id="club_footer" name="Club footer">
+        <section class="club-footer-strip club-site">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <h5 t-esc="res_company.name"/>
+                        <p>Tennis, padel, badminton and cricket, with a pro-shop and a bar to match.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Explore</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="/membership">Membership</a></li>
+                            <li><a href="/courts">Court availability</a></li>
+                            <li><a href="/club-shop">Pro-Shop</a></li>
+                            <li><a href="/about">About the club</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Get in touch</h5>
+                        <ul class="list-unstyled">
+                            <li t-if="res_company.phone">
+                                <a t-att-href="'tel:%s' % res_company.phone" t-esc="res_company.phone"/>
+                            </li>
+                            <li t-if="res_company.email">
+                                <a t-att-href="'mailto:%s' % res_company.email" t-esc="res_company.email"/>
+                            </li>
+                            <li>Courts open 06:00 to 22:00, daily</li>
+                            <li><a href="/contact">Send us a message</a> or <a href="/join">join the club</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="footer" inherit_id="website.footer_custom" name="Club footer (site-wide)">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" t-ignore="true" t-if="not no_footer">
+                <t t-call="club_website.club_footer"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>
