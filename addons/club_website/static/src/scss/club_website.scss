@@ -189,3 +189,13 @@ a.nav-link[href="/join"] {
 }
 
 .club-site .club-login-box { border-top: 1px dashed $club-line; margin-top: 1.25rem; padding-top: 1rem; }
+
+// Feedback stars (radios in 5..1 order, shown reversed so a click fills the stars to its left)
+.club-site {
+    .club-stars { display: inline-flex; flex-direction: row-reverse; gap: .15rem;
+        input { position: absolute; opacity: 0; pointer-events: none; }
+        label { cursor: pointer; margin: 0; svg { fill: #e2e8f0; stroke: #cbd5e1; stroke-width: 1; transition: fill .12s; } }
+        label:hover svg, label:hover ~ label svg, input:checked ~ label svg { fill: $club-gold; stroke: $club-gold; }
+        input:focus-visible + label svg { outline: 2px solid $club-green; outline-offset: 2px; } }
+    .club-help-links { color: $club-muted; font-size: .9rem; }
+}

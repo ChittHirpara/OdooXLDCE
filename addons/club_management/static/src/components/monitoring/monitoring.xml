@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.ClubMonitoring">
+        <div class="o_club_monitoring p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 class="m-0">System Monitoring</h2>
+                    <div class="text-muted small" t-if="state.data">Checked <t t-esc="state.data.checked_at"/> (UTC)</div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span t-if="state.data" class="badge fs-6" t-att-class="badge(state.data.overall)" t-esc="word(state.data.overall)"/>
+                    <button class="btn btn-outline-primary" t-on-click="load"><i class="fa fa-refresh"/> Refresh</button>
+                </div>
+            </div>
+            <div class="row g-3" t-if="state.data">
+                <t t-foreach="state.data.checks" t-as="check" t-key="check.key">
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="fw-bold" t-esc="check.label"/>
+                                <span class="badge" t-att-class="badge(check.status)"><t t-esc="check.count"/></span>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-muted small mb-2" t-esc="check.hint"/>
+                                <t t-if="check.items.length">
+                                    <div t-foreach="check.items" t-as="item" t-key="item_index"
+                                         class="d-flex justify-content-between border-bottom py-1 small">
+                                        <span><b t-esc="item.title"/> <span class="text-muted" t-esc="item.subtitle"/></span>
+                                        <span class="text-muted text-end" t-esc="item.extra"/>
+                                    </div>
+                                    <div class="small text-muted mt-1" t-if="check.count > check.items.length">
+                                        and <t t-esc="check.count - check.items.length"/> more
+                                    </div>
+                                </t>
+                                <div t-else="" class="text-success"><i class="fa fa-check"/> Nothing to act on.</div>
+                            </div>
+                            <div class="card-footer text-end" t-if="check.count">
+                                <button class="btn btn-sm btn-link" t-on-click="() => this.open(check)">Open <i class="fa fa-arrow-right"/></button>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+            <div t-elif="state.loading" class="text-muted">Checking...</div>
+        </div>
+    </t>
+</templates>

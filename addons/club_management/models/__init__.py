@@ -13,3 +13,4 @@ from . import club_pos_and_shop
 from . import frontend_api
 from . import club_dashboard
 from . import demo_data
+from . import club_support

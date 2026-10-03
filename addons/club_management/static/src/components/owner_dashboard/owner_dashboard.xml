@@ -91,6 +91,25 @@
                         <div class="small text-muted"><t t-esc="state.data.outstanding_count"/> unpaid invoices</div>
                     </div></div>
                 </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6"><div class="card p-3 h-100">
+                        <div class="text-muted">Member satisfaction</div>
+                        <div class="fs-2 fw-bold">
+                            <t t-if="state.data.ratings.count"><t t-esc="state.data.ratings.average"/> / 5</t>
+                            <t t-else="">No ratings yet</t>
+                        </div>
+                        <div class="small text-muted" t-if="state.data.ratings.count">
+                            <t t-foreach="state.data.ratings.rows" t-as="row" t-key="row.area">
+                                <span class="me-3" t-if="row.count"><t t-esc="row.label"/>: <b t-esc="row.average"/> (<t t-esc="row.count"/>)</span>
+                            </t>
+                        </div>
+                    </div></div>
+                    <div class="col-md-6"><div class="card p-3 h-100">
+                        <div class="text-muted">Open support tickets</div>
+                        <div class="fs-2 fw-bold" t-att-class="state.data.open_tickets ? 'text-warning' : ''" t-esc="state.data.open_tickets"/>
+                        <div class="small text-muted">complaints, booking, refund and order issues</div>
+                    </div></div>
+                </div>
                 <div class="text-end">
                     <button class="btn btn-link" t-on-click="openReports">Open Reports &amp; Analytics <i class="fa fa-arrow-right"/></button>
                 </div>

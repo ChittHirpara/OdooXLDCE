@@ -30,6 +30,7 @@
         'views/order_views.xml',
         'views/crm_lead_views.xml',
         'views/admin_views.xml',
+        'views/support_views.xml',
     ],
     'demo': [
         'demo/demo_courts.xml',
@@ -58,6 +59,8 @@
             'club_management/static/src/components/analytics/analytics.js',
             'club_management/static/src/components/staff_overview/staff_overview.xml',
             'club_management/static/src/components/staff_overview/staff_overview.js',
+            'club_management/static/src/components/monitoring/monitoring.xml',
+            'club_management/static/src/components/monitoring/monitoring.js',
         ],
     },
     'application': True,

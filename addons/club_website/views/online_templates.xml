@@ -120,6 +120,10 @@
                         </t>
                         <p class="club-muted mt-3">Keep this page: the link is private to you.</p>
                         <p><a href="/courts">Book another court</a> · <a href="/membership">See memberships</a></p>
+                        <p class="club-help-links">
+                            <a t-attf-href="/feedback?area=court&amp;booking=#{booking.access_token}">Rate this session</a> ·
+                            <a t-attf-href="/support?category=booking&amp;booking=#{booking.access_token}">Report a problem</a>
+                        </p>
                     </div>
                 </section>
             </div>
@@ -293,6 +297,10 @@
                         </div>
                         <p class="club-muted mt-3">Keep this page: the link is private to you.</p>
                         <p><a href="/club-shop">Continue shopping</a> · <a href="/courts">Book a court</a></p>
+                        <p class="club-help-links">
+                            <a t-attf-href="/feedback?area=#{order.channel}&amp;order=#{order.access_token}">Rate this order</a> ·
+                            <a t-attf-href="/support?category=order&amp;order=#{order.access_token}">Report a problem</a>
+                        </p>
                     </div>
                 </section>
             </div>

@@ -5,6 +5,7 @@ from odoo import api, fields, models
 from odoo.exceptions import AccessError
 
 from .booking import club_today
+from .club_support import FEEDBACK_AREAS
 
 OPEN_HOURS_PER_DAY = 16     # courts open 06:00-22:00
 SOURCES = [('membership', 'Memberships'), ('court', 'Court Bookings'),
@@ -13,6 +14,11 @@ PERIODS = ('today', 'week', 'month', 'all')
 PAYMENT_LABELS = {'cash': 'Cash', 'card': 'Card', 'upi': 'UPI', False: 'Paid at the club (method not recorded)'}
 UTILIZATION_DAYS = 30
 MAX_MONTHS = 24
+PAYMENT_GRACE_DAYS = 3       # an unpaid club invoice older than this counts as a failed payment
+CANCELLED_WINDOW_DAYS = 7
+STALE_SHIFT_HOURS = 24
+LOW_RATING = 2
+DEFAULT_REMINDER_DAYS = 14
 
 
 def month_start(day, back=0):
@@ -157,6 +163,8 @@ class ClubDashboard(models.AbstractModel):
             'bar_sales': revenue['bar'],
             'outstanding_amount': sum(unpaid.mapped('amount_residual')),
             'outstanding_count': len(unpaid),
+            'open_tickets': env['club.ticket'].search_count([('state', 'in', ('new', 'progress'))]),
+            'ratings': env['club.feedback'].rating_summary(),
         }
 
     # ------------------------------------------------------------------
@@ -312,3 +320,90 @@ class ClubDashboard(models.AbstractModel):
             'stop': fields.Datetime.to_string(s.stop_at) if s.stop_at else None,
         } for s in Session.search([], order='id desc', limit=10)]
         return {'staff': staff, 'shifts': shifts, 'open_shifts': sum(1 for s in shifts if s['state'] != 'closed')}
+
+    # ------------------------------------------------------------------
+    # system monitoring
+    # ------------------------------------------------------------------
+    @api.model
+    def get_monitoring(self):
+        """Health checks for the club's operation. Each check has a status (ok, warn or alert),
+        a count and the first few offending records, so a manager sees what to act on."""
+        self._require_manager("system monitoring")
+        env = self.sudo().env
+        today = club_today()
+        now = fields.Datetime.now()
+        symbol = self._currency_symbol()
+        limit = 8
+        checks = []
+
+        def add(key, label, records, row, action, alert=False, hint=''):
+            count = len(records)
+            checks.append({
+                'key': key, 'label': label, 'count': count, 'hint': hint, 'action': action,
+                'status': 'ok' if not count else ('alert' if alert else 'warn'),
+                'items': [row(record) for record in records[:limit]]})
+
+        invoices = env['account.move'].search([
+            ('move_type', '=', 'out_invoice'), ('state', '=', 'posted'), ('club_source', '!=', False),
+            ('payment_state', 'in', ('not_paid', 'partial')),
+            ('invoice_date', '<=', today - timedelta(days=PAYMENT_GRACE_DAYS))], order='invoice_date')
+        add('failed_payments', 'Failed payments', invoices,
+            lambda m: {'title': m.name, 'subtitle': m.partner_id.name or '',
+                       'extra': '%s%s unpaid since %s' % (symbol, round(m.amount_residual), m.invoice_date)},
+            'account.action_move_out_invoice_type', alert=True,
+            hint="Club invoices still unpaid after %d days." % PAYMENT_GRACE_DAYS)
+
+        since = fields.Datetime.subtract(now, days=CANCELLED_WINDOW_DAYS)
+        cancelled = env['club.booking'].search([
+            ('state', '=', 'cancelled'), ('write_date', '>=', since)], order='write_date desc')
+        add('failed_bookings', 'Failed bookings', cancelled,
+            lambda b: {'title': b.name,
+                       'subtitle': '%s, %s' % (b.court_id.name, b.partner_id.name or b.walkin_name or 'Guest'),
+                       'extra': 'cancelled'},
+            'club_management.action_club_booking',
+            hint="Bookings cancelled in the last %d days." % CANCELLED_WINDOW_DAYS)
+
+        points = env['stock.warehouse.orderpoint'].search([]).filtered(
+            lambda op: op.product_id.qty_available < op.product_min_qty)
+        add('low_inventory', 'Low inventory', points,
+            lambda op: {'title': op.product_id.name, 'subtitle': '%d on hand' % op.product_id.qty_available,
+                        'extra': 'minimum %d' % op.product_min_qty},
+            'stock.action_orderpoint', hint="Products below their reorder minimum.")
+
+        days = int(env['ir.config_parameter'].get_param('club_management.reminder_days', DEFAULT_REMINDER_DAYS))
+        expiring = env['res.partner'].search([
+            ('is_member', '=', True), ('member_state', '=', 'active'),
+            ('expiry_date', '>=', today), ('expiry_date', '<=', today + timedelta(days=days))], order='expiry_date')
+        add('expiring_memberships', 'Expiring memberships', expiring,
+            lambda p: {'title': p.name, 'subtitle': '%s, %s' % (p.member_id, p.plan_id.name),
+                       'extra': 'ends %s' % p.expiry_date},
+            'club_management.action_club_members', hint="Active memberships ending within %d days." % days)
+
+        stale_before = fields.Datetime.subtract(now, hours=STALE_SHIFT_HOURS)
+        sessions = env['pos.session'].search([
+            '|', ('state', '=', 'closing_control'),
+            '&', ('state', '!=', 'closed'), ('start_at', '<=', stale_before)], order='start_at')
+        add('pos_sessions', 'POS / session issues', sessions,
+            lambda s: {'title': s.name, 'subtitle': s.user_id.name,
+                       'extra': '%s since %s' % (s.state.replace('_', ' '), s.start_at)},
+            'point_of_sale.action_pos_session', alert=True,
+            hint="Shifts open for more than %d hours, or stuck while closing." % STALE_SHIFT_HOURS)
+
+        tickets = env['club.ticket'].search([('state', 'in', ('new', 'progress'))], order='priority desc, id')
+        add('open_tickets', 'Open support tickets', tickets,
+            lambda t: {'title': t.name, 'subtitle': t.subject, 'extra': '%d days old' % t.age_days},
+            'club_management.action_club_tickets', hint="Requests that still need a reply or a fix.")
+
+        bad = env['club.feedback'].search([('rating', '<=', LOW_RATING), ('reviewed', '=', False)], order='id desc')
+        add('low_ratings', 'Unreviewed low ratings', bad,
+            lambda f: {'title': '%s, %d stars' % (dict(FEEDBACK_AREAS)[f.area], f.rating),
+                       'subtitle': f.name or 'Anonymous', 'extra': (f.comment or '')[:60]},
+            'club_management.action_club_feedback',
+            hint="Ratings of %d stars or less that nobody has read yet." % LOW_RATING)
+
+        statuses = [c['status'] for c in checks]
+        return {
+            'checked_at': fields.Datetime.to_string(now),
+            'overall': 'alert' if 'alert' in statuses else ('warn' if 'warn' in statuses else 'ok'),
+            'checks': checks,
+        }
