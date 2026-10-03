@@ -5,3 +5,4 @@ from . import test_availability
 from . import test_enquiry
 from . import test_pricelists
 from . import test_reports
+from . import test_cron

@@ -15,6 +15,8 @@
         'data/plans.xml',
         'data/product.xml',
         'data/crm_data.xml',
+        'data/mail_template.xml',
+        'data/cron.xml',
         'views/membership_plan_views.xml',
         'views/partner_views.xml',
         'views/court_views.xml',

@@ -17,6 +17,11 @@ def to_club_time(dt):
     return pytz.utc.localize(dt).astimezone(CLUB_TZ)
 
 
+def club_today():
+    """Today's date in club time (not the server's or the user's timezone)."""
+    return to_club_time(fields.Datetime.now()).date()
+
+
 class Booking(models.Model):
     _name = 'club.booking'
     _description = 'Court Booking'

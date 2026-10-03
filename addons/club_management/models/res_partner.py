@@ -3,7 +3,10 @@ from datetime import timedelta
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
+from .booking import club_today
+
 JUNIOR_AGE_LIMIT = 18
+DEFAULT_REMINDER_DAYS = 14
 
 
 class ResPartner(models.Model):
@@ -15,6 +18,9 @@ class ResPartner(models.Model):
     date_of_birth = fields.Date()
     join_date = fields.Date(copy=False)
     expiry_date = fields.Date(copy=False)
+    expiry_reminder_for = fields.Date(
+        copy=False, readonly=True,
+        help="Expiry date for which the reminder email was already sent.")
     is_junior = fields.Boolean(compute='_compute_is_junior')
     member_state = fields.Selection(
         [('none', 'Not a Member'), ('active', 'Active'), ('expired', 'Expired')],
@@ -26,14 +32,14 @@ class ResPartner(models.Model):
 
     @api.depends('date_of_birth')
     def _compute_is_junior(self):
-        today = fields.Date.context_today(self)
+        today = club_today()
         for partner in self:
             dob = partner.date_of_birth
             partner.is_junior = bool(dob) and self._age_on(dob, today) < JUNIOR_AGE_LIMIT
 
     @api.depends('is_member', 'expiry_date')
     def _compute_member_state(self):
-        today = fields.Date.context_today(self)
+        today = club_today()
         for partner in self:
             if not partner.is_member or not partner.expiry_date:
                 partner.member_state = 'none'
@@ -95,8 +101,56 @@ class ResPartner(models.Model):
         for partner in self.filtered(lambda p: p.is_member and not p.member_id):
             partner.member_id = self.env['ir.sequence'].next_by_code('club.member')
 
+    # ------------------------------------------------------------------
+    # Scheduled actions
+    # ------------------------------------------------------------------
+    @api.model
+    def _cron_lapse_memberships(self):
+        """Mark members whose expiry date has passed as expired.
+
+        member_state is stored and only depends on expiry_date, so nothing
+        recomputes it when the date merely goes by: this job does.
+        """
+        stale = self.search([
+            ('is_member', '=', True),
+            ('member_state', '=', 'active'),
+            ('expiry_date', '<', club_today()),
+        ])
+        if not stale:
+            return 0
+        self.env.add_to_compute(self._fields['member_state'], stale)
+        stale._sync_club_pricelist()    # reads member_state, which triggers the recompute
+        for partner in stale:
+            partner.message_post(
+                body="Club membership expired on %s." % partner.expiry_date,
+                subtype_xmlid='mail.mt_note')
+        return len(stale)
+
+    @api.model
+    def _cron_send_expiry_reminders(self):
+        """Email active members whose membership ends within the reminder window.
+
+        One email per expiry date: renewing moves the date, which re-arms the reminder.
+        The window comes from the system parameter ``club_management.reminder_days``.
+        """
+        days = int(self.env['ir.config_parameter'].sudo().get_param(
+            'club_management.reminder_days', DEFAULT_REMINDER_DAYS))
+        today = club_today()
+        template = self.env.ref('club_management.mail_template_membership_expiry')
+        due = self.search([
+            ('is_member', '=', True),
+            ('member_state', '=', 'active'),
+            ('expiry_date', '>=', today),
+            ('expiry_date', '<=', today + timedelta(days=days)),
+            ('email', '!=', False),
+        ]).filtered(lambda p: p.expiry_reminder_for != p.expiry_date)
+        for partner in due:
+            template.send_mail(partner.id)
+            partner.expiry_reminder_for = partner.expiry_date
+        return len(due)
+
     def action_activate_membership(self):
-        today = fields.Date.context_today(self)
+        today = club_today()
         for partner in self:
             if not partner.plan_id:
                 raise ValidationError("Select a membership plan for %s first." % partner.name)

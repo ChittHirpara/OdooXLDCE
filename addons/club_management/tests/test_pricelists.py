@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from odoo import fields
+from odoo.addons.club_management.models.booking import club_today
 from odoo.tests import TransactionCase, tagged
 
 
@@ -21,7 +21,7 @@ class TestTierPricelists(TransactionCase):
             'name': 'Smoothie', 'list_price': 100.0,
             'categ_id': cls.env.ref('club_management.product_category_bar').id})
         cls.other_item = Product.create({'name': 'Misc', 'list_price': 100.0})
-        cls.today = fields.Date.context_today(cls.env['res.partner'])
+        cls.today = club_today()
 
     def _price(self, plan, product):
         return plan.pricelist_id._get_product_price(product, 1.0)

@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from odoo import fields
+from odoo.addons.club_management.models.booking import club_today
 from odoo.exceptions import ValidationError
 from odoo.tests import TransactionCase, tagged
 
@@ -13,7 +13,7 @@ class TestMember(TransactionCase):
         super().setUpClass()
         cls.gold = cls.env.ref('club_management.plan_gold')
         cls.junior = cls.env.ref('club_management.plan_junior')
-        cls.today = fields.Date.context_today(cls.env['res.partner'])
+        cls.today = club_today()
 
     def test_activate_sets_dates_and_member_id(self):
         partner = self.env['res.partner'].create({'name': 'Gold Guy', 'plan_id': self.gold.id})
