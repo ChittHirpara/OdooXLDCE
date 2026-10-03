@@ -106,7 +106,8 @@ class ClubWebsite(http.Controller):
 
     @http.route('/about', type='http', auth='public', website=True, sitemap=True)
     def about(self, **kw):
-        return request.render('club_website.about_page', {'courts': self.site.courts()})
+        return request.render('club_website.about_page', {
+            'courts': self.site.courts(), 'site': self.site, 'sport_labels': dict(SPORTS)})
 
     @http.route('/contact', type='http', auth='public', website=True, sitemap=True)
     def contact(self, **kw):

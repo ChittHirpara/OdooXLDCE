@@ -4,24 +4,156 @@
         <t t-call="website.layout">
             <t t-set="pageName" t-value="'club_about'"/>
             <div id="wrap" class="club-site club-about">
-                <t t-call="club_website.page_header">
-                    <t t-set="eyebrow" t-value="'About'"/>
-                    <t t-set="title" t-value="'The Champions Club'"/>
-                    <t t-set="subtitle" t-value="'A neighbourhood club for people who love racket sports and cricket, from first lessons to league nights.'"/>
-                </t>
-                <section class="club-section">
-                    <div class="container club-prose">
-                        <h2>Play, shop, unwind</h2>
-                        <p>We run <t t-esc="len(courts)"/> courts and nets, a pro-shop with the gear you need and a bar and cafeteria
-                            for after the match. Your membership works everywhere in the club: your court rate and your
-                            shop and bar discounts follow you from the court to the till.</p>
-                        <h2>Friday social play</h2>
-                        <p>On Fridays the courts open up for social play, so groups can share a court and meet new partners.</p>
-                        <h2>For every age</h2>
-                        <p>Our Junior membership gives under-18s access to the academy and off-peak hours at a reduced rate.</p>
-                        <p><a href="/membership" class="btn btn-club-primary">See the memberships</a></p>
+                <section class="club-hero">
+                    <div class="container">
+                        <p class="club-eyebrow">About the club</p>
+                        <h1>A home for every player.</h1>
+                        <p class="club-lead">The Champions Club is a neighbourhood club for people who love racket sports
+                            and cricket, from first lessons to league nights, with a pro-shop and a bar to match.</p>
+                        <div class="club-hero-actions">
+                            <a href="/membership" class="btn btn-club-primary btn-lg">See the memberships</a>
+                            <a href="/courts" class="btn btn-club-outline btn-lg">Check court availability</a>
+                        </div>
                     </div>
                 </section>
+
+                <section class="club-stats">
+                    <div class="container">
+                        <div class="row g-3 text-center">
+                            <div class="col-6 col-md-3"><strong t-esc="len(courts)"/><span>Courts and nets</span></div>
+                            <div class="col-6 col-md-3"><strong t-esc="len(set(courts.mapped('sport')))"/><span>Sports to play</span></div>
+                            <div class="col-6 col-md-3"><strong>06:00 to 22:00</strong><span>Open every day</span></div>
+                            <div class="col-6 col-md-3"><strong t-esc="len(site.plans())"/><span>Membership plans</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section">
+                    <div class="container">
+                        <div class="row g-5 align-items-center">
+                            <div class="col-lg-6">
+                                <p class="club-eyebrow-dark">Our story</p>
+                                <h2 class="club-heading">Play, shop, unwind.</h2>
+                                <p class="club-lead-dark">We built one club where the whole day fits together: a match on the
+                                    court, the right gear from the pro-shop, a coffee or a shake at the bar afterwards.</p>
+                                <p>Your membership works everywhere in the club. One member record gives you your court rate,
+                                    your pro-shop discount and your bar discount, so the price you see is the price you
+                                    get, from the booking page to the till.</p>
+                            </div>
+                            <div class="col-lg-6">
+                                <ul class="club-checklist">
+                                    <li>Book a court online in under a minute, 1-hour sessions every half hour</li>
+                                    <li>Live availability, so you only see slots that are really free</li>
+                                    <li>Members save in the pro-shop and at the bar automatically</li>
+                                    <li>Friday social play: share a court and meet new partners</li>
+                                    <li>Junior membership with a reduced rate for under 18s</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section club-section-alt">
+                    <div class="container">
+                        <h2 class="club-section-title">Everything under one roof</h2>
+                        <p class="club-section-sub">Six reasons members call it their second home.</p>
+                        <div class="row g-4">
+                            <div class="col-md-6 col-lg-4"><div class="club-offer">
+                                <span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'tennis'"/></t></span>
+                                <h5>Tennis courts</h5><p>Well-kept hard courts, bookable by the hour all day.</p></div></div>
+                            <div class="col-md-6 col-lg-4"><div class="club-offer">
+                                <span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'padel'"/></t></span>
+                                <h5>Padel</h5><p>The fastest-growing racket sport, easy to learn and great in a group.</p></div></div>
+                            <div class="col-md-6 col-lg-4"><div class="club-offer">
+                                <span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'badminton'"/></t></span>
+                                <h5>Badminton</h5><p>Quick, social games for beginners and seasoned players alike.</p></div></div>
+                            <div class="col-md-6 col-lg-4"><div class="club-offer">
+                                <span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'cricket'"/></t></span>
+                                <h5>Cricket nets</h5><p>Practise your batting and bowling in dedicated net lanes.</p></div></div>
+                            <div class="col-md-6 col-lg-4"><div class="club-offer">
+                                <span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'shop'"/></t></span>
+                                <h5>Pro-Shop</h5><p>Rackets, balls and accessories with live stock and member prices.</p>
+                                <a href="/club-shop">Browse the shop</a></div></div>
+                            <div class="col-md-6 col-lg-4"><div class="club-offer">
+                                <span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="'cafe'"/></t></span>
+                                <h5>Bar &amp; Cafeteria</h5><p>Coffee, shakes and fresh food for before and after the match.</p></div></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section">
+                    <div class="container">
+                        <h2 class="club-section-title">Our courts</h2>
+                        <p class="club-section-sub">Check any court's live availability at any time.</p>
+                        <div class="row g-3">
+                            <t t-foreach="courts" t-as="court">
+                                <div class="col-sm-6 col-lg-4">
+                                    <a href="/courts" class="club-court-card text-decoration-none">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <span class="club-feature-icon"><t t-call="club_website.icon"><t t-set="name" t-value="court.sport"/><t t-set="size" t-value="26"/></t></span>
+                                            <div>
+                                                <h5 class="mb-0" t-esc="court.name"/>
+                                                <span class="club-muted small"><t t-esc="sport_labels.get(court.sport, court.sport)"/>
+                                                    <t t-if="court.surface"> · <t t-esc="court.surface"/></t>
+                                                    · <t t-esc="'Indoor' if court.is_indoor else 'Outdoor'"/></span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section club-section-alt">
+                    <div class="container">
+                        <div class="club-spotlight">
+                            <div class="row g-4 align-items-center">
+                                <div class="col-lg-8">
+                                    <p class="club-eyebrow">Every Friday</p>
+                                    <h2>Friday social play</h2>
+                                    <p>On Fridays the courts open up for social play: many players share one court, so groups
+                                        can rally together and meet new partners. Pick a court, tell us how many are
+                                        coming and we keep a place for everyone.</p>
+                                </div>
+                                <div class="col-lg-4 text-lg-end">
+                                    <a href="/courts" class="btn btn-club-primary btn-lg">Reserve a place</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section">
+                    <div class="container">
+                        <h2 class="club-section-title">Find your membership</h2>
+                        <p class="club-section-sub">For every age and every level of play.</p>
+                        <div class="row g-4 club-plans">
+                            <t t-foreach="site.plans()" t-as="plan">
+                                <div class="col-md-4"><t t-call="club_website.plan_card"/></div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="club-section club-section-alt">
+                    <div class="container">
+                        <div class="row g-4">
+                            <div class="col-md-4"><div class="club-offer">
+                                <h5>Opening hours</h5><p class="mb-0">Courts open 06:00 to 22:00, every day of the week.</p></div></div>
+                            <div class="col-md-4"><div class="club-offer">
+                                <h5>Call or write</h5>
+                                <p class="mb-0">
+                                    <a t-if="res_company.phone" t-att-href="'tel:%s' % res_company.phone" t-esc="res_company.phone"/><br t-if="res_company.phone"/>
+                                    <a t-if="res_company.email" t-att-href="'mailto:%s' % res_company.email" t-esc="res_company.email"/>
+                                </p></div></div>
+                            <div class="col-md-4"><div class="club-offer">
+                                <h5>Questions?</h5><p class="mb-0">Tell us what you are looking for on the <a href="/contact">contact page</a> and we will get back to you within a day.</p></div></div>
+                        </div>
+                    </div>
+                </section>
+
+                <t t-call="club_website.cta_band"/>
             </div>
         </t>
     </template>

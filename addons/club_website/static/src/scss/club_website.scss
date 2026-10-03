@@ -170,3 +170,20 @@ a.nav-link[href="/join"] {
         &.club-status-ok { background: rgba(16, 185, 129, .2); color: #6ee7b7; }
         &.club-status-off { background: rgba(239, 68, 68, .2); color: #fca5a5; } }
 }
+
+// About page
+.club-site {
+    .club-stats { background: $club-navy; color: #fff; padding: 2rem 0;
+        strong { display: block; font-size: 2rem; font-weight: 800; color: $club-green; line-height: 1.1; }
+        span { color: #94a3b8; font-size: .9rem; } }
+    .club-heading { font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.4rem); }
+    .club-checklist { list-style: none; padding: 0; margin: 0;
+        li { position: relative; padding: .85rem 1rem .85rem 3rem; background: #fff; border: 1px solid $club-line; border-radius: .85rem; margin-bottom: .6rem; font-weight: 500;
+            &::before { content: ""; position: absolute; left: 1rem; top: 50%; width: 1.4rem; height: 1.4rem; margin-top: -.7rem; border-radius: 50%; background: $club-green
+                url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%273.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M5 12l5 5 9-10%27/%3E%3C/svg%3E") center / 70% no-repeat; } } }
+    .club-offer { background: #fff; border: 1px solid $club-line; border-radius: 1.1rem; padding: 1.5rem; height: 100%;
+        h5 { font-weight: 700; margin: .75rem 0 .35rem; } p { color: $club-muted; } a { font-weight: 600; color: $club-green-dark; } }
+    .club-spotlight { background: linear-gradient(135deg, $club-navy 0%, #0c2a2a 100%); color: #fff; border-radius: 1.5rem; padding: 2.5rem;
+        h2 { font-weight: 800; } p { color: #cbd5e1; margin: 0; } }
+    .club-court-card:hover { border-color: $club-green; box-shadow: 0 8px 24px rgba(15, 23, 42, .08); }
+}
