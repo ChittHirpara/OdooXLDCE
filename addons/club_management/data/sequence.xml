@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_club_member" model="ir.sequence">
+        <field name="name">Club Member ID</field>
+        <field name="code">club.member</field>
+        <field name="prefix">CC-</field>
+        <field name="padding">5</field>
+    </record>
+    <record id="seq_club_booking" model="ir.sequence">
+        <field name="name">Club Booking</field>
+        <field name="code">club.booking</field>
+        <field name="prefix">BK/</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>

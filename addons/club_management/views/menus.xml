@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_club_root" name="Club" sequence="50" groups="group_club_staff"/>
+    <menuitem id="menu_club_bookings" name="Bookings" parent="menu_club_root"
+              action="action_club_booking" sequence="10"/>
+    <menuitem id="menu_club_members" name="Members" parent="menu_club_root"
+              action="action_club_members" sequence="20"/>
+    <menuitem id="menu_club_config" name="Configuration" parent="menu_club_root"
+              sequence="90" groups="group_club_manager"/>
+    <menuitem id="menu_club_courts" name="Courts" parent="menu_club_config"
+              action="action_club_court" sequence="10"/>
+    <menuitem id="menu_club_plans" name="Membership Plans" parent="menu_club_config"
+              action="action_club_membership_plan" sequence="20"/>
+</odoo>

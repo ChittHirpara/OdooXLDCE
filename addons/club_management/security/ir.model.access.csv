@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_club_membership_plan_staff,club.membership.plan staff,model_club_membership_plan,group_club_staff,1,0,0,0
+access_club_membership_plan_manager,club.membership.plan manager,model_club_membership_plan,group_club_manager,1,1,1,1
+access_club_court_staff,club.court staff,model_club_court,group_club_staff,1,0,0,0
+access_club_court_manager,club.court manager,model_club_court,group_club_manager,1,1,1,1
+access_club_booking_staff,club.booking staff,model_club_booking,group_club_staff,1,1,1,0
+access_club_booking_manager,club.booking manager,model_club_booking,group_club_manager,1,1,1,1

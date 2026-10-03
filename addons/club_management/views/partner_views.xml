@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_club" model="ir.ui.view">
+        <field name="name">res.partner.form.club</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Club Membership" name="club_membership">
+                    <group>
+                        <group>
+                            <field name="is_member"/>
+                            <field name="plan_id" invisible="not is_member"/>
+                            <field name="member_id" invisible="not is_member"/>
+                            <field name="member_state" invisible="not is_member"/>
+                        </group>
+                        <group>
+                            <field name="date_of_birth"/>
+                            <field name="is_junior"/>
+                            <field name="join_date" invisible="not is_member"/>
+                            <field name="expiry_date" invisible="not is_member"/>
+                        </group>
+                    </group>
+                    <button name="action_activate_membership" type="object"
+                            string="Activate / Renew Membership" class="btn-primary"
+                            invisible="not plan_id"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_tree_club" model="ir.ui.view">
+        <field name="name">res.partner.tree.club</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="member_id"/>
+                <field name="name"/>
+                <field name="plan_id"/>
+                <field name="join_date"/>
+                <field name="expiry_date"/>
+                <field name="member_state" widget="badge"
+                       decoration-success="member_state == 'active'"
+                       decoration-danger="member_state == 'expired'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_club_members" model="ir.actions.act_window">
+        <field name="name">Members</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_member', '=', True)]</field>
+        <field name="context">{'default_is_member': True}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_partner_tree_club')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('base.view_partner_form')})]"/>
+    </record>
+</odoo>
