@@ -1,3 +1,4 @@
+import base64
 from datetime import timedelta
 
 from odoo import api, fields, models
@@ -21,6 +22,7 @@ class ResPartner(models.Model):
     expiry_reminder_for = fields.Date(
         copy=False, readonly=True,
         help="Expiry date for which the reminder email was already sent.")
+    qr_code = fields.Binary(compute='_compute_qr_code', string='Membership QR Code')
     is_junior = fields.Boolean(compute='_compute_is_junior')
     member_state = fields.Selection(
         [('none', 'Not a Member'), ('active', 'Active'), ('expired', 'Expired')],
@@ -29,6 +31,14 @@ class ResPartner(models.Model):
     _sql_constraints = [
         ('member_id_unique', 'unique(member_id)', 'Member ID must be unique.'),
     ]
+
+    @api.depends('member_id')
+    def _compute_qr_code(self):
+        """QR image of the member ID, for the membership card and front-desk scanning."""
+        Report = self.env['ir.actions.report']
+        for partner in self:
+            partner.qr_code = partner.member_id and base64.b64encode(
+                Report.barcode('QR', partner.member_id, width=256, height=256))
 
     @api.depends('date_of_birth')
     def _compute_is_junior(self):

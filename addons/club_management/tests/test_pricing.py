@@ -131,6 +131,26 @@ class TestPricing(AccountTestInvoicingCommon):
         with self.assertRaises(UserError):
             booking.action_cancel()
 
+    def test_invoiced_booking_can_move_if_price_is_unchanged(self):
+        booking = self._book(self.silver)
+        booking.action_create_invoice()
+        booking.action_reschedule(club_dt(TUE, 14))
+        self.assertEqual(booking.start_datetime, club_dt(TUE, 14))
+
+    def test_invoiced_booking_cannot_move_if_price_changes(self):
+        other = self.env['club.court'].create({'name': 'Court 2', 'sport': 'tennis', 'list_price': 900.0})
+        booking = self._book()                       # walk-in at 800
+        booking.action_create_invoice()
+        with self.assertRaises(UserError):
+            booking.action_reschedule(club_dt(MON, 10), other)   # would cost 900
+        self.assertEqual(booking.court_id, self.court)           # rolled back
+
+    def test_uninvoiced_booking_can_move_and_reprice(self):
+        other = self.env['club.court'].create({'name': 'Court 3', 'sport': 'tennis', 'list_price': 900.0})
+        booking = self._book()
+        booking.action_reschedule(club_dt(MON, 10), other)
+        self.assertEqual(booking.price, 900.0)
+
     def test_can_cancel_booking_with_draft_invoice(self):
         booking = self._book(self.silver)
         booking.action_create_invoice()

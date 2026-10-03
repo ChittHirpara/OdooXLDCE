@@ -1,3 +1,4 @@
+import base64
 from datetime import timedelta
 
 from odoo.addons.club_management.models.booking import club_today
@@ -51,3 +52,18 @@ class TestMember(TransactionCase):
             'name': 'Kid', 'is_member': True, 'plan_id': self.junior.id,
             'date_of_birth': self.today - timedelta(days=365 * 10)})
         self.assertTrue(kid.is_junior)
+
+    def test_member_has_qr_code_png(self):
+        partner = self.env['res.partner'].create({'name': 'QR Member', 'plan_id': self.gold.id})
+        partner.action_activate_membership()
+        self.assertTrue(partner.qr_code)
+        self.assertTrue(base64.b64decode(partner.qr_code).startswith(b'\x89PNG'))
+
+    def test_qr_codes_differ_between_members(self):
+        first = self.env['res.partner'].create({'name': 'QR One', 'plan_id': self.gold.id})
+        second = self.env['res.partner'].create({'name': 'QR Two', 'plan_id': self.gold.id})
+        (first | second).action_activate_membership()
+        self.assertNotEqual(first.qr_code, second.qr_code)
+
+    def test_non_member_has_no_qr_code(self):
+        self.assertFalse(self.env['res.partner'].create({'name': 'No QR'}).qr_code)

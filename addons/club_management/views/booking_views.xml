@@ -36,6 +36,8 @@
                             invisible="invoice_id or state == 'cancelled'"/>
                     <button name="action_view_invoice" type="object" string="View Invoice"
                             invisible="not invoice_id"/>
+                    <button name="action_open_reschedule" type="object" string="Reschedule"
+                            invisible="state not in ('draft', 'confirmed')"/>
                     <button name="action_cancel" type="object" string="Cancel"
                             invisible="state not in ('draft', 'confirmed')"/>
                     <button name="action_draft" type="object" string="Reset to Draft"

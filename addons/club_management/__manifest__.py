@@ -23,6 +23,7 @@
         'views/partner_views.xml',
         'views/court_views.xml',
         'views/booking_views.xml',
+        'wizard/booking_reschedule_views.xml',
         'views/menus.xml',
         'views/report_views.xml',
     ],

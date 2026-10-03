@@ -192,6 +192,55 @@ class TestBookingRules(TransactionCase):
         with self.assertRaises(ValidationError):
             booking.action_reschedule(club_dt(TUE, 12))
 
+    def _wizard(self, booking, **vals):
+        return self.env['club.booking.reschedule'].with_context(
+            default_booking_id=booking.id).create(dict(vals, booking_id=booking.id))
+
+    def test_wizard_defaults_to_current_values(self):
+        booking = self._book(MON, 10)
+        wizard = self.env['club.booking.reschedule'].with_context(
+            default_booking_id=booking.id).new({})
+        self.assertEqual(wizard.court_id, self.court)
+        self.assertEqual(wizard.new_start, booking.start_datetime)
+
+    def test_button_opens_wizard_for_the_booking(self):
+        booking = self._book(MON, 10)
+        action = booking.action_open_reschedule()
+        self.assertEqual(action['res_model'], 'club.booking.reschedule')
+        self.assertEqual(action['target'], 'new')
+        self.assertEqual(action['context']['default_booking_id'], booking.id)
+
+    def test_wizard_moves_booking_in_time(self):
+        booking = self._book(MON, 10)
+        self._wizard(booking, court_id=self.court.id, new_start=club_dt(MON, 15)).action_reschedule()
+        self.assertEqual(booking.start_datetime, club_dt(MON, 15))
+        self.assertEqual(booking.court_id, self.court)
+
+    def test_wizard_moves_booking_to_another_court(self):
+        booking = self._book(MON, 10)
+        self._wizard(booking, court_id=self.court2.id, new_start=club_dt(MON, 10)).action_reschedule()
+        self.assertEqual(booking.court_id, self.court2)
+
+    def test_wizard_rejects_conflicts(self):
+        self._book(MON, 15, partner=self.member2)
+        booking = self._book(MON, 10)
+        with self.assertRaises(ValidationError):
+            self._wizard(booking, court_id=self.court.id, new_start=club_dt(MON, 15, 30)).action_reschedule()
+        self.assertEqual(booking.start_datetime, club_dt(MON, 10))
+
+    def test_wizard_rejects_off_grid_time(self):
+        booking = self._book(MON, 10)
+        with self.assertRaises(ValidationError):
+            self._wizard(booking, court_id=self.court.id, new_start=club_dt(MON, 15, 15)).action_reschedule()
+
+    def test_reschedule_leaves_a_chatter_note(self):
+        booking = self._book(MON, 10)
+        booking.action_reschedule(club_dt(MON, 14), self.court2)
+        note = booking.message_ids[0].body
+        self.assertIn('Court 1', note)
+        self.assertIn('Court 2', note)
+        self.assertIn('14:00', note)
+
     def test_cannot_reschedule_cancelled_booking(self):
         booking = self._book(MON, 10)
         booking.action_cancel()

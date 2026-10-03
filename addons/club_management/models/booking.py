@@ -237,16 +237,38 @@ class Booking(models.Model):
     def action_reschedule(self, new_start, court=None):
         """Move a booking to a new start time (and optionally another court).
 
-        All constraints are re-checked by the write.
+        All booking rules are re-checked by the write. An invoiced booking may
+        only move if its price stays the same.
         """
         self._require_state('draft', 'confirmed')
         for booking in self:
+            before = "%s, %s" % (
+                booking.court_id.name, to_club_time(booking.start_datetime).strftime('%a %d %b %H:%M'))
+            old_price = booking.price
             vals = {'start_datetime': new_start}
             if court:
                 vals['court_id'] = court.id
             booking.write(vals)
-            booking.message_post(body="Booking rescheduled.")
+            if booking.invoice_id and booking.price != old_price:
+                raise UserError(
+                    "Moving booking %s would change its price from %s to %s, but it is already "
+                    "invoiced (%s). Cancel the invoice or create a new booking instead."
+                    % (booking.name, old_price, booking.price, booking.invoice_id.name))
+            booking.message_post(body="Rescheduled from %s to %s, %s." % (
+                before, booking.court_id.name,
+                to_club_time(booking.start_datetime).strftime('%a %d %b %H:%M')))
         return True
+
+    def action_open_reschedule(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Reschedule Booking',
+            'res_model': 'club.booking.reschedule',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_booking_id': self.id},
+        }
 
     def _require_state(self, *states):
         for booking in self:
