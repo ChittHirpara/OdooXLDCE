@@ -119,7 +119,8 @@
     <t t-if="object.user_ids">
         <p>
             You can also sign in on our website with <strong><t t-out="object.email or ''"/></strong> to see your
-            membership, bookings and orders. A separate email lets you choose your password.
+            membership, bookings and orders. If you have not chosen a password yet, use the link in our
+            separate email, or Reset Password on the sign-in page.
         </p>
     </t>
     <p>See you on the court!<br/>The Champions Club</p>

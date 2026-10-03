@@ -49,7 +49,12 @@ class ClubMember(http.Controller):
                                   order='start_datetime', limit=10)
         recent = Booking.search(mine + [('start_datetime', '<', now)], order='start_datetime desc', limit=5)
         orders = request.env['club.order'].sudo().search(mine, order='create_date desc', limit=5)
+        enquiry = request.env['crm.lead'].sudo().search(
+            [('partner_id', '=', partner.id), ('enquiry_ref', '!=', False)], order='id desc', limit=1)
         return request.render('club_website.my_club_page', {
+            'enquiry': enquiry and {
+                'reference': enquiry.enquiry_ref, 'plan': enquiry.interested_plan_id.name,
+                'url': '/club/enquiry/status/%s' % enquiry.enquiry_token},
             'partner': partner, 'is_member': partner.is_member, 'plan': plan or partner.plan_id,
             'active': partner.member_state == 'active', 'days_left': days_left,
             'expiring': days_left is not None and days_left <= EXPIRY_WARNING_DAYS,

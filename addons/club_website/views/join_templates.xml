@@ -56,6 +56,26 @@
                     <textarea id="enq-message" name="message" rows="4" maxlength="2000" class="form-control"
                               t-esc="form['message']"/>
                 </div>
+                <t t-if="request.env.user._is_public() and form['type'] != 'general'">
+                    <div class="col-12 club-login-box">
+                        <h6 class="mb-1">Create your login <span class="club-muted fw-normal">(optional)</span></h6>
+                        <p class="form-text mt-0">Choose a password and you can sign in any time with the email above to
+                            follow your membership, book courts faster and see your orders.</p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="enq-password">Password</label>
+                                <input id="enq-password" type="password" name="password" class="form-control"
+                                       minlength="8" autocomplete="new-password"/>
+                                <div class="form-text">At least 8 characters.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="enq-password-confirm">Confirm password</label>
+                                <input id="enq-password-confirm" type="password" name="password_confirm"
+                                       class="form-control" minlength="8" autocomplete="new-password"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
                 <!-- Honeypot: invisible to people, tempting to bots. Anything in it is dropped. -->
                 <div class="club-hp" aria-hidden="true">
                     <label for="enq-website">Leave this empty</label>
@@ -95,6 +115,11 @@
                         <div class="club-check">✓</div>
                         <h1>Thank you<t t-if="name">, <t t-esc="name"/></t>!</h1>
                         <p class="club-lead-dark">We have your enquiry and a member of the team will contact you shortly.</p>
+                        <div class="alert alert-success text-start" t-if="account">
+                            <t t-if="signed_in">Your login is ready and you are signed in.</t>
+                            <t t-else="">Your login is ready. <a href="/web/login">Sign in</a> with your email and the password you chose.</t>
+                            <a href="/my/club" t-if="signed_in">Open My Club</a>
+                        </div>
                         <t t-if="reference">
                             <p>Your reference is <strong class="club-ref" t-esc="reference"/>.</p>
                             <p><a t-att-href="status_url" class="btn btn-club-outline">Check the status of my enquiry</a></p>

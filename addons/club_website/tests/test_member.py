@@ -127,3 +127,101 @@ class TestMyClub(HttpCase):
         self.authenticate('tara.member@example.com', 'tara-test-pw-1')
         self.assertIn('/my/club', self.url_open('/my/home').text)
         self.assertIn('/my/club', self.url_open('/').text)
+
+
+@tagged('post_install', '-at_install', 'club_management', 'club_website')
+class TestJoinWithLogin(HttpCase):
+    """The join form can create the visitor's login at the same time."""
+
+    PASSWORD = 'join-test-pw-1'
+
+    def submit(self, **data):
+        from odoo import http
+        self.authenticate(None, None)
+        data.setdefault('type', 'membership')
+        data.setdefault('plan', 'gold')
+        data['csrf_token'] = http.Request.csrf_token(self)
+        response = self.url_open('/join/submit', data=data)
+        new_session = response.cookies.get('session_id')
+        if new_session:     # the server rotated the session (a login): keep only the new cookie
+            self.opener.cookies.clear()
+            self.opener.cookies.set('session_id', new_session)
+        return response
+
+    def details(self, email='new.joiner@example.com', **extra):
+        values = {'name': 'New Joiner', 'email': email, 'phone': '9000000000',
+                  'password': self.PASSWORD, 'password_confirm': self.PASSWORD}
+        values.update(extra)
+        return values
+
+    def lead_count(self):
+        return self.env['crm.lead'].search_count([('enquiry_ref', '!=', False)])
+
+    def test_form_offers_the_password_fields_but_contact_does_not(self):
+        self.assertIn('name="password"', self.url_open('/join').text)
+        self.assertNotIn('name="password"', self.url_open('/contact').text)
+
+    def test_password_creates_the_enquiry_and_a_portal_login(self):
+        response = self.submit(**self.details())
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('you are signed in', response.text)
+        user = self.env['res.users'].search([('login', '=', 'new.joiner@example.com')])
+        self.assertEqual(len(user), 1)
+        self.assertTrue(user.share)
+        self.assertFalse(user.partner_id.is_member, "membership starts only when the club confirms it")
+        lead = self.env['crm.lead'].search([('partner_id', '=', user.partner_id.id)])
+        self.assertTrue(lead.enquiry_ref)
+
+    def test_the_new_visitor_is_signed_in_and_sees_their_request(self):
+        self.submit(**self.details())
+        page = self.url_open('/my/club').text
+        self.assertIn('not a member yet', page)
+        self.assertIn('is with our team', page)
+
+    def test_the_login_works_with_the_chosen_password_after_the_club_confirms(self):
+        self.submit(**self.details())
+        lead = self.env['crm.lead'].search([('email_from', '=', 'new.joiner@example.com')])
+        lead.action_join_club()
+        partner = lead.partner_id
+        self.assertTrue(partner.is_member)
+        self.assertEqual(len(partner.user_ids), 1, "no second login is created on activation")
+        self.authenticate('new.joiner@example.com', self.PASSWORD)
+        self.assertIn(partner.member_id, self.url_open('/my/club').text)
+
+    def test_mismatched_or_short_passwords_are_refused_and_leave_nothing_behind(self):
+        before = self.lead_count()
+        for extra, message in (({'password_confirm': 'different-pw-9'}, 'do not match'),
+                               ({'password': 'short', 'password_confirm': 'short'}, 'at least 8')):
+            response = self.submit(**self.details(**extra))
+            self.assertEqual(response.status_code, 400)
+            self.assertIn(message, response.text)
+        self.assertEqual(self.lead_count(), before)
+        self.assertFalse(self.env['res.users'].search([('login', '=', 'new.joiner@example.com')]))
+
+    def test_a_password_needs_an_email(self):
+        response = self.submit(**self.details(email=''))
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('valid email', response.text)
+
+    def test_an_email_the_club_already_knows_cannot_get_a_login_this_way(self):
+        member = self.env['res.partner'].create({'name': 'Existing Ed', 'email': 'existing.ed@example.com'})
+        member.plan_id = self.env.ref('club_management.plan_gold')
+        member.action_activate_membership()
+        before = self.lead_count()
+        response = self.submit(**self.details(email='Existing.Ed@example.com'))
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('already registered', response.text)
+        self.assertFalse(member.user_ids, "nobody can take over a member's record by typing their email")
+        self.assertEqual(self.lead_count(), before)
+
+    def test_without_a_password_it_is_the_plain_enquiry(self):
+        response = self.submit(**self.details(email='plain.joiner@example.com', password='', password_confirm=''))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('Your login is ready', response.text)
+        self.assertFalse(self.env['res.users'].search([('login', '=', 'plain.joiner@example.com')]))
+
+    def test_the_honeypot_still_creates_nothing(self):
+        before = self.lead_count()
+        self.submit(**self.details(email='bot@example.com', website_url='http://spam.example'))
+        self.assertEqual(self.lead_count(), before)
+        self.assertFalse(self.env['res.users'].search([('login', '=', 'bot@example.com')]))

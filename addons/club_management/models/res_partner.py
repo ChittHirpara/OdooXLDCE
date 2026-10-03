@@ -10,6 +10,7 @@ from .booking import club_today
 
 _logger = logging.getLogger(__name__)
 
+MIN_PASSWORD_LENGTH = 8
 JUNIOR_AGE_LIMIT = 18
 DEFAULT_REMINDER_DAYS = 14
 
@@ -198,6 +199,45 @@ class ResPartner(models.Model):
                 'groups_id': [Command.set([portal.id])],
             })
         return created
+
+    @api.model
+    def _club_validate_signup(self, email, password, confirm):
+        """Check the details a visitor gives to create their own login; returns the login.
+
+        An e-mail that is already known to the club (as a login or as a contact) is refused:
+        attaching a new password to an existing member's record would hand over their card,
+        bookings and orders to whoever types their e-mail address.
+        """
+        login = email_normalize(email or '')
+        if not login:
+            raise ValidationError("Enter a valid email address to create your login.")
+        if len(password or '') < MIN_PASSWORD_LENGTH:
+            raise ValidationError("Choose a password of at least %d characters." % MIN_PASSWORD_LENGTH)
+        if password != confirm:
+            raise ValidationError("The two passwords do not match.")
+        known = self.env['res.users'].sudo().with_context(active_test=False).search_count([('login', '=', login)]) \
+            or self.sudo().with_context(active_test=False).search_count([('email_normalized', '=', login)])
+        if known:
+            raise ValidationError(
+                "This email address is already registered with the club. Sign in, or contact us "
+                "if you need help getting access.")
+        return login
+
+    def _club_create_login(self, password):
+        """A portal login (never staff) for this contact, with the password the visitor chose."""
+        self.ensure_one()
+        partner = self.sudo()
+        login = email_normalize(partner.email or '')
+        if not login or partner.user_ids:
+            raise ValidationError("This contact cannot get a new login.")
+        return self.env['res.users'].sudo().with_context(no_reset_password=True).create({
+            'name': partner.name,
+            'login': login,
+            'email': partner.email,
+            'password': password,
+            'partner_id': partner.id,
+            'groups_id': [Command.set([self.env.ref('base.group_portal').id])],
+        })
 
     def _club_ensure_portal_login(self):
         """Create the website login and e-mail the invitation, without ever failing the

@@ -187,3 +187,5 @@ a.nav-link[href="/join"] {
         h2 { font-weight: 800; } p { color: #cbd5e1; margin: 0; } }
     .club-court-card:hover { border-color: $club-green; box-shadow: 0 8px 24px rgba(15, 23, 42, .08); }
 }
+
+.club-site .club-login-box { border-top: 1px dashed $club-line; margin-top: 1.25rem; padding-top: 1rem; }

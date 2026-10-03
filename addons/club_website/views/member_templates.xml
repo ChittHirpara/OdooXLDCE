@@ -47,8 +47,16 @@
                                 </div>
                                 <div class="club-summary" t-else="">
                                     <h4>You are not a member yet</h4>
-                                    <p>Join to get your court rate and your shop and bar discounts.</p>
-                                    <a href="/membership" class="btn btn-club-primary">See the plans</a>
+                                    <t t-if="enquiry">
+                                        <p>Your <t t-if="enquiry['plan']"><strong t-esc="enquiry['plan']"/> </t>membership request
+                                            <span class="club-ref" t-esc="enquiry['reference']"/> is with our team.
+                                            Your card appears here as soon as it is confirmed.</p>
+                                        <a t-att-href="enquiry['url']" class="btn btn-club-outline">Check my request</a>
+                                    </t>
+                                    <t t-else="">
+                                        <p>Join to get your court rate and your shop and bar discounts.</p>
+                                        <a href="/membership" class="btn btn-club-primary">See the plans</a>
+                                    </t>
                                 </div>
                                 <p class="mt-3"><a href="/my/account">Edit my contact details</a></p>
                             </div>

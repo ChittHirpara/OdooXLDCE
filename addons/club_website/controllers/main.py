@@ -86,23 +86,41 @@ class ClubWebsite(http.Controller):
 
     @http.route('/join/submit', type='http', auth='public', website=True, methods=['POST'], sitemap=False)
     def join_submit(self, name=None, email=None, phone=None, type='membership', plan=None,
-                    sport=None, message=None, website_url=None, **kw):
-        """The enquiry form: creates the CRM lead and shows its reference and status link."""
+                    sport=None, message=None, website_url=None, password=None, password_confirm=None, **kw):
+        """The enquiry form: creates the CRM lead and shows its reference and status link.
+
+        With a password the visitor also gets a website login (their e-mail), and is signed in
+        straight away. Their membership still starts only when the club confirms it.
+        """
         form = {'name': name, 'email': email, 'phone': phone, 'type': type, 'plan': plan,
                 'sport': sport, 'message': message}
         if website_url:     # honeypot: a bot filled the hidden field; look normal, create nothing
             return request.render('club_website.join_success_page', {'name': name or '', 'reference': None})
+        wants_login = bool(password or password_confirm) and request.env.user._is_public()
         try:
+            if wants_login:     # checked first, so a refused login does not leave an enquiry behind
+                login = request.env['res.partner']._club_validate_signup(email, password, password_confirm)
             lead = request.env['crm.lead'].create_club_enquiry(
                 name, email=email, phone=phone, message=message, plan=plan or None,
                 sport=sport or None, enquiry_type=type or 'membership')
+            if wants_login:
+                lead.sudo()._club_ensure_customer()._club_create_login(password)
         except ValidationError as error:
             response = request.render('club_website.join_page', self._join_values(form, error.args[0]))
             response.status_code = 400
             return response
+        signed_in = False
+        if wants_login:
+            try:
+                request.env.cr.commit()     # the login must exist before the session can use it
+                request.session.authenticate(request.db, login, password)
+                signed_in = True
+            except Exception:    # noqa: BLE001 - the account exists; they can sign in by hand
+                signed_in = False
         return request.render('club_website.join_success_page', {
             'name': lead.contact_name, 'reference': lead.enquiry_ref,
-            'status_url': '/club/enquiry/status/%s' % lead.enquiry_token})
+            'status_url': '/club/enquiry/status/%s' % lead.enquiry_token,
+            'account': wants_login, 'signed_in': signed_in})
 
     @http.route('/about', type='http', auth='public', website=True, sitemap=True)
     def about(self, **kw):
