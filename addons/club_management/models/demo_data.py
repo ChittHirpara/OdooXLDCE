@@ -21,6 +21,10 @@ PARAM_SOCIAL_DAY = 'club_management.demo_social_day'
 MEMBERS = ['arjun', 'priya', 'rohan', 'sneha', 'vikram', 'meera', 'aarav', 'diya', 'karan']
 TENNIS = ['tennis_1', 'tennis_2', 'tennis_3']
 CRICKET = ['cricket_1', 'cricket_2']
+# Courts and members from data/demo_club_data.xml (added by the frontend work). They join
+# the generated bookings when present so every screen shows the same busy club.
+EXTRA_COURTS = ['court_1', 'court_2', 'court_3', 'court_4']
+EXTRA_MEMBERS = ['partner_member_chitt', 'partner_member_aarav', 'partner_member_rohan']
 WALKIN_NAMES = ['Imran Khan', 'Divya Menon', 'Suresh Rao', 'Neha Gupta', 'Tarun Joshi', 'Pooja Bhatt']
 
 # product xmlid suffix -> (stock on hand, reorder minimum, reorder maximum)
@@ -76,6 +80,16 @@ class ClubDemo(models.AbstractModel):
     def _court(self, key):
         return self.env.ref('club_management.demo_court_%s' % key)
 
+    def _ref_all(self, xmlids):
+        refs = (self.env.ref('club_management.%s' % x, raise_if_not_found=False) for x in xmlids)
+        return [rec for rec in refs if rec]
+
+    def _all_members(self):
+        return [self._member(key) for key in MEMBERS] + self._ref_all(EXTRA_MEMBERS)
+
+    def _all_courts(self):
+        return [self._court(key) for key in TENNIS + CRICKET] + self._ref_all(EXTRA_COURTS)
+
     def _book(self, court, start, partner=None, walkin=None, players=1, state='confirmed'):
         """Create a booking, skipping it if a booking rule rejects it."""
         Booking = self.env['club.booking'].with_context(tracking_disable=True, mail_create_nolog=True)
@@ -96,8 +110,8 @@ class ClubDemo(models.AbstractModel):
     def _load_history(self, today):
         """Two weeks of finished bookings so the revenue reports have shape."""
         rng = random.Random(2026)
-        members = [self._member(key) for key in MEMBERS]
-        courts = [self._court(key) for key in TENNIS + CRICKET]
+        members = self._all_members()
+        courts = self._all_courts()
         hours = [7, 8, 9, 10, 16, 17, 18, 18, 19, 19, 20, 20, 21]   # evenings are busiest
         cancelled = 0
         for offset in range(14, 0, -1):
@@ -123,12 +137,12 @@ class ClubDemo(models.AbstractModel):
 
     def _load_busy_evening(self, day):
         """Every court booked solid from 17:00/18:00 to 21:00: the 'busy evening'."""
-        pool = [self._member(key) for key in MEMBERS]
+        pool = self._all_members()
         used, walkins = {}, 0
-        slots = [(court, hour) for hour in (17, 18, 19, 20)
-                 for court in map(self._court, TENNIS)]
-        slots += [(court, hour) for hour in (18, 19, 20)
-                  for court in map(self._court, CRICKET)]
+        courts = self._all_courts()
+        # cricket nets start at 18:00, every other sport at 17:00
+        slots = [(court, hour) for hour in (17, 18, 19, 20) for court in courts
+                 if hour >= (18 if court.sport == 'cricket' else 17)]
         for index, (court, hour) in enumerate(slots):
             # every third slot goes to a walk-in, who pays the full court price
             partner = None if index % 3 == 2 else next(

@@ -5,7 +5,7 @@
     'summary': 'Memberships, courts and bookings for The Champions Club',
     'author': 'Hackathon Team',
     'license': 'LGPL-3',
-    'depends': ['base', 'web', 'mail', 'account', 'product', 'crm', 'point_of_sale'],
+    'depends': ['base', 'web', 'mail', 'account', 'product', 'crm', 'point_of_sale', 'stock'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -26,6 +26,12 @@
         'wizard/booking_reschedule_views.xml',
         'views/menus.xml',
         'views/report_views.xml',
+    ],
+    'demo': [
+        'demo/demo_courts.xml',
+        'demo/demo_members.xml',
+        'demo/demo_products.xml',
+        'demo/demo_activity.xml',
     ],
     'assets': {
         'web.assets_backend': [
