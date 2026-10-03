@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="about_page" name="About the Club">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_about'"/>
+            <div id="wrap" class="club-site club-about">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'About'"/>
+                    <t t-set="title" t-value="'The Champions Club'"/>
+                    <t t-set="subtitle" t-value="'A neighbourhood club for people who love racket sports and cricket, from first lessons to league nights.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container club-prose">
+                        <h2>Play, shop, unwind</h2>
+                        <p>We run <t t-esc="len(courts)"/> courts and nets, a pro-shop with the gear you need and a bar and cafeteria
+                            for after the match. Your membership works everywhere in the club: your court rate and your
+                            shop and bar discounts follow you from the court to the till.</p>
+                        <h2>Friday social play</h2>
+                        <p>On Fridays the courts open up for social play, so groups can share a court and meet new partners.</p>
+                        <h2>For every age</h2>
+                        <p>Our Junior membership gives under-18s access to the academy and off-peak hours at a reduced rate.</p>
+                        <p><a href="/membership" class="btn btn-club-primary">See the memberships</a></p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="contact_page" name="Contact the Club">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_contact'"/>
+            <div id="wrap" class="club-site club-contact">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'Contact'"/>
+                    <t t-set="title" t-value="'Get in touch'"/>
+                    <t t-set="subtitle" t-value="'Questions about the club, an event or a booking? Send us a message.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container club-form-wrap">
+                        <t t-call="club_website.enquiry_form"/>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Visitor's private enquiry status, from the link in the acknowledgment email -->
+    <template id="enquiry_status_page" name="Enquiry status">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_status'"/>
+            <div id="wrap" class="club-site club-status">
+                <section class="club-section">
+                    <div class="container club-form-wrap">
+                        <p class="club-eyebrow-dark">Enquiry <span class="club-ref" t-esc="status['reference']"/></p>
+                        <h1 t-esc="status['status']"/>
+                        <p class="club-lead-dark" t-esc="status['message']"/>
+                        <ol class="club-timeline" t-if="not closed">
+                            <li t-foreach="timeline" t-as="step"
+                                t-attf-class="club-step #{step_index &lt; current and 'done' or ''} #{step_index == current and 'current' or ''}">
+                                <span class="club-step-dot"/><span t-esc="step"/>
+                            </li>
+                        </ol>
+                        <p t-if="status['plan']" class="club-muted">Plan: <t t-esc="status['plan']"/></p>
+                        <p t-if="status['is_member']"><a href="/courts" class="btn btn-club-primary">Book a court</a></p>
+                        <p class="club-muted">Questions? <a href="/contact">Contact us</a> and quote your reference.</p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

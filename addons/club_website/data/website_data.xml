@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Brand: the company is the club, so the header, invoices and emails all say so.
+         Replace the phone and email with the club's real ones in Settings > Companies. -->
+    <record id="base.main_company" model="res.company">
+        <field name="name">The Champions Club</field>
+        <field name="phone">+91 98100 00000</field>
+        <field name="email">hello@championsclub.example</field>
+    </record>
+    <record id="website.default_website" model="website">
+        <field name="name">The Champions Club</field>
+        <field name="logo" type="base64" file="club_website/static/src/img/logo.svg"/>
+    </record>
+
+    <!-- Odoo's sample header text ("+1 555-555-5556", info@yourcompany...). The real contact
+         details are in the footer and on the Contact page, from the company record. -->
+    <record id="website.header_text_element" model="ir.ui.view">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- Navigation: Home | Membership | Courts | Shop | About | Contact | Join the Club -->
+    <record id="website.menu_contactus" model="website.menu">
+        <field name="name">Contact</field>
+        <field name="url">/contact</field>
+        <field name="page_id" eval="False"/>
+        <field name="sequence" eval="60"/>
+    </record>
+    <record id="menu_membership" model="website.menu">
+        <field name="name">Membership</field>
+        <field name="url">/membership</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="20"/>
+    </record>
+    <record id="menu_courts" model="website.menu">
+        <field name="name">Courts</field>
+        <field name="url">/courts</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="30"/>
+    </record>
+    <record id="menu_shop" model="website.menu">
+        <field name="name">Shop</field>
+        <field name="url">/club-shop</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="40"/>
+    </record>
+    <record id="menu_about" model="website.menu">
+        <field name="name">About</field>
+        <field name="url">/about</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="50"/>
+    </record>
+    <record id="menu_join" model="website.menu">
+        <field name="name">Join the Club</field>
+        <field name="url">/join</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="70"/>
+    </record>
+</odoo>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="shop_page" name="Club Shop">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_shop'"/>
+            <div id="wrap" class="club-site club-shop">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'Pro-Shop'"/>
+                    <t t-set="title" t-value="'Gear up'"/>
+                    <t t-set="subtitle" t-value="'Rackets, balls, apparel and accessories, with live stock. Members save automatically at the club.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container">
+                        <form action="/club-shop" method="get" class="row g-2 club-shop-search">
+                            <div class="col-md-8">
+                                <input type="search" name="q" class="form-control" placeholder="Search the shop"
+                                       t-att-value="query" aria-label="Search the shop"/>
+                                <input type="hidden" name="category" t-att-value="category"/>
+                            </div>
+                            <div class="col-md-4"><button type="submit" class="btn btn-club-primary w-100">Search</button></div>
+                        </form>
+                        <div class="club-chips">
+                            <a href="/club-shop" t-attf-class="club-chip #{not category and 'active' or ''}">All</a>
+                            <a t-foreach="categories" t-as="cat" t-attf-href="/club-shop?category=#{cat[0]}"
+                               t-attf-class="club-chip #{category == cat[0] and 'active' or ''}" t-esc="cat[1]"/>
+                        </div>
+                        <p class="club-muted" t-if="max_shop_discount">
+                            Members save up to <t t-esc="'{:g}'.format(max_shop_discount)"/>% in the shop.
+                            <a href="/membership">See membership</a>
+                        </p>
+                        <div class="row g-3 club-products">
+                            <t t-foreach="products" t-as="product">
+                                <div class="col-6 col-md-4 col-lg-3"><t t-call="club_website.product_card"/></div>
+                            </t>
+                        </div>
+                        <p t-if="not products" class="club-muted text-center py-5">
+                            Nothing matches your search. <a href="/club-shop">Show everything</a>
+                        </p>
+                    </div>
+                </section>
+                <t t-call="club_website.cta_band"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="shop_product_page" name="Club Product">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_product'"/>
+            <div id="wrap" class="club-site club-shop club-product-page">
+                <section class="club-section">
+                    <div class="container">
+                        <p><a href="/club-shop">← Back to the shop</a></p>
+                        <div class="row g-4">
+                            <div class="col-md-5"><div class="club-product-hero" t-esc="product['image_icon']"/></div>
+                            <div class="col-md-7">
+                                <span class="club-product-cat" t-esc="product['category_label']"/>
+                                <h1 t-esc="product['name']"/>
+                                <p class="club-lead-dark" t-esc="product['description']"/>
+                                <p class="club-price-large">₹<t t-esc="'{:,.0f}'.format(product['price'])"/></p>
+                                <p><span t-attf-class="club-stock #{product['stock'] &lt;= 0 and 'club-stock-out' or ''}"
+                                         t-esc="stock_label"/></p>
+                                <t t-if="product.get('tiers')">
+                                    <h5>Member prices</h5>
+                                    <table class="table club-compare">
+                                        <tbody>
+                                            <tr t-foreach="product['tiers']" t-as="tier">
+                                                <th t-esc="tier['plan']"/>
+                                                <td>₹<t t-esc="'{:,.0f}'.format(tier['price'])"/></td>
+                                                <td class="club-muted"><t t-esc="'{:g}'.format(tier['discount'])"/>% off</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <a t-att-href="reserve_url" class="btn btn-club-primary btn-lg"
+                                   t-if="product['stock'] &gt; 0">Reserve for pickup</a>
+                                <a href="/join?type=shop" class="btn btn-club-outline btn-lg" t-else="">Ask when it is back</a>
+                                <p class="club-muted mt-3">Pay and collect at the club. Members get their discount at the till.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -31,7 +31,7 @@ async function login(page, user = 'admin', pass = 'admin') {
   await page.goto(`${BASE}/web/login?db=${DB}`, { waitUntil: 'networkidle2' });
   await page.type('input[name=login]', user);
   await page.type('input[name=password]', pass);
-  await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle2' }), page.click('button[type=submit]')]);
+  await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle2' }), page.click('form.oe_login_form button[type=submit], .oe_login_form button[type=submit]')]);
 }
 
 async function openAction(page, xmlid, waitSelector) {

@@ -1,0 +1,137 @@
+// The Champions Club website. Everything is scoped under .club-site so the rest of the
+// Odoo website is untouched.
+$club-navy: #0b1220;
+$club-navy-2: #111a2e;
+$club-green: #10b981;
+$club-green-dark: #059669;
+$club-gold: #f59e0b;
+$club-ink: #0f172a;
+$club-muted: #64748b;
+$club-line: #e2e8f0;
+$club-soft: #f8fafc;
+
+// "Join the Club" in the navigation reads as a button
+a.nav-link[href="/join"] {
+    background: $club-green;
+    color: #fff !important;
+    border-radius: 999px;
+    padding-left: 1.1rem !important;
+    padding-right: 1.1rem !important;
+    font-weight: 600;
+    &:hover { background: $club-green-dark; }
+}
+
+.club-site {
+    color: $club-ink;
+
+    .btn-club-primary {
+        background: $club-green; border-color: $club-green; color: #fff; font-weight: 600; border-radius: 999px;
+        &:hover { background: $club-green-dark; border-color: $club-green-dark; color: #fff; }
+    }
+    .btn-club-outline {
+        background: transparent; border: 2px solid $club-green; color: $club-green-dark; font-weight: 600; border-radius: 999px;
+        &:hover { background: $club-green; color: #fff; }
+    }
+    .club-hero .btn-club-outline { color: #fff; border-color: rgba(255, 255, 255, .6); }
+
+    // Hero
+    .club-hero {
+        background: linear-gradient(135deg, $club-navy 0%, $club-navy-2 60%, #0c2a2a 100%);
+        color: #fff; padding: 6rem 0 5rem;
+        h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -.02em; max-width: 18ch; }
+        .club-lead { font-size: 1.2rem; max-width: 40rem; color: #cbd5e1; margin: 1rem 0 2rem; }
+    }
+    .club-hero-small { padding: 3.5rem 0 3rem; h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); } .club-lead { margin-bottom: 0; } }
+    .club-hero-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+    .club-eyebrow { color: $club-green; text-transform: uppercase; letter-spacing: .14em; font-weight: 700; font-size: .8rem; margin-bottom: .75rem; }
+    .club-eyebrow-dark { color: $club-green-dark; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; font-size: .8rem; }
+
+    // Sections
+    .club-section { padding: 4rem 0; }
+    .club-section-alt { background: $club-soft; }
+    .club-section-title { font-weight: 800; text-align: center; margin-bottom: .5rem; }
+    .club-section-sub { text-align: center; color: $club-muted; margin-bottom: 2.5rem; }
+    .club-muted { color: $club-muted; }
+    .club-lead-dark { font-size: 1.15rem; color: #334155; }
+    .club-error, .club-stock-out { color: #dc2626; }
+    .club-prose { max-width: 46rem; h2 { margin-top: 2rem; font-weight: 700; } }
+    .club-ref { background: #ecfdf5; color: $club-green-dark; padding: .1rem .5rem; border-radius: .35rem; font-family: monospace; }
+
+    // Features
+    .club-feature {
+        display: block; text-align: center; background: #fff; border: 1px solid $club-line; border-radius: 1rem;
+        padding: 1.5rem .5rem; color: $club-ink; text-decoration: none; height: 100%;
+        span { font-size: 2.2rem; display: block; }
+        h5 { margin: .5rem 0 0; font-size: 1rem; font-weight: 700; }
+    }
+    a.club-feature:hover { border-color: $club-green; }
+
+    // Plans
+    .club-plan {
+        position: relative; background: #fff; border: 1px solid $club-line; border-radius: 1.25rem; padding: 2rem 1.75rem; height: 100%;
+        display: flex; flex-direction: column;
+        &.club-plan-featured { border: 2px solid $club-green; box-shadow: 0 12px 40px rgba(16, 185, 129, .15); }
+        .club-badge {
+            position: absolute; top: -.8rem; left: 1.5rem; background: $club-gold; color: #1f2937; font-weight: 800;
+            font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; padding: .25rem .7rem; border-radius: 999px;
+            &.club-badge-alt { background: #06b6d4; color: #fff; }
+        }
+        .club-plan-name { font-weight: 800; }
+        .club-plan-desc { color: $club-muted; }
+        .club-price { font-size: 2.4rem; font-weight: 800; margin: .5rem 0 1rem; small { font-size: .9rem; font-weight: 500; color: $club-muted; } }
+        .club-currency { font-size: 1.2rem; margin-right: .1rem; vertical-align: top; }
+        .club-benefits { list-style: none; padding: 0; margin: 0 0 1.5rem; flex-grow: 1;
+            li { padding: .4rem 0 .4rem 1.6rem; position: relative; border-bottom: 1px solid $club-soft;
+                &::before { content: "✓"; position: absolute; left: 0; color: $club-green; font-weight: 800; } } }
+    }
+    .club-compare { th { font-weight: 600; } thead th { text-transform: uppercase; font-size: .8rem; letter-spacing: .05em; } td, th { padding: .75rem; } }
+
+    // Courts
+    .club-filters { margin-bottom: 1rem; }
+    .club-legend { color: $club-muted; font-size: .9rem; }
+    .club-dot { display: inline-block; width: .8rem; height: .8rem; border-radius: 50%; margin: 0 .25rem 0 .9rem; vertical-align: middle;
+        &.club-dot-free { background: $club-green; } &.club-dot-booked { background: #fca5a5; } &.club-dot-off { background: $club-line; } }
+    .club-note { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: .75rem; padding: .75rem 1rem; margin-bottom: 1rem; }
+    .club-court-row { background: #fff; border: 1px solid $club-line; border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .club-court-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .5rem; h5 { margin: 0; font-weight: 700; } }
+    .club-slots { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
+    .club-slot { min-width: 4.2rem; text-align: center; padding: .35rem .5rem; border-radius: .5rem; font-size: .85rem; font-weight: 600; text-decoration: none; line-height: 1.1;
+        small { display: block; font-weight: 500; font-size: .65rem; }
+        &.club-slot-free { background: #ecfdf5; color: $club-green-dark; border: 1px solid #a7f3d0; &:hover { background: $club-green; color: #fff; } }
+        &.club-slot-booked { background: #fef2f2; color: #b91c1c; text-decoration: line-through; border: 1px solid #fecaca; }
+        &.club-slot-off { background: $club-soft; color: #94a3b8; border: 1px solid $club-line; } }
+    .club-court-card { display: block; background: #fff; border: 1px solid $club-line; border-radius: 1rem; padding: 1.25rem; height: 100%; color: $club-ink;
+        h5 { font-weight: 700; } }
+
+    // Shop
+    .club-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.25rem 0 .5rem; }
+    .club-chip { padding: .35rem .9rem; border-radius: 999px; border: 1px solid $club-line; color: $club-ink; text-decoration: none; font-weight: 600; font-size: .9rem;
+        &.active, &:hover { background: $club-green; border-color: $club-green; color: #fff; } }
+    .club-product { display: flex; flex-direction: column; height: 100%; background: #fff; border: 1px solid $club-line; border-radius: 1rem; padding: 1.25rem; color: $club-ink;
+        &:hover { border-color: $club-green; box-shadow: 0 8px 24px rgba(15, 23, 42, .08); }
+        .club-product-icon { font-size: 2.6rem; }
+        .club-product-name { font-size: 1rem; font-weight: 700; margin: .25rem 0 1rem; flex-grow: 1; }
+        .club-product-foot { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; } }
+    .club-product-cat { color: $club-muted; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+    .club-stock { font-size: .8rem; color: $club-green-dark; font-weight: 600; }
+    .club-product-hero { font-size: 7rem; text-align: center; background: $club-soft; border-radius: 1.25rem; padding: 2rem; }
+    .club-price-large { font-size: 2rem; font-weight: 800; }
+
+    // Forms
+    .club-form-wrap { max-width: 44rem; }
+    .club-form .form-control, .club-form .form-select { border-radius: .6rem; padding: .65rem .85rem; }
+    .club-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .club-success { padding: 3rem 0; }
+    .club-check { width: 4rem; height: 4rem; line-height: 4rem; border-radius: 50%; background: $club-green; color: #fff; font-size: 2rem; margin: 0 auto 1rem; }
+
+    // Status timeline
+    .club-timeline { list-style: none; padding: 0; margin: 2rem 0; display: flex; gap: .5rem; flex-wrap: wrap;
+        .club-step { flex: 1; min-width: 6rem; text-align: center; color: #94a3b8; font-size: .85rem; font-weight: 600;
+            .club-step-dot { display: block; width: 1rem; height: 1rem; border-radius: 50%; background: $club-line; margin: 0 auto .4rem; }
+            &.done { color: $club-green-dark; .club-step-dot { background: $club-green; } }
+            &.current { color: $club-ink; .club-step-dot { background: $club-gold; box-shadow: 0 0 0 .3rem rgba(245, 158, 11, .25); } } } }
+
+    // Call to action and footer strip
+    .club-cta { background: $club-navy; color: #fff; padding: 4rem 0; h2 { font-weight: 800; } p { color: #cbd5e1; margin-bottom: 1.5rem; } }
+    .club-footer-strip { background: $club-navy-2; color: #cbd5e1; padding: 2.5rem 0; h5 { color: #fff; font-weight: 700; } a { color: $club-green; } p { margin: 0; } }
+}
