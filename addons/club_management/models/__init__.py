@@ -3,6 +3,7 @@ from . import res_partner
 from . import booking
 from . import court
 from . import crm_lead
+from . import res_company
 from . import sale_order
 from . import pos_config
 from . import club_order

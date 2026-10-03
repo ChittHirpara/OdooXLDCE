@@ -23,10 +23,10 @@ data, so run them on a throwaway demo database.
 ## Run
 
 ```bash
-# 1. a fresh demo database and a server on it (from the repo root)
+# 1. a fresh demo database (in rupees) and a server on it (from the repo root)
 docker compose build db            # first time: Postgres image with legacy timezone names
-docker compose exec -T db dropdb -U odoo --if-exists club_demo
-docker compose run --rm odoo odoo -d club_demo -i club_management,club_website --stop-after-init
+bash scripts/create_demo_db.sh club_demo
+docker stop odooxldce-odoo-1       # the normal server also uses port 8069 and has no database filter
 docker compose run -d --service-ports --name club-web odoo odoo -d club_demo --db-filter='^club_demo$'
 
 # 2. the checks (needs Node and Chrome on the host)

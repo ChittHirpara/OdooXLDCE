@@ -46,6 +46,9 @@ const sql = (q) => execSync(
     await shot(page, 'n2_bookings');
     const rows = await page.$$eval('.o_data_row', (r) => r.length);
     check('bookings list shows demo bookings', rows > 10, `(${rows} rows)`);
+    const listText = await page.$eval('.o_list_view', (e) => e.innerText);
+    check('amounts are in rupees: ₹ shown, no dollar signs', /₹\s?[\d,]+\.\d\d/.test(listText) && !/\$\s?[\d,]+\.\d\d/.test(listText),
+      `(${(listText.match(/[₹$]\s?[\d,]+\.\d\d/) || ['none'])[0]})`);
     clean('bookings list');
 
     const bk = sql("select id||'|'||name from club_booking where state='confirmed' and booking_date > current_date and partner_id is not null order by id limit 1").split('|');

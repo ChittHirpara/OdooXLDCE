@@ -11,6 +11,8 @@ import pytz
 
 from odoo import api, models
 from odoo.exceptions import ValidationError
+from odoo.modules.module import get_manifest
+from odoo.tools import convert_file
 
 from .booking import CLUB_TZ, FRIDAY, club_today
 
@@ -46,6 +48,20 @@ def utc(day, hour, minute=0):
 class ClubDemo(models.AbstractModel):
     _name = 'club.demo'
     _description = 'Club demo data loader'
+
+    @api.model
+    def install_demo_files(self):
+        """Load the club's demo files into a database created WITHOUT Odoo's demo data.
+
+        Odoo's accounting demo data creates journal entries, after which a company can no
+        longer change currency. scripts/create_demo_db.sh therefore installs without any
+        demo data, so the club can be set up in rupees, and then calls this to add only the
+        club's own demo (courts, members, products and the date-relative activity).
+        """
+        for filename in get_manifest('club_management')['demo']:
+            convert_file(self.env, 'club_management', filename, {}, mode='init',
+                         noupdate=True, kind='demo')
+        return True
 
     @api.model
     def load(self):

@@ -60,6 +60,9 @@ const sql = (q) => execSync(
       follow: document.querySelector('div[name=follow_up_date]')?.innerText.trim(),
     }));
     console.log('club tab:', JSON.stringify(tab));
+    // (the amount itself is an input, so read the field's own text, which carries the currency symbol)
+    const revenue = await page.evaluate(() => (document.querySelector('div[name=expected_revenue]') || { innerText: '' }).innerText);
+    check('the lead\'s expected revenue is in rupees', revenue.includes('₹') && !revenue.includes('$'), `(${revenue.replace(/\s+/g, ' ').trim()})`);
     check('Club Enquiry tab shows plan, reference, source and next follow-up',
       tab.plan === 'Junior' && /^ENQ-\d+/.test(tab.ref) && /Website/.test(tab.source) && /\d{2}\/\d{2}\/\d{4}/.test(tab.follow));
     clean('lead form');
