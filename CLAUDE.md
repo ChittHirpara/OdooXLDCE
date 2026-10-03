@@ -45,4 +45,5 @@ Odoo 17.0 via Docker (docker-compose.yml, config/odoo.conf, custom addons in ./a
 - Update module: `docker compose run --rm odoo odoo -d club -u club_management --stop-after-init`
 - Tests (first run; later runs use `-u`): `docker compose run --rm odoo odoo -d club_test -i club_management --test-tags club_management --stop-after-init`
   (Git Bash on Windows mangles `/club_management` into a path, so use the plain tag; all our tests carry the `club_management` tag.)
+- Tier discounts (POS bar + website shop): each membership plan auto-generates a pricelist ("Club Gold" etc.) with its shop % on product category "Club Shop" and bar % on "Bar & Cafeteria" (incl. child categories). Active members get their tier pricelist; POS configs get the tier pricelists automatically. Person B: put shop/bar products in those categories, and pick the member as customer in POS.
 - Club rules: timezone Asia/Kolkata, courts open 06:00-22:00, Friday = whole-day social play.

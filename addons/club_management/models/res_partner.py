@@ -60,13 +60,36 @@ class ResPartner(models.Model):
     def create(self, vals_list):
         partners = super().create(vals_list)
         partners._assign_member_id()
+        partners.filtered('is_member')._sync_club_pricelist()
         return partners
 
     def write(self, vals):
         res = super().write(vals)
         if vals.get('is_member'):
             self._assign_member_id()
+        if vals.keys() & {'is_member', 'plan_id', 'expiry_date'}:
+            self._sync_club_pricelist()
         return res
+
+    def _sync_club_pricelist(self):
+        """Active members get their tier pricelist (used by POS and the website
+        shop). When a membership ends, only a tier pricelist is removed: any
+        pricelist set by hand is left alone."""
+        club = self.env['club.membership.plan'].sudo().with_context(
+            active_test=False).search([]).pricelist_id
+        for partner in self:
+            current = partner.sudo().property_product_pricelist
+            plan = partner.plan_id
+            if partner.is_member and partner.member_state == 'active' and plan.pricelist_id:
+                if current != plan.pricelist_id:
+                    partner.sudo().property_product_pricelist = plan.pricelist_id
+            elif current in club:
+                # Writing False would not reset the property, so drop it explicitly.
+                self.env['ir.property'].sudo().search([
+                    ('fields_id.name', '=', 'property_product_pricelist'),
+                    ('fields_id.model', '=', 'res.partner'),
+                    ('res_id', '=', 'res.partner,%s' % partner.id),
+                ]).unlink()
 
     def _assign_member_id(self):
         for partner in self.filtered(lambda p: p.is_member and not p.member_id):
