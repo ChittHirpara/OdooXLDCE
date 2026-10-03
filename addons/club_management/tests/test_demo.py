@@ -170,3 +170,27 @@ class TestDemoData(TransactionCase):
         before = self.env['club.booking'].search_count([])
         self.assertFalse(self.env['club.demo'].load())
         self.assertEqual(self.env['club.booking'].search_count([]), before)
+
+    # --- CRM pipeline -------------------------------------------------------
+    def _demo_leads(self):
+        return self.env['crm.lead'].with_context(active_test=False).search([
+            ('enquiry_ref', '!=', False), ('email_from', 'like', '@example.com')])
+
+    def test_demo_pipeline_has_a_lead_in_every_stage(self):
+        stages = set(self._demo_leads().filtered('active').stage_id.mapped('name'))
+        self.assertTrue({'New', 'Contacted', 'Interested', 'Quote Sent', 'Negotiation', 'Won'} <= stages, stages)
+        self.assertTrue(self._demo_leads().filtered(lambda lead: not lead.active), "no lost lead")
+
+    def test_demo_won_lead_is_a_real_member_with_a_confirmed_quote(self):
+        won = self._demo_leads().filtered(lambda lead: lead.stage_id.is_won)
+        self.assertTrue(won)
+        for lead in won:
+            self.assertTrue(lead.member_activated)
+            self.assertEqual(lead.partner_id.member_state, 'active')
+            self.assertIn('sale', lead.order_ids.mapped('state'))
+
+    def test_demo_has_open_quotes_and_an_overdue_follow_up(self):
+        leads = self._demo_leads()
+        self.assertGreaterEqual(len(leads.order_ids.filtered(lambda o: o.state == 'draft')), 2)
+        overdue = leads.filtered('active').activity_ids.filtered(lambda a: a.date_deadline < club_today())
+        self.assertTrue(overdue, "no overdue follow-up to demo")

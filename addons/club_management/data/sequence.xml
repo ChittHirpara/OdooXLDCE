@@ -12,6 +12,12 @@
         <field name="prefix">BK/</field>
         <field name="padding">5</field>
     </record>
+    <record id="seq_club_enquiry" model="ir.sequence">
+        <field name="name">Club Enquiry</field>
+        <field name="code">club.enquiry</field>
+        <field name="prefix">ENQ-</field>
+        <field name="padding">5</field>
+    </record>
     <record id="seq_club_order" model="ir.sequence">
         <field name="name">Club Order</field>
         <field name="code">club.order</field>

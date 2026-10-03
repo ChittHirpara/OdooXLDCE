@@ -8,3 +8,4 @@ from . import test_reports
 from . import test_cron
 from . import test_demo
 from . import test_frontend_api
+from . import test_crm_flow

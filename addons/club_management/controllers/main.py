@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from markupsafe import escape
+
 from odoo import fields, http
 from odoo.exceptions import ValidationError
 from odoo.http import request
@@ -27,19 +29,49 @@ class ClubController(http.Controller):
 
     @http.route('/club/enquiry', type='http', auth='public', methods=['POST'])
     def enquiry(self, name=None, email=None, phone=None, message=None, plan=None,
-                sport=None, redirect=None, **kw):
-        """Membership enquiry form: creates a crm.lead.
+                sport=None, type=None, redirect=None, website_url=None, **kw):
+        """Enquiry form (website "Join the club"): creates a crm.lead.
 
-        Returns JSON, or redirects to ``redirect`` (a local path) when given.
+        Returns JSON with the enquiry reference and a private status link, or redirects to
+        ``redirect`` (a local path) when given. ``website_url`` is a honeypot: real visitors
+        never see or fill it, so a bot that does gets a normal-looking reply and no lead.
         """
+        if website_url:
+            return request.make_json_response({'success': True, 'reference': 'ENQ-00000'})
         try:
             lead = request.env['crm.lead'].create_club_enquiry(
-                name, email=email, phone=phone, message=message, plan=plan, sport=sport)
+                name, email=email, phone=phone, message=message, plan=plan, sport=sport,
+                enquiry_type=type or 'membership')
         except ValidationError as error:
             return request.make_json_response({'success': False, 'error': str(error)}, status=400)
+        status_url = '/club/enquiry/status/%s' % lead.enquiry_token
         if redirect and redirect.startswith('/') and not redirect.startswith(('//', '/\\')):
             return request.redirect(redirect)
-        return request.make_json_response({'success': True, 'lead_id': lead.id})
+        return request.make_json_response({
+            'success': True, 'lead_id': lead.id, 'reference': lead.enquiry_ref,
+            'status_url': status_url})
+
+    @http.route('/club/api/enquiry/status', type='http', auth='public', methods=['GET'], cors='*')
+    def api_enquiry_status(self, token=None, **kw):
+        """Progress of an enquiry, by the secret token in the visitor's status link."""
+        status = request.env['crm.lead'].club_enquiry_status(token)
+        if not status:
+            return request.make_json_response({'error': "Enquiry not found."}, status=404)
+        return request.make_json_response(status)
+
+    @http.route('/club/enquiry/status/<string:token>', type='http', auth='public', methods=['GET'])
+    def enquiry_status_page(self, token, **kw):
+        """Plain status page for the link in the acknowledgment email."""
+        status = request.env['crm.lead'].club_enquiry_status(token)
+        if not status:
+            return request.not_found()
+        body = (
+            "<h2>Enquiry %(reference)s</h2><p><strong>%(status)s</strong></p><p>%(message)s</p>"
+            % {key: escape(value or '') for key, value in status.items() if key != 'is_member'})
+        return request.make_response(
+            "<!doctype html><meta charset='utf-8'><title>Enquiry status</title>"
+            "<body style='font-family:sans-serif;max-width:32rem;margin:3rem auto'>%s</body>" % body,
+            headers=[('Content-Type', 'text/html; charset=utf-8')])
 
     @http.route('/club/api/plans', type='http', auth='public', methods=['GET'], cors='*')
     def api_plans(self, **kw):

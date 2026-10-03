@@ -175,16 +175,60 @@ class ClubDemo(models.AbstractModel):
     # CRM and stock
     # ------------------------------------------------------------------
     def _load_enquiries(self):
+        """A pipeline with a lead in every stage, so the CRM looks like a club mid-season."""
         Lead = self.env['crm.lead']
-        for name, email, plan, sport, message in [
-            ('Ananya Desai', 'ananya.desai@example.com', 'gold', 'tennis',
-             'Looking for a family membership. Do you offer coaching?'),
-            ('Rahul Verma', 'rahul.verma@example.com', 'silver', 'cricket',
-             'Interested in net practice on weekday evenings.'),
-            ('Kavita Shah', 'kavita.shah@example.com', 'junior', 'tennis',
-             'My daughter is 11 and wants to join the junior programme.'),
-        ]:
-            Lead.create_club_enquiry(name, email=email, plan=plan, sport=sport, message=message)
+        today = club_today()
+        stage = lambda xmlid: self.env.ref(xmlid)  # noqa: E731
+
+        def enquire(name, email, plan, sport, message):
+            return Lead.create_club_enquiry(name, email=email, plan=plan, sport=sport, message=message)
+
+        def follow_up_in(lead, days, summary):
+            lead.activity_ids.action_feedback()        # close the automatic first call
+            lead.activity_schedule('mail.mail_activity_data_call', summary=summary,
+                                   date_deadline=today + timedelta(days=days),
+                                   user_id=(lead.user_id or self.env.user).id)
+
+        # NEW, first call overdue
+        late = enquire('Ananya Desai', 'ananya.desai@example.com', 'gold', 'tennis',
+                       'Looking for a family membership. Do you offer coaching?')
+        late.activity_ids.date_deadline = today - timedelta(days=2)
+        # NEW, fresh
+        enquire('Meghna Joshi', 'meghna.joshi@example.com', 'silver', 'padel',
+                'Can I try a court before joining?')
+        # CONTACTED
+        contacted = enquire('Rahul Verma', 'rahul.verma@example.com', 'silver', 'cricket',
+                            'Interested in net practice on weekday evenings.')
+        contacted.stage_id = stage('crm.stage_lead2')
+        follow_up_in(contacted, 3, "Send the cricket net timetable")
+        # INTERESTED (Junior: birth date captured for the membership)
+        interested = enquire('Kavita Shah', 'kavita.shah@example.com', 'junior', 'tennis',
+                             'My daughter is 11 and wants to join the junior programme.')
+        interested.member_date_of_birth = today.replace(year=today.year - 11)
+        interested.stage_id = stage('crm.stage_lead3')
+        follow_up_in(interested, 2, "Confirm junior coaching slots")
+        # QUOTE SENT
+        quoted = enquire('Nikhil Rao', 'nikhil.rao@example.com', 'silver', 'badminton',
+                         'Looking for evening badminton and the gym discount.')
+        quoted.stage_id = stage('crm.stage_lead3')
+        quoted.action_create_membership_quote()
+        follow_up_in(quoted, 4, "Ask whether the quote works for them")
+        # NEGOTIATION
+        negotiating = enquire('Sana Qureshi', 'sana.qureshi@example.com', 'gold', 'tennis',
+                              'Corporate rate for 4 colleagues?')
+        negotiating.action_create_membership_quote()
+        negotiating.stage_id = stage('club_management.stage_negotiation')
+        follow_up_in(negotiating, 1, "Agree the group discount")
+        # LOST
+        lost = enquire('Dev Malhotra', 'dev.malhotra@example.com', 'silver', 'tennis',
+                       'Just looking at prices.')
+        lost.action_set_lost(lost_reason_id=self.env.ref('club_management.lost_competitor').id)
+        # WON: the quote is accepted, so a member is created
+        won = enquire('Isha Kulkarni', 'isha.kulkarni@example.com', 'silver', 'tennis',
+                      'Joined after a trial session.')
+        won.stage_id = stage('crm.stage_lead3')
+        won.action_create_membership_quote()
+        won.order_ids.filtered(lambda o: o.state in ('draft', 'sent')).action_confirm()
 
     def _load_stock(self):
         warehouse = self.env['stock.warehouse'].search([], limit=1)

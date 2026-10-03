@@ -1,11 +1,11 @@
 {
     'name': 'Club Management',
-    'version': '17.0.1.2.0',
+    'version': '17.0.1.3.0',
     'category': 'Services',
     'summary': 'Memberships, courts and bookings for The Champions Club',
     'author': 'Hackathon Team',
     'license': 'LGPL-3',
-    'depends': ['base', 'web', 'mail', 'account', 'product', 'crm', 'point_of_sale', 'stock'],
+    'depends': ['base', 'web', 'mail', 'account', 'product', 'crm', 'sale_crm', 'point_of_sale', 'stock'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -15,6 +15,7 @@
         'data/plans.xml',
         'data/product.xml',
         'data/crm_data.xml',
+        'data/crm_pipeline.xml',
         'data/mail_template.xml',
         'data/cron.xml',
         'data/demo_club_data.xml',
@@ -27,6 +28,7 @@
         'views/menus.xml',
         'views/report_views.xml',
         'views/order_views.xml',
+        'views/crm_lead_views.xml',
     ],
     'demo': [
         'demo/demo_courts.xml',

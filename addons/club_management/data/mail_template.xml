@@ -22,4 +22,49 @@
 </div>
         </field>
     </record>
+
+    <record id="mail_template_enquiry_received" model="mail.template">
+        <field name="name">Club: enquiry received</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="subject">We received your enquiry {{ object.enquiry_ref }}</field>
+        <field name="email_to">{{ object.email_from }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.contact_name or ''"/>,</p>
+    <p>
+        Thank you for contacting The Champions Club<t t-if="object.interested_plan_id">
+        about our <strong><t t-out="object.interested_plan_id.name"/></strong> membership</t>.
+        Your reference is <strong><t t-out="object.enquiry_ref or ''"/></strong>.
+    </p>
+    <p>A member of our team will contact you shortly. You can check the progress of your enquiry any time:</p>
+    <p><a t-attf-href="{{ object.get_base_url() }}/club/enquiry/status/{{ object.enquiry_token }}">Check my enquiry status</a></p>
+    <p>The Champions Club</p>
+</div>
+        </field>
+    </record>
+
+    <record id="mail_template_member_welcome" model="mail.template">
+        <field name="name">Club: welcome new member</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="subject">Welcome to The Champions Club, {{ object.name }}!</field>
+        <field name="partner_to">{{ object.id }}</field>
+        <field name="lang">{{ object.lang }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Welcome <t t-out="object.name or ''"/>,</p>
+    <p>
+        Your <strong><t t-out="object.plan_id.name or ''"/></strong> membership is now active.
+        Your member ID is <strong><t t-out="object.member_id or ''"/></strong> and it is valid until
+        <strong><t t-out="format_date(object.expiry_date)"/></strong>.
+    </p>
+    <p>
+        As a member you get your tier court rate and your shop and bar discounts automatically:
+        just give your member ID at the front desk, the shop or the bar.
+    </p>
+    <p>See you on the court!<br/>The Champions Club</p>
+</div>
+        </field>
+    </record>
 </odoo>
