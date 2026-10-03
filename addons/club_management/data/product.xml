@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="product_court_booking" model="product.product">
+        <field name="name">Court Booking (1 hour)</field>
+        <field name="detailed_type">service</field>
+        <field name="list_price">0.0</field>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+    </record>
+
+    <record id="partner_walkin" model="res.partner">
+        <field name="name">Walk-in Customer</field>
+        <field name="is_company" eval="False"/>
+    </record>
+</odoo>

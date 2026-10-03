@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytz
 
-from odoo import api, fields, models
+from odoo import Command, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 CLUB_TZ = pytz.timezone('Asia/Kolkata')
@@ -35,6 +35,10 @@ class Booking(models.Model):
     state = fields.Selection(
         [('draft', 'Draft'), ('confirmed', 'Confirmed'), ('cancelled', 'Cancelled'), ('done', 'Done')],
         default='draft', required=True, tracking=True)
+    company_id = fields.Many2one('res.company', default=lambda self: self.env.company, required=True)
+    currency_id = fields.Many2one(related='company_id.currency_id')
+    price = fields.Monetary(compute='_compute_price', store=True, tracking=True)
+    invoice_id = fields.Many2one('account.move', string='Invoice', copy=False, readonly=True)
 
     _sql_constraints = [
         ('players_positive', 'CHECK(players > 0)', 'A booking needs at least one player.'),
@@ -52,6 +56,26 @@ class Booking(models.Model):
                 booking.end_datetime = False
                 booking.booking_date = False
                 booking.is_social = False
+
+    # ------------------------------------------------------------------
+    # Pricing
+    # ------------------------------------------------------------------
+    def _get_member_plan(self):
+        """Plan whose rate applies: the partner must be a member whose
+        membership is still valid on the booking date. Otherwise empty."""
+        self.ensure_one()
+        partner = self.partner_id
+        if (partner.is_member and partner.plan_id and partner.expiry_date
+                and self.booking_date and partner.expiry_date >= self.booking_date):
+            return partner.plan_id
+        return self.env['club.membership.plan']
+
+    @api.depends('court_id.list_price', 'booking_date', 'partner_id.is_member',
+                 'partner_id.plan_id.court_rate', 'partner_id.expiry_date')
+    def _compute_price(self):
+        for booking in self:
+            plan = booking._get_member_plan()
+            booking.price = plan.court_rate if plan else booking.court_id.list_price
 
     # ------------------------------------------------------------------
     # Constraints
@@ -139,7 +163,53 @@ class Booking(models.Model):
 
     def action_cancel(self):
         self._require_state('draft', 'confirmed')
+        for booking in self:
+            if booking.invoice_id.state == 'posted':
+                raise UserError(
+                    "Booking %s has a posted invoice (%s). Issue a credit note before cancelling."
+                    % (booking.name, booking.invoice_id.name))
         self.state = 'cancelled'
+
+    def action_create_invoice(self):
+        """Create a draft customer invoice for the booking price.
+
+        Walk-ins without a contact are invoiced to the shared "Walk-in Customer".
+        """
+        product = self.env.ref('club_management.product_court_booking')
+        walkin_partner = self.env.ref('club_management.partner_walkin')
+        for booking in self:
+            if booking.state == 'cancelled':
+                raise UserError("Booking %s is cancelled and cannot be invoiced." % booking.name)
+            if booking.invoice_id:
+                raise UserError("Booking %s is already invoiced (%s)."
+                                % (booking.name, booking.invoice_id.name))
+            local = to_club_time(booking.start_datetime)
+            label = "%s - %s %s-%s" % (
+                booking.court_id.name, local.strftime('%a %d %b %Y'),
+                local.strftime('%H:%M'), (local + BOOKING_DURATION).strftime('%H:%M'))
+            if not booking.partner_id:
+                label += " (%s)" % booking.walkin_name
+            booking.invoice_id = self.env['account.move'].with_company(booking.company_id).create({
+                'move_type': 'out_invoice',
+                'partner_id': (booking.partner_id or walkin_partner).id,
+                'invoice_origin': booking.name,
+                'invoice_line_ids': [Command.create({
+                    'product_id': product.id,
+                    'name': label,
+                    'quantity': 1,
+                    'price_unit': booking.price,
+                })],
+            })
+        return True
+
+    def action_view_invoice(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.move',
+            'res_id': self.invoice_id.id,
+            'view_mode': 'form',
+        }
 
     def action_done(self):
         self._require_state('confirmed')

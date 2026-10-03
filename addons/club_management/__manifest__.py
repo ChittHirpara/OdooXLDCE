@@ -11,6 +11,7 @@
         'security/ir.model.access.csv',
         'data/sequence.xml',
         'data/plans.xml',
+        'data/product.xml',
         'views/membership_plan_views.xml',
         'views/partner_views.xml',
         'views/court_views.xml',

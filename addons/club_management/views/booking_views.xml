@@ -12,6 +12,7 @@
                 <field name="start_datetime"/>
                 <field name="end_datetime"/>
                 <field name="players"/>
+                <field name="price" sum="Total"/>
                 <field name="is_social" optional="hide"/>
                 <field name="state" widget="badge"
                        decoration-info="state == 'draft'"
@@ -31,6 +32,10 @@
                             class="btn-primary" invisible="state != 'draft'"/>
                     <button name="action_done" type="object" string="Mark Done"
                             class="btn-primary" invisible="state != 'confirmed'"/>
+                    <button name="action_create_invoice" type="object" string="Create Invoice"
+                            invisible="invoice_id or state == 'cancelled'"/>
+                    <button name="action_view_invoice" type="object" string="View Invoice"
+                            invisible="not invoice_id"/>
                     <button name="action_cancel" type="object" string="Cancel"
                             invisible="state not in ('draft', 'confirmed')"/>
                     <button name="action_draft" type="object" string="Reset to Draft"
@@ -45,6 +50,10 @@
                             <field name="partner_id"/>
                             <field name="walkin_name" invisible="partner_id"/>
                             <field name="players"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="price"/>
+                            <field name="invoice_id"/>
                         </group>
                         <group>
                             <field name="start_datetime" readonly="state in ('cancelled', 'done')"/>
