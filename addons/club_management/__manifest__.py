@@ -1,6 +1,6 @@
 {
     'name': 'Club Management',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.0',
     'category': 'Services',
     'summary': 'Memberships, courts and bookings for The Champions Club',
     'author': 'Hackathon Team',
@@ -26,6 +26,7 @@
         'wizard/booking_reschedule_views.xml',
         'views/menus.xml',
         'views/report_views.xml',
+        'views/order_views.xml',
     ],
     'demo': [
         'demo/demo_courts.xml',

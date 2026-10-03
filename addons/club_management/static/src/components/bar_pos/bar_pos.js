@@ -77,6 +77,7 @@ export class BarPOSPage extends Component {
                 { product: DEFAULT_PRODUCTS[11], qty: 1 }, // Burger x1 = ₹250
                 { product: DEFAULT_PRODUCTS[7], qty: 2 }, // Water x2 = ₹120
             ],
+            members: CLUB_MEMBERS,            // replaced by the real member list from Odoo
             selectedMember: CLUB_MEMBERS[0], // Chitt Hirpara (Gold)
             pricing: {
                 subtotal: 530,
@@ -153,26 +154,50 @@ export class BarPOSPage extends Component {
         this.state.loading = true;
         if (this.orm) {
             try {
-                // Fetch tables from Odoo
+                // Members: the real list. The default customer is the walk-in guest (last entry).
+                const members = await this.orm.call("res.partner", "get_members_list", []);
+                if (members && members.length) {
+                    this.state.members = members;
+                    this.state.selectedMember = members[members.length - 1];
+                }
+                // Tables from Odoo; start on a free one
                 const tables = await this.orm.call("club.pos.table", "get_tables_data", []);
                 if (tables && tables.length) {
                     this.state.tables = tables;
+                    this.state.currentTable = tables.find((t) => t.status === "available") || tables[0];
                 }
-                // Fetch products from Odoo
+                // Products with real stock. The sample cart refers to preview products, so clear it.
                 const products = await this.orm.call("club.pos.product", "get_products_data", ["all", ""]);
-                if (products && products.length) {
-                    this.state.products = products;
-                }
-                // Fetch shift data from Odoo
+                this.state.products = products || [];
+                this.state.cart = [];
+                // Today's shift and recent orders, from real orders
                 const shift = await this.orm.call("club.pos.session", "get_current_shift", []);
                 if (shift) {
                     this.state.shiftData = shift;
                 }
+                const history = await this.orm.call("club.pos.order", "get_recent_orders", []);
+                this.state.orderHistory = history || [];
             } catch (err) {
                 console.warn("[Bar POS OWL] Using fallback state:", err);
             }
         }
         this.state.loading = false;
+    }
+
+    initials(name) {
+        return (name || "?").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+    }
+
+    /** After a sale: refresh stock, shift totals and history from the server. */
+    async refreshAfterSale() {
+        if (!this.orm) return;
+        try {
+            this.state.products = (await this.orm.call("club.pos.product", "get_products_data", ["all", ""])) || [];
+            this.state.shiftData = await this.orm.call("club.pos.session", "get_current_shift", []);
+            this.state.orderHistory = (await this.orm.call("club.pos.order", "get_recent_orders", [])) || [];
+        } catch (err) {
+            console.warn("[Bar POS OWL] Could not refresh after sale:", err);
+        }
     }
 
     /**
@@ -190,7 +215,8 @@ export class BarPOSPage extends Component {
 
         if (this.orm) {
             try {
-                const res = await this.orm.call("club.pos.order", "calculate_order_pricing", [orderItems, planCode]);
+                const memberId = this.state.selectedMember ? this.state.selectedMember.id : 0;
+                const res = await this.orm.call("club.pos.order", "calculate_order_pricing", [orderItems, planCode, memberId]);
                 if (res) {
                     this.state.pricing = res;
                     return;
@@ -408,6 +434,7 @@ export class BarPOSPage extends Component {
 
         const orderData = {
             table_name: this.state.currentTable.name,
+            member_id: this.state.selectedMember.id,
             member_name: this.state.selectedMember.name,
             payment_method: this.state.paymentMethod,
             items: this.state.cart,
@@ -460,6 +487,7 @@ export class BarPOSPage extends Component {
                 this.state.isSuccessOpen = true;
                 this.state.cart = [];
                 this.calculatePricingFromBackend();
+                await this.refreshAfterSale();
             } else {
                 this.state.error = result?.message || "Payment failed. Please try again.";
             }

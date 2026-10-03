@@ -4,5 +4,7 @@ from . import booking
 from . import court
 from . import crm_lead
 from . import pos_config
+from . import club_order
 from . import club_pos_and_shop
+from . import frontend_api
 from . import demo_data

@@ -170,16 +170,27 @@ class ResPartner(models.Model):
                 'expiry_date': today + timedelta(days=partner.plan_id.validity_days),
             })
 
+    def _get_active_plan(self, on=None):
+        """The membership plan in force on ``on`` (club today by default), else an empty recordset.
+
+        Single rule used by court pricing, shop, bar and the frontend: a member whose
+        membership has ended gets no tier benefits.
+        """
+        self.ensure_one()
+        on = on or club_today()
+        if self.is_member and self.plan_id and self.expiry_date and self.expiry_date >= on:
+            return self.plan_id
+        return self.env['club.membership.plan']
+
     @api.model
     def get_current_member(self):
         """Return the current user's member profile or default active demo member."""
         user = self.env.user
         partner = user.partner_id
         if not partner.is_member:
-            partner = self.search([('is_member', '=', True), ('member_state', '=', 'active')], limit=1)
-            if not partner:
-                partner = user.partner_id
-        plan = partner.plan_id
+            partner = self.search([('is_member', '=', True), ('member_state', '=', 'active')],
+                                  order='id', limit=1) or user.partner_id
+        plan = partner._get_active_plan()    # lapsed members get no tier benefits
         return {
             'id': partner.id,
             'name': partner.name,
@@ -202,7 +213,7 @@ class ResPartner(models.Model):
         members = self.search([('is_member', '=', True)], order='name asc')
         result = []
         for m in members:
-            plan = m.plan_id
+            plan = m._get_active_plan()    # lapsed members get no tier benefits
             result.append({
                 'id': m.id,
                 'name': m.name,

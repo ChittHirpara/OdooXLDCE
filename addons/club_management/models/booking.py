@@ -332,36 +332,55 @@ class Booking(models.Model):
             'players': max(1, int(players)),
         }
 
-        if partner_id and int(partner_id) > 0:
-            partner = self.env['res.partner'].browse(int(partner_id))
-            if partner.exists():
-                vals['partner_id'] = partner.id
-        elif walkin_name:
-            vals['walkin_name'] = walkin_name
-        else:
-            # Fallback to current user partner or demo member
-            partner = self.env.user.partner_id
+        if partner_id is not None and int(partner_id) > 0:
+            partner = self.env['res.partner'].browse(int(partner_id)).exists()
+            if not partner:
+                raise ValidationError("Member not found. Please reload the page and try again.")
             vals['partner_id'] = partner.id
+        elif walkin_name or partner_id is not None:
+            vals['walkin_name'] = walkin_name or 'Walk-in Guest'    # id 0 is the walk-in guest
+        else:
+            vals['partner_id'] = self.env.user.partner_id.id
 
         booking = self.create(vals)
         booking.action_confirm()
+        return booking._to_frontend()
 
-        local_start = to_club_time(booking.start_datetime)
-        local_end = to_club_time(booking.end_datetime)
-
+    def _to_frontend(self):
+        """Booking as the OWL screens expect it: ``id`` is the reference, ``odoo_id`` the record."""
+        self.ensure_one()
+        local_start = to_club_time(self.start_datetime)
+        local_end = to_club_time(self.end_datetime)
         return {
-            'id': booking.id,
-            'name': booking.name,
-            'court_id': court.id,
-            'court_name': court.name,
+            'id': self.name,
+            'odoo_id': self.id,
+            'name': self.name,
+            'court_id': self.court_id.id,
+            'court_name': self.court_id.name,
             'date': local_start.strftime('%Y-%m-%d'),
             'start_time': local_start.strftime('%H:%M'),
             'end_time': local_end.strftime('%H:%M'),
-            'price': f"₹{int(booking.price)}",
-            'member_name': booking.partner_id.name if booking.partner_id else booking.walkin_name,
-            'plan_name': f"{booking.tier.capitalize()} Member" if booking.tier != 'guest' else "Non-member",
-            'state': booking.state,
+            'price': f"₹{int(self.price)}",
+            'member_name': self.partner_id.name if self.partner_id else self.walkin_name,
+            'plan_name': f"{self.tier.capitalize()} Member" if self.tier != 'guest' else "Non-member",
+            'state': self.state,
         }
+
+    @api.model
+    def get_availability(self, date_str=None, court_id=None):
+        """Booked start times per court for a date: ``{court_id: ['10:00', ...]}``."""
+        return self.env['club.court'].get_availability_matrix(date_str, court_id)['availability_map']
+
+    @api.model
+    def create_booking_api(self, court_id, date_str, time_str, partner_id=None, walkin_name=None, players=1):
+        """Book from the court-booking screen. Rule violations come back as a message."""
+        try:
+            with self.env.cr.savepoint():
+                booking = self.create_member_booking(
+                    court_id, date_str, time_str, partner_id, walkin_name, players)
+        except (ValidationError, UserError) as error:
+            return {'success': False, 'message': error.args[0]}
+        return {'success': True, 'booking': booking}
 
     @api.model
     def cancel_member_booking(self, booking_id, partner_id=None):
@@ -387,21 +406,4 @@ class Booking(models.Model):
             domain.append(('partner_id', '=', int(partner_id)))
         bookings = self.search(domain, order='start_datetime desc', limit=50)
 
-        result = []
-        for b in bookings:
-            start_local = to_club_time(b.start_datetime)
-            end_local = to_club_time(b.end_datetime)
-            result.append({
-                'id': b.id,
-                'name': b.name,
-                'court_id': b.court_id.id,
-                'court_name': b.court_id.name,
-                'date': start_local.strftime('%Y-%m-%d'),
-                'start_time': start_local.strftime('%H:%M'),
-                'end_time': end_local.strftime('%H:%M'),
-                'price': f"₹{int(b.price)}",
-                'member_name': b.partner_id.name if b.partner_id else b.walkin_name,
-                'plan_name': f"{b.tier.capitalize()} Member" if b.tier != 'guest' else "Guest",
-                'state': b.state,
-            })
-        return result
+        return [b._to_frontend() for b in bookings]
