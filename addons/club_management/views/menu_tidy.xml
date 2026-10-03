@@ -26,4 +26,13 @@
     <record id="menu_club_config" model="ir.ui.menu"><field name="sequence">90</field></record>
     <!-- Administration: the admin-side plan list is the settings (prices, discounts), the screen above is the showcase -->
     <record id="menu_club_plans" model="ir.ui.menu"><field name="name">Plan Settings</field></record>
+
+    <!-- Odoo's Apps page (module manager). Everything the club needs is already installed and
+         updates run from the command line; the page only invites people to install unrelated
+         apps (Sales, Restaurant, Manufacturing, ...) and shows Enterprise upgrade buttons.
+         Hidden, not deleted: the menu comes back by ticking Active on it (Settings > Technical >
+         Menu Items, "Apps"). Apps can still be installed or updated from the command line. -->
+    <record id="base.menu_management" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
 </odoo>
