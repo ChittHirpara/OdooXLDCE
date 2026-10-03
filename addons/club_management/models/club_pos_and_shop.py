@@ -228,7 +228,7 @@ class ClubOrderService(models.AbstractModel):
     @api.model
     def _create_order(self, channel, lines, plan, partner, **vals):
         self._check_and_deduct_stock(lines)
-        return self.env['club.order'].create(dict(
+        order = self.env['club.order'].create(dict(
             vals,
             channel=channel,
             partner_id=partner.id,
@@ -238,6 +238,8 @@ class ClubOrderService(models.AbstractModel):
                 'list_price': l['list_price'], 'unit_price': l['unit_price'],
             }) for l in lines],
         ))
+        order._create_invoice()
+        return order
 
     @api.model
     def process_pos_payment(self, vals):

@@ -234,6 +234,7 @@ class Booking(models.Model):
                 label += " (%s)" % booking.walkin_name
             booking.invoice_id = self.env['account.move'].with_company(booking.company_id).create({
                 'move_type': 'out_invoice',
+                'club_source': 'court',
                 'partner_id': (booking.partner_id or walkin_partner).id,
                 'invoice_origin': booking.name,
                 'invoice_line_ids': [Command.create({
