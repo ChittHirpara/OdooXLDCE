@@ -6,6 +6,9 @@ services:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo
       POSTGRES_DB: postgres
+    # Host port 5433 so pgAdmin can connect (5432 is usually taken by a local Postgres).
+    ports:
+      - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
   odoo:
