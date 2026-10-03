@@ -1,0 +1,20 @@
+{
+    'name': 'Club Management',
+    'version': '17.0.1.0.0',
+    'category': 'Services',
+    'summary': 'Memberships, courts and bookings for The Champions Club',
+    'author': 'Hackathon Team',
+    'license': 'LGPL-3',
+    'depends': ['base', 'mail', 'account', 'product'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'data/sequence.xml',
+        'data/plans.xml',
+        'views/membership_plan_views.xml',
+        'views/partner_views.xml',
+        'views/menus.xml',
+    ],
+    'application': True,
+    'installable': True,
+}

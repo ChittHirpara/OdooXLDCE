@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_club_membership_plan_tree" model="ir.ui.view">
+        <field name="name">club.membership.plan.tree</field>
+        <field name="model">club.membership.plan</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="court_rate"/>
+                <field name="shop_discount"/>
+                <field name="bar_discount"/>
+                <field name="validity_days"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_club_membership_plan_form" model="ir.ui.view">
+        <field name="name">club.membership.plan.form</field>
+        <field name="model">club.membership.plan</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="validity_days"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="court_rate"/>
+                            <field name="shop_discount"/>
+                            <field name="bar_discount"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_club_membership_plan" model="ir.actions.act_window">
+        <field name="name">Membership Plans</field>
+        <field name="res_model">club.membership.plan</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
