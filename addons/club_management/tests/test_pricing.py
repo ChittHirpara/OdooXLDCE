@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
-from odoo import fields
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.addons.club_management.models.booking import club_today
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
@@ -15,7 +15,7 @@ class TestPricing(AccountTestInvoicingCommon):
     def setUpClass(cls):
         super().setUpClass()
         cls.env.user.groups_id |= cls.env.ref('club_management.group_club_manager')
-        today = fields.Date.context_today(cls.env['res.partner'])
+        today = club_today()
 
         cls.court = cls.env['club.court'].create({
             'name': 'Court 1', 'sport': 'tennis', 'list_price': 800.0})

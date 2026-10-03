@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_club_booking_pivot" model="ir.ui.view">
+        <field name="name">club.booking.pivot</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <pivot string="Booking Revenue" sample="1">
+                <field name="court_id" type="row"/>
+                <field name="booking_date" interval="month" type="col"/>
+                <field name="price" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_club_booking_pivot_hours" model="ir.ui.view">
+        <field name="name">club.booking.pivot.hours</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <pivot string="Peak Hours" sample="1">
+                <field name="start_hour" type="row"/>
+                <field name="court_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_club_booking_graph" model="ir.ui.view">
+        <field name="name">club.booking.graph</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <graph string="Booking Revenue" type="bar" stacked="True" sample="1">
+                <field name="booking_date" interval="day"/>
+                <field name="tier"/>
+                <field name="price" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_club_booking_graph_hours" model="ir.ui.view">
+        <field name="name">club.booking.graph.hours</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <graph string="Peak Hours" type="bar" sample="1">
+                <field name="start_hour"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_club_booking_report_search" model="ir.ui.view">
+        <field name="name">club.booking.report.search</field>
+        <field name="model">club.booking</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="court_id"/>
+                <field name="partner_id"/>
+                <filter name="today" string="Today"
+                        domain="[('booking_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="this_month" string="This Month"
+                        domain="[('booking_date', '&gt;=', context_today().replace(day=1).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="social" string="Friday Social" domain="[('is_social', '=', True)]"/>
+                <filter name="members" string="Members" domain="[('tier', '!=', 'guest')]"/>
+                <filter name="guests" string="Walk-ins / Non-members" domain="[('tier', '=', 'guest')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_court" string="Court" context="{'group_by': 'court_id'}"/>
+                    <filter name="group_sport" string="Sport" context="{'group_by': 'sport'}"/>
+                    <filter name="group_tier" string="Customer Tier" context="{'group_by': 'tier'}"/>
+                    <filter name="group_day" string="Day" context="{'group_by': 'booking_date:day'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'booking_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_club_booking_revenue" model="ir.actions.act_window">
+        <field name="name">Booking Revenue</field>
+        <field name="res_model">club.booking</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="domain">[('state', '!=', 'cancelled')]</field>
+        <field name="search_view_id" ref="view_club_booking_report_search"/>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_club_booking_pivot')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_club_booking_graph')})]"/>
+    </record>
+
+    <record id="action_club_booking_peak_hours" model="ir.actions.act_window">
+        <field name="name">Peak Hours</field>
+        <field name="res_model">club.booking</field>
+        <field name="view_mode">graph,pivot</field>
+        <field name="domain">[('state', '!=', 'cancelled')]</field>
+        <field name="search_view_id" ref="view_club_booking_report_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_club_booking_graph_hours')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_club_booking_pivot_hours')})]"/>
+    </record>
+
+    <menuitem id="menu_club_reporting" name="Reporting" parent="menu_club_root"
+              sequence="80" groups="group_club_manager"/>
+    <menuitem id="menu_club_report_revenue" name="Booking Revenue" parent="menu_club_reporting"
+              action="action_club_booking_revenue" sequence="10"/>
+    <menuitem id="menu_club_report_hours" name="Peak Hours" parent="menu_club_reporting"
+              action="action_club_booking_peak_hours" sequence="20"/>
+</odoo>

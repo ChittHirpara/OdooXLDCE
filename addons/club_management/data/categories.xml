@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Products in these categories (or their children) get the tier discounts. -->
+    <record id="product_category_shop" model="product.category">
+        <field name="name">Club Shop</field>
+        <field name="parent_id" ref="product.product_category_all"/>
+    </record>
+    <record id="product_category_bar" model="product.category">
+        <field name="name">Bar &amp; Cafeteria</field>
+        <field name="parent_id" ref="product.product_category_all"/>
+    </record>
+</odoo>

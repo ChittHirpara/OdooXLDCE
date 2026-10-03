@@ -17,6 +17,11 @@ def to_club_time(dt):
     return pytz.utc.localize(dt).astimezone(CLUB_TZ)
 
 
+def club_today():
+    """Today's date in club time (not the server's or the user's timezone)."""
+    return to_club_time(fields.Datetime.now()).date()
+
+
 class Booking(models.Model):
     _name = 'club.booking'
     _description = 'Court Booking'
@@ -38,6 +43,13 @@ class Booking(models.Model):
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company, required=True)
     currency_id = fields.Many2one(related='company_id.currency_id')
     price = fields.Monetary(compute='_compute_price', store=True, tracking=True)
+    # Reporting dimensions (stored so pivot/graph can group by them)
+    tier = fields.Selection(
+        [('gold', 'Gold'), ('silver', 'Silver'), ('junior', 'Junior'), ('guest', 'Walk-in / Non-member')],
+        compute='_compute_price', store=True, string='Customer Tier')
+    sport = fields.Selection(related='court_id.sport', store=True)
+    start_hour = fields.Integer(compute='_compute_times', store=True, group_operator=False,
+                                string='Start Hour (club time)')
     invoice_id = fields.Many2one('account.move', string='Invoice', copy=False, readonly=True)
 
     _sql_constraints = [
@@ -52,10 +64,12 @@ class Booking(models.Model):
                 booking.end_datetime = booking.start_datetime + BOOKING_DURATION
                 booking.booking_date = local.date()
                 booking.is_social = local.weekday() == FRIDAY
+                booking.start_hour = local.hour
             else:
                 booking.end_datetime = False
                 booking.booking_date = False
                 booking.is_social = False
+                booking.start_hour = False
 
     # ------------------------------------------------------------------
     # Pricing
@@ -76,6 +90,7 @@ class Booking(models.Model):
         for booking in self:
             plan = booking._get_member_plan()
             booking.price = plan.court_rate if plan else booking.court_id.list_price
+            booking.tier = plan.code if plan else 'guest'
 
     # ------------------------------------------------------------------
     # Constraints
