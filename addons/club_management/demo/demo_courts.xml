@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="demo_court_tennis_1" model="club.court">
+        <field name="name">Tennis Court 1</field>
+        <field name="sport">tennis</field>
+        <field name="list_price">800</field>
+        <field name="social_capacity">8</field>
+    </record>
+    <record id="demo_court_tennis_2" model="club.court">
+        <field name="name">Tennis Court 2</field>
+        <field name="sport">tennis</field>
+        <field name="list_price">800</field>
+        <field name="social_capacity">8</field>
+    </record>
+    <record id="demo_court_tennis_3" model="club.court">
+        <field name="name">Tennis Court 3 (Floodlit)</field>
+        <field name="sport">tennis</field>
+        <field name="list_price">900</field>
+        <field name="social_capacity">8</field>
+    </record>
+    <record id="demo_court_cricket_1" model="club.court">
+        <field name="name">Cricket Net 1</field>
+        <field name="sport">cricket</field>
+        <field name="list_price">600</field>
+        <field name="social_capacity">10</field>
+    </record>
+    <record id="demo_court_cricket_2" model="club.court">
+        <field name="name">Cricket Net 2</field>
+        <field name="sport">cricket</field>
+        <field name="list_price">600</field>
+        <field name="social_capacity">10</field>
+    </record>
+</odoo>
