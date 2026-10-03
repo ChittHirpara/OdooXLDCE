@@ -299,6 +299,43 @@ class TestLeadToMember(CrmCommon):
         lead.action_set_won()
         self.assertTrue(lead.member_activated)
 
+    def test_join_button_makes_the_member_in_one_click(self):
+        lead = self.enquire(plan='silver')
+        self.assertFalse(lead.member_activated)
+        action = lead.action_join_club()
+        self.assertEqual(action['tag'], 'display_notification')
+        self.assertTrue(lead.member_activated)
+        self.assertTrue(lead.stage_id.is_won)
+        member = lead.partner_id
+        self.assertEqual((member.plan_id, member.member_state), (self.silver, 'active'))
+        self.assertTrue(member.member_id)
+        # a second press is not offered, and does nothing harmful
+        lead.action_join_club()
+        self.assertEqual(self.env['res.partner'].search_count([('email', '=', lead.email_from)]), 1)
+
+    def test_join_button_needs_a_plan_and_says_so(self):
+        lead = self.enquire(plan=None, enquiry_type='court')
+        with self.assertRaisesRegex(UserError, 'membership plan'):
+            lead.action_join_club()
+        self.assertFalse(lead.member_activated)
+        lead.interested_plan_id = self.gold
+        lead.action_join_club()
+        self.assertTrue(lead.member_activated)
+
+    def test_join_button_refuses_a_junior_without_a_birth_date(self):
+        lead = self.enquire('Kid Parent', 'kid.parent2@example.com', plan='junior')
+        with self.assertRaises(ValidationError):
+            lead.action_join_club()
+        self.assertFalse(lead.member_activated)
+        lead.member_date_of_birth = self.today.replace(year=self.today.year - 10)
+        lead.action_join_club()
+        self.assertTrue(lead.partner_id.is_junior)
+
+    def test_join_button_is_on_the_lead_form_and_list(self):
+        for xml in ('crm.crm_lead_view_form', 'crm.crm_case_tree_view_oppor'):
+            arch = self.env['crm.lead'].get_view(self.env.ref(xml).id)['arch']
+            self.assertIn('action_join_club', arch)
+
     def test_won_without_a_plan_creates_no_member_and_says_so(self):
         lead = self.enquire(plan=None, enquiry_type='general')
         lead.action_set_won()

@@ -7,6 +7,9 @@
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
+                <button name="action_join_club" type="object" string="Join the Club" class="btn-success"
+                        icon="fa-user-plus" invisible="member_activated or not active"
+                        confirm="Make this enquirer a club member now?"/>
                 <button name="action_create_membership_quote" type="object" string="Create Membership Quote"
                         class="btn-primary"
                         invisible="not interested_plan_id or member_activated or not active or probability == 100"/>
@@ -64,6 +67,10 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
                 <field name="enquiry_ref" optional="show"/>
+                <field name="member_activated" column_invisible="1"/>
+                <field name="active" column_invisible="1"/>
+                <button name="action_join_club" type="object" string="Join" icon="fa-user-plus"
+                        invisible="member_activated or not active" title="Make this enquirer a member"/>
                 <field name="interested_plan_id" optional="show"/>
                 <field name="enquiry_source" optional="show"/>
                 <field name="follow_up_date" optional="show"/>

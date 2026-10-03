@@ -303,6 +303,29 @@ class CrmLead(models.Model):
             if template and partner.email:
                 template.sudo().send_mail(partner.id)
 
+    def action_join_club(self):
+        """The Join button: make the enquirer a member in one click.
+
+        Creates (or links) the contact, activates the chosen plan, marks the lead Won and
+        sends the welcome e-mail. Problems (no plan, a Junior without a birth date) are
+        raised as messages instead of being left in the chatter.
+        """
+        for lead in self:
+            if not lead.interested_plan_id:
+                raise UserError("Choose the membership plan (Club Enquiry tab) before pressing Join.")
+        self._club_activate_member(raise_errors=True)
+        self.filtered(lambda lead: lead.active and not lead.stage_id.is_won).action_set_won()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': "Member joined",
+                'message': ", ".join("%s (%s)" % (lead.partner_id.name, lead.partner_id.member_id) for lead in self),
+                'type': 'success', 'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'reload'},
+            },
+        }
+
     def action_open_member(self):
         self.ensure_one()
         return {
