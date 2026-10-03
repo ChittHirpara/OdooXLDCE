@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Gold -->
+    <record id="demo_member_arjun" model="res.partner">
+        <field name="name">Arjun Mehta</field>
+        <field name="email">arjun.mehta@example.com</field>
+        <field name="phone">+91 98100 00001</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_gold"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(months=3)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() + relativedelta(months=9)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="demo_member_priya" model="res.partner">
+        <field name="name">Priya Nair</field>
+        <field name="email">priya.nair@example.com</field>
+        <field name="phone">+91 98100 00002</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_gold"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(months=8)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() + relativedelta(months=4)).strftime('%Y-%m-%d')"/>
+    </record>
+
+    <!-- Silver -->
+    <record id="demo_member_rohan" model="res.partner">
+        <field name="name">Rohan Kapoor</field>
+        <field name="email">rohan.kapoor@example.com</field>
+        <field name="phone">+91 98100 00003</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_silver"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(months=2)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() + relativedelta(months=10)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="demo_member_sneha" model="res.partner">
+        <field name="name">Sneha Iyer</field>
+        <field name="email">sneha.iyer@example.com</field>
+        <field name="phone">+91 98100 00004</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_silver"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() + relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="demo_member_vikram" model="res.partner">
+        <field name="name">Vikram Singh</field>
+        <field name="email">vikram.singh@example.com</field>
+        <field name="phone">+91 98100 00005</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_silver"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() + relativedelta(months=11)).strftime('%Y-%m-%d')"/>
+    </record>
+    <!-- Expires in 5 days: shows the reminder email -->
+    <record id="demo_member_meera" model="res.partner">
+        <field name="name">Meera Reddy</field>
+        <field name="email">meera.reddy@example.com</field>
+        <field name="phone">+91 98100 00006</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_silver"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(days=360)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() + timedelta(days=5)).strftime('%Y-%m-%d')"/>
+    </record>
+    <!-- Lapsed 10 days ago: shows the expired state -->
+    <record id="demo_member_karan" model="res.partner">
+        <field name="name">Karan Malhotra</field>
+        <field name="email">karan.malhotra@example.com</field>
+        <field name="phone">+91 98100 00007</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_silver"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(days=375)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')"/>
+    </record>
+
+    <!-- Junior (under 18) -->
+    <record id="demo_member_aarav" model="res.partner">
+        <field name="name">Aarav Sharma</field>
+        <field name="email">aarav.parent@example.com</field>
+        <field name="phone">+91 98100 00008</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_junior"/>
+        <field name="date_of_birth" eval="(datetime.now() - relativedelta(years=12, days=40)).strftime('%Y-%m-%d')"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(months=4)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() + relativedelta(months=8)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="demo_member_diya" model="res.partner">
+        <field name="name">Diya Patel</field>
+        <field name="email">diya.parent@example.com</field>
+        <field name="phone">+91 98100 00009</field>
+        <field name="is_member" eval="True"/>
+        <field name="plan_id" ref="plan_junior"/>
+        <field name="date_of_birth" eval="(datetime.now() - relativedelta(years=15, days=100)).strftime('%Y-%m-%d')"/>
+        <field name="join_date" eval="(datetime.now() - relativedelta(months=5)).strftime('%Y-%m-%d')"/>
+        <field name="expiry_date" eval="(datetime.now() + relativedelta(months=7)).strftime('%Y-%m-%d')"/>
+    </record>
+</odoo>

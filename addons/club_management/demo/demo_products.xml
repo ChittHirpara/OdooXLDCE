@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Club Shop (gear). Stock levels and reorder rules are set by club.demo. -->
+    <record id="demo_product_racket" model="product.product">
+        <field name="name">Tennis Racket Pro</field>
+        <field name="categ_id" ref="product_category_shop"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">6500</field>
+        <field name="standard_price">4200</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_balls" model="product.product">
+        <field name="name">Tennis Balls (can of 3)</field>
+        <field name="categ_id" ref="product_category_shop"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">450</field>
+        <field name="standard_price">280</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_bat" model="product.product">
+        <field name="name">Cricket Bat (English Willow)</field>
+        <field name="categ_id" ref="product_category_shop"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">4200</field>
+        <field name="standard_price">2800</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_grip" model="product.product">
+        <field name="name">Grip Tape</field>
+        <field name="categ_id" ref="product_category_shop"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">250</field>
+        <field name="standard_price">120</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_towel" model="product.product">
+        <field name="name">Club Towel</field>
+        <field name="categ_id" ref="product_category_shop"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">350</field>
+        <field name="standard_price">180</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+
+    <!-- Bar &amp; Cafeteria -->
+    <record id="demo_product_water" model="product.product">
+        <field name="name">Bottled Water</field>
+        <field name="categ_id" ref="product_category_bar"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">40</field>
+        <field name="standard_price">15</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_coffee" model="product.product">
+        <field name="name">Cold Coffee</field>
+        <field name="categ_id" ref="product_category_bar"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">180</field>
+        <field name="standard_price">60</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_energy" model="product.product">
+        <field name="name">Energy Drink</field>
+        <field name="categ_id" ref="product_category_bar"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">150</field>
+        <field name="standard_price">85</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_lime" model="product.product">
+        <field name="name">Fresh Lime Soda</field>
+        <field name="categ_id" ref="product_category_bar"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">90</field>
+        <field name="standard_price">25</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_sandwich" model="product.product">
+        <field name="name">Club Sandwich</field>
+        <field name="categ_id" ref="product_category_bar"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">220</field>
+        <field name="standard_price">90</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+    <record id="demo_product_shake" model="product.product">
+        <field name="name">Protein Shake</field>
+        <field name="categ_id" ref="product_category_bar"/>
+        <field name="detailed_type">product</field>
+        <field name="list_price">280</field>
+        <field name="standard_price">130</field>
+        <field name="available_in_pos" eval="True"/>
+    </record>
+</odoo>
