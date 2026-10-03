@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Membership Plan List View -->
+    <record id="view_champions_membership_plan_list" model="ir.ui.view">
+        <field name="name">champions.membership.plan.list</field>
+        <field name="model">champions.membership.plan</field>
+        <field name="arch" type="xml">
+            <list string="Membership Plans">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="badge_text"/>
+                <field name="price_monthly" widget="monetary"/>
+                <field name="price_annual" widget="monetary"/>
+                <field name="advance_booking_days"/>
+                <field name="is_featured"/>
+                <field name="subscribers_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Membership Plan Form View -->
+    <record id="view_champions_membership_plan_form" model="ir.ui.view">
+        <field name="name">champions.membership.plan.form</field>
+        <field name="model">champions.membership.plan</field>
+        <field name="arch" type="xml">
+            <form string="Membership Tier Configuration">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="e.g. Gold Champion VIP"/></h1>
+                        <h4><field name="tagline" placeholder="Brief subtitle for this tier"/></h4>
+                    </div>
+                    <group>
+                        <group string="Basic &amp; Badging">
+                            <field name="code"/>
+                            <field name="badge_text" placeholder="e.g. Most Popular"/>
+                            <field name="is_featured"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Pricing &amp; Currency">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="price_monthly" widget="monetary"/>
+                            <field name="price_annual" widget="monetary"/>
+                            <field name="annual_discount_pct"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Court Booking Privileges" name="court_rules">
+                            <group>
+                                <group string="Sport-by-Sport Entitlements">
+                                    <field name="tennis_access"/>
+                                    <field name="padel_access"/>
+                                    <field name="badminton_access"/>
+                                </group>
+                                <group string="Booking Rules">
+                                    <field name="advance_booking_days"/>
+                                    <field name="peak_hours_allowed"/>
+                                    <field name="guest_passes_per_month"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Discounts &amp; Amenities" name="amenities">
+                            <group>
+                                <group string="Commercial Discounts">
+                                    <field name="pro_shop_discount_pct"/>
+                                    <field name="bar_cafe_discount_pct"/>
+                                    <field name="coaching_discount_pct"/>
+                                </group>
+                                <group string="Club Perks">
+                                    <field name="locker_access"/>
+                                    <field name="towel_service"/>
+                                    <field name="ball_machine_included"/>
+                                    <field name="tournament_priority"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Marketing Description" name="description">
+                            <field name="description" placeholder="Detailed marketing copy explaining benefits..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

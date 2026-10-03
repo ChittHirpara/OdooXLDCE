@@ -14,7 +14,14 @@ class Court(models.Model):
     _order = 'sport, name'
 
     name = fields.Char(required=True)
-    sport = fields.Selection([('tennis', 'Tennis'), ('cricket', 'Cricket')], required=True)
+    sport = fields.Selection([
+        ('tennis', 'Tennis'),
+        ('padel', 'Padel'),
+        ('badminton', 'Badminton'),
+        ('cricket', 'Cricket'),
+    ], required=True)
+    surface = fields.Char(string='Surface Type', default='DecoTurf')
+    is_indoor = fields.Boolean(string='Indoor Court', default=False)
     list_price = fields.Float(string='List Price / Hour', required=True,
                               help="Full price per hour, charged to walk-ins and non-active members.")
     social_capacity = fields.Integer(
@@ -90,3 +97,53 @@ class Court(models.Model):
                                       % court.name)
             if court.close_hour - court.open_hour < 1:
                 raise ValidationError("%s must be open at least one hour." % court.name)
+
+    @api.model
+    def get_courts_list(self):
+        """Return all active courts formatted for OWL frontend grid."""
+        courts = self.search([('active', '=', True)], order='sport, name')
+        result = []
+        for c in courts:
+            result.append({
+                'id': c.id,
+                'name': c.name,
+                'court_type': c.sport,
+                'sport': c.sport,
+                'surface': c.surface or 'DecoTurf Hard Court',
+                'is_indoor': c.is_indoor,
+                'base_rate': c.list_price,
+                'list_price': c.list_price,
+                'social_capacity': c.social_capacity,
+                'open_hour': c.open_hour,
+                'close_hour': c.close_hour,
+            })
+        return result
+
+    @api.model
+    def get_availability_matrix(self, date_str=None, court_id=None):
+        """Return court schedule and slot availability mapped by court ID."""
+        if date_str:
+            try:
+                day = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                day = club_today()
+        else:
+            day = club_today()
+
+        domain = [('active', '=', True)]
+        if court_id:
+            domain.append(('id', '=', int(court_id)))
+        courts = self.search(domain, order='sport, name')
+        raw_avail = courts.get_availability(day)
+
+        # Map to booked start times per court for visual grid
+        grid_map = {}
+        for c_data in raw_avail:
+            c_id = c_data['court_id']
+            grid_map[c_id] = [s['start'] for s in c_data['slots'] if not s['available']]
+
+        return {
+            'date': day.isoformat(),
+            'availability_map': grid_map,
+            'courts_detail': raw_avail,
+        }

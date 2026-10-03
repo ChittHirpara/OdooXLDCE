@@ -40,3 +40,52 @@ class ClubController(http.Controller):
         if redirect and redirect.startswith('/') and not redirect.startswith(('//', '/\\')):
             return request.redirect(redirect)
         return request.make_json_response({'success': True, 'lead_id': lead.id})
+
+    @http.route('/club/api/plans', type='http', auth='public', methods=['GET'], cors='*')
+    def api_plans(self, **kw):
+        """Return all membership plans."""
+        plans = request.env['club.membership.plan'].sudo().get_frontend_plans()
+        return request.make_json_response({'plans': plans})
+
+    @http.route('/club/api/courts', type='http', auth='public', methods=['GET'], cors='*')
+    def api_courts(self, **kw):
+        """Return all courts."""
+        courts = request.env['club.court'].sudo().get_courts_list()
+        return request.make_json_response({'courts': courts})
+
+    @http.route('/club/api/booking/create', type='json', auth='public', methods=['POST'], cors='*')
+    def api_create_booking(self, court_id=None, date=None, time=None, partner_id=None, walkin_name=None, **kw):
+        """Create and confirm a booking."""
+        try:
+            booking = request.env['club.booking'].sudo().create_member_booking(
+                court_id=court_id,
+                date_str=date,
+                time_str=time,
+                partner_id=partner_id,
+                walkin_name=walkin_name
+            )
+            return {'success': True, 'booking': booking}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+    @http.route('/club/api/shop/catalog', type='http', auth='public', methods=['GET'], cors='*')
+    def api_shop_catalog(self, category=None, search=None, partner_id=None, **kw):
+        """Return Pro-Shop catalog with live inventory."""
+        products = request.env['product.product'].sudo().get_shop_catalog(
+            category=category,
+            search_query=search or '',
+            partner_id=partner_id
+        )
+        return request.make_json_response({'products': products})
+
+    @http.route('/club/api/pos/catalog', type='http', auth='public', methods=['GET'], cors='*')
+    def api_pos_catalog(self, category=None, search=None, partner_id=None, **kw):
+        """Return Bar & Cafeteria products and floor tables."""
+        products = request.env['product.product'].sudo().get_bar_products(
+            category=category,
+            search_query=search or '',
+            partner_id=partner_id
+        )
+        tables = request.env['club.pos.table'].sudo().get_tables_data()
+        return request.make_json_response({'products': products, 'tables': tables})
+

@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="champions_club.ShopPage">
+        <div class="cc-shop-app">
+            <!-- 1. Top Navigation Bar -->
+            <header class="cc-header">
+                <div class="cc-header-inner">
+                    <a href="#dashboard" class="cc-brand">
+                        <div class="cc-brand-emblem">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <path d="M16 10a4 4 0 0 1-8 0"/>
+                            </svg>
+                        </div>
+                        <h1 class="cc-brand-title">Champions Club Shop</h1>
+                    </a>
+
+                    <nav class="cc-nav">
+                        <a href="#dashboard" class="cc-nav-link">Dashboard</a>
+                        <a href="#members" class="cc-nav-link">Members</a>
+                        <a href="#memberships" class="cc-nav-link">Memberships</a>
+                        <a href="#courts" class="cc-nav-link">Courts</a>
+                        <a href="#shop" class="cc-nav-link active">Shop</a>
+                        <a href="#pos" class="cc-nav-link">POS</a>
+                        <a href="#reports" class="cc-nav-link">Reports</a>
+                    </nav>
+
+                    <div class="cc-header-right">
+                        <!-- Cart Trigger Button -->
+                        <button class="cc-cart-trigger-btn" t-on-click="openCart" title="View Cart">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="9" cy="21" r="1"/>
+                                <circle cx="20" cy="21" r="1"/>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                            </svg>
+                            <span>Cart</span>
+                            <t t-if="cartCount > 0">
+                                <span class="cc-cart-badge"><t t-esc="cartCount"/></span>
+                            </t>
+                        </button>
+
+                        <div class="cc-user-profile" title="Member Profile">
+                            <div class="cc-user-avatar">CH</div>
+                            <div class="cc-user-info">
+                                <span class="cc-user-name"><t t-esc="member.name"/></span>
+                                <span class="cc-user-role"><t t-esc="member.plan"/> Member (20% Off)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="cc-main-container">
+                <!-- VIEW 1: CATALOG & SHOPPING -->
+                <t t-if="state.currentView === 'catalog'">
+                    <!-- Shop Hero & Search Controls -->
+                    <section class="cc-shop-hero">
+                        <div class="cc-shop-hero-text">
+                            <h2 class="cc-page-title">Pro-Shop &amp; Equipment</h2>
+                            <p class="cc-page-subtitle">Premium racket gear, apparel, and tournament-grade accessories.</p>
+                        </div>
+
+                        <!-- Search Bar -->
+                        <div class="cc-search-wrapper">
+                            <svg class="cc-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <input type="text"
+                                   placeholder="Search rackets, balls, shoes, accessories..." 
+                                   t-att-value="state.searchQuery"
+                                   t-on-input="(e) => this.handleSearchInput(e.target.value)"
+                                   class="cc-search-input"/>
+                            <t t-if="state.searchQuery">
+                                <button class="cc-search-clear" t-on-click="() => this.handleSearchInput('')">✕</button>
+                            </t>
+                        </div>
+                    </section>
+
+                    <!-- Category & Stock Filter Bar -->
+                    <div class="cc-filter-bar">
+                        <div class="cc-category-pills">
+                            <t t-foreach="state.categories" t-as="cat" t-key="cat.id">
+                                <button t-att-class="'cc-cat-pill ' + (state.selectedCategory === cat.id ? 'active' : '')"
+                                        t-on-click="() => this.setCategory(cat.id)">
+                                    <t t-esc="cat.label"/>
+                                </button>
+                            </t>
+                        </div>
+
+                        <div class="cc-stock-filter">
+                            <label class="cc-toggle-label">
+                                <input type="checkbox" 
+                                       t-att-checked="state.inStockOnly"
+                                       t-on-change="(e) => this.state.inStockOnly = e.target.checked"/>
+                                <span>In Stock Only</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Error Banner -->
+                    <t t-if="state.error">
+                        <div class="cc-error-banner">
+                            <span><t t-esc="state.error"/></span>
+                            <button class="cc-error-dismiss" t-on-click="() => this.state.error = null">✕</button>
+                        </div>
+                    </t>
+
+                    <!-- Loading Skeleton -->
+                    <t t-if="state.loading">
+                        <div class="cc-skeleton-grid">
+                            <div class="cc-skeleton-card" t-foreach="[1,2,3,4,5,6,7,8]" t-as="sk" t-key="sk"></div>
+                        </div>
+                    </t>
+
+                    <!-- ProductGrid Component (4-Column Responsive) -->
+                    <t t-else="">
+                        <t t-if="filteredProducts.length === 0">
+                            <div class="cc-empty-state">
+                                <span class="cc-empty-icon">🛍️</span>
+                                <h3>No products found</h3>
+                                <p>Try adjusting your search query or category filters.</p>
+                                <button class="cc-btn-primary" t-on-click="() => { this.state.searchQuery = ''; this.state.selectedCategory = 'all'; }">
+                                    Reset Filters
+                                </button>
+                            </div>
+                        </t>
+
+                        <div class="cc-product-grid" t-else="">
+                            <t t-foreach="filteredProducts" t-as="product" t-key="product.id">
+                                <!-- ProductCard Component -->
+                                <div class="cc-product-card" t-on-click="() => this.openProductDetail(product)">
+                                    <div class="cc-card-img-wrap">
+                                        <span class="cc-product-emoji-icon"><t t-esc="product.image_icon"/></span>
+                                        <t t-if="product.stock > 0">
+                                            <span class="cc-stock-badge in-stock">
+                                                <span class="cc-dot"></span> <t t-esc="product.stock"/> in stock
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="cc-stock-badge out-stock">
+                                                <span class="cc-dot-red"></span> Out of Stock
+                                            </span>
+                                        </t>
+                                    </div>
+
+                                    <div class="cc-card-body">
+                                        <span class="cc-card-cat"><t t-esc="product.category_label"/></span>
+                                        <h3 class="cc-card-title"><t t-esc="product.name"/></h3>
+
+                                        <div class="cc-card-price-row">
+                                            <div class="cc-card-pricing">
+                                                <span class="cc-price-main">₹<t t-esc="product.price.toLocaleString('en-IN')"/></span>
+                                                <span class="cc-member-price-sub">₹<t t-esc="Math.round(product.price * 0.8).toLocaleString('en-IN')"/> (Gold)</span>
+                                            </div>
+
+                                            <t t-if="product.stock > 0">
+                                                <button class="cc-btn-add-card" 
+                                                        t-on-click.stop="() => this.addToCart(product, 1)">
+                                                    + Cart
+                                                </button>
+                                            </t>
+                                            <t t-else="">
+                                                <button class="cc-btn-add-card disabled" disabled="1">
+                                                    Unavailable
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </t>
+
+                <!-- VIEW 2: CHECKOUT PAGE -->
+                <t t-if="state.currentView === 'checkout'">
+                    <section class="cc-checkout-container">
+                        <div class="cc-page-header">
+                            <div>
+                                <h2 class="cc-page-title">Checkout &amp; Fulfillment</h2>
+                                <p class="cc-page-subtitle">Review your order details and choose collection or delivery.</p>
+                            </div>
+                            <button class="cc-btn-secondary" t-on-click="backToCatalog">← Back to Shop</button>
+                        </div>
+
+                        <t t-if="state.error">
+                            <div class="cc-error-banner">
+                                <span><t t-esc="state.error"/></span>
+                            </div>
+                        </t>
+
+                        <div class="cc-checkout-layout">
+                            <!-- Left: Details Form -->
+                            <div class="cc-checkout-form-pane">
+                                <div class="cc-checkout-section">
+                                    <h3 class="cc-section-title">1. Customer Information</h3>
+                                    <div class="cc-member-card-box">
+                                        <div class="cc-m-avatar">CH</div>
+                                        <div class="cc-m-details">
+                                            <h4 class="cc-m-name"><t t-esc="member.name"/></h4>
+                                            <span class="cc-m-plan"><t t-esc="member.plan"/> Member Account • 20% Pro-Shop Discount Applied</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="cc-checkout-section">
+                                    <h3 class="cc-section-title">2. Fulfillment Method</h3>
+                                    <div class="cc-fulfillment-options">
+                                        <label t-att-class="'cc-fulfillment-card ' + (state.fulfillment === 'club_pickup' ? 'selected' : '')">
+                                            <input type="radio" name="fulfillment" value="club_pickup" 
+                                                   t-att-checked="state.fulfillment === 'club_pickup'"
+                                                   t-on-change="() => this.state.fulfillment = 'club_pickup'"/>
+                                            <div class="cc-f-text">
+                                                <span class="cc-f-title">🏢 Collect at Club</span>
+                                                <span class="cc-f-desc">Pick up at Clubhouse Front Desk ready in 15 minutes</span>
+                                            </div>
+                                        </label>
+
+                                        <label t-att-class="'cc-fulfillment-card ' + (state.fulfillment === 'home_delivery' ? 'selected' : '')">
+                                            <input type="radio" name="fulfillment" value="home_delivery"
+                                                   t-att-checked="state.fulfillment === 'home_delivery'"
+                                                   t-on-change="() => this.state.fulfillment = 'home_delivery'"/>
+                                            <div class="cc-f-text">
+                                                <span class="cc-f-title">🚚 Home Delivery</span>
+                                                <span class="cc-f-desc">Delivered to your address within 24 hours</span>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <t t-if="state.fulfillment === 'home_delivery'">
+                                        <div class="cc-delivery-address-box">
+                                            <label>Delivery Address *</label>
+                                            <textarea class="cc-address-input" 
+                                                      placeholder="Enter street, apartment, city, and pincode..."
+                                                      t-model="state.deliveryAddress"></textarea>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <div class="cc-checkout-section">
+                                    <h3 class="cc-section-title">3. Payment Method</h3>
+                                    <div class="cc-payment-methods">
+                                        <label class="cc-payment-radio selected">
+                                            <input type="radio" name="payment" checked="1"/>
+                                            <span>💳 Charge to Club Member Account (Invoice on Month-End)</span>
+                                        </label>
+                                        <label class="cc-payment-radio">
+                                            <input type="radio" name="payment"/>
+                                            <span>📱 UPI / Credit Card / NetBanking</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Order Summary Sidebar -->
+                            <div class="cc-checkout-summary-pane">
+                                <h3 class="cc-summary-title">Order Summary (<t t-esc="cartCount"/> items)</h3>
+
+                                <div class="cc-summary-items-list">
+                                    <t t-foreach="state.cart" t-as="item" t-key="item.product.id">
+                                        <div class="cc-summary-item-row">
+                                            <div class="cc-sum-item-left">
+                                                <span class="cc-sum-item-name"><t t-esc="item.product.name"/></span>
+                                                <span class="cc-sum-item-qty">Qty: <t t-esc="item.qty"/> × ₹<t t-esc="item.product.price.toLocaleString('en-IN')"/></span>
+                                            </div>
+                                            <span class="cc-sum-item-total">₹<t t-esc="(item.product.price * item.qty).toLocaleString('en-IN')"/></span>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <div class="cc-pricing-breakdown">
+                                    <div class="cc-price-row">
+                                        <span>Subtotal</span>
+                                        <span>₹<t t-esc="cartSubtotal.toLocaleString('en-IN')"/></span>
+                                    </div>
+                                    <div class="cc-price-row discount-row">
+                                        <span>Gold Member Discount (20%)</span>
+                                        <span class="cc-discount-text">-₹<t t-esc="memberDiscountAmount.toLocaleString('en-IN')"/></span>
+                                    </div>
+                                    <div class="cc-price-row">
+                                        <span>Fulfillment Fee</span>
+                                        <span class="cc-free-text">FREE</span>
+                                    </div>
+                                    <div class="cc-price-divider"></div>
+                                    <div class="cc-price-row total-row">
+                                        <span>Total</span>
+                                        <span class="cc-total-val">₹<t t-esc="cartTotal.toLocaleString('en-IN')"/></span>
+                                    </div>
+                                </div>
+
+                                <button class="cc-btn-primary cc-btn-full" t-on-click="placeOrder">
+                                    Place Order
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </t>
+
+                <!-- VIEW 3: ORDER CONFIRMED SCREEN -->
+                <t t-if="state.currentView === 'order_confirmed'">
+                    <section class="cc-confirmed-screen">
+                        <div class="cc-confirmed-box">
+                            <div class="cc-confirmed-icon">✓</div>
+                            <h2 class="cc-conf-heading">Order Confirmed</h2>
+                            <p class="cc-conf-num">Order <strong>#<t t-esc="state.confirmedOrder.order_id"/></strong></p>
+
+                            <div class="cc-conf-details-card">
+                                <div class="cc-conf-row">
+                                    <span>Customer:</span>
+                                    <strong><t t-esc="state.confirmedOrder.customer_name"/></strong>
+                                </div>
+                                <div class="cc-conf-row">
+                                    <span>Fulfillment:</span>
+                                    <strong><t t-esc="state.confirmedOrder.fulfillment"/></strong>
+                                </div>
+                                <div class="cc-conf-row">
+                                    <span>Instructions / Address:</span>
+                                    <span><t t-esc="state.confirmedOrder.delivery_address"/></span>
+                                </div>
+                                <div class="cc-conf-row">
+                                    <span>Date:</span>
+                                    <span><t t-esc="state.confirmedOrder.date"/></span>
+                                </div>
+                                <div class="cc-conf-divider"></div>
+                                <div class="cc-conf-row total-row">
+                                    <span>Total Paid:</span>
+                                    <span class="cc-total-highlight"><t t-esc="state.confirmedOrder.total"/></span>
+                                </div>
+                            </div>
+
+                            <div class="cc-conf-actions">
+                                <button class="cc-btn-primary" t-on-click="backToCatalog">
+                                    Continue Shopping
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </t>
+
+                <!-- MODAL: ProductDetail Component -->
+                <t t-if="state.isDetailOpen and state.selectedProduct">
+                    <div class="cc-modal-backdrop" t-on-click="closeProductDetail">
+                        <div class="cc-modal-dialog cc-product-detail-dialog" t-on-click.stop="">
+                            <button class="cc-modal-close" t-on-click="closeProductDetail">✕</button>
+
+                            <div class="cc-detail-layout">
+                                <div class="cc-detail-img-box">
+                                    <span class="cc-detail-large-icon"><t t-esc="state.selectedProduct.image_icon"/></span>
+                                </div>
+
+                                <div class="cc-detail-info-box">
+                                    <span class="cc-card-cat"><t t-esc="state.selectedProduct.category_label"/></span>
+                                    <h2 class="cc-detail-title"><t t-esc="state.selectedProduct.name"/></h2>
+
+                                    <div class="cc-detail-pricing">
+                                        <span class="cc-detail-price">₹<t t-esc="state.selectedProduct.price.toLocaleString('en-IN')"/></span>
+                                        <span class="cc-member-badge">₹<t t-esc="Math.round(state.selectedProduct.price * 0.8).toLocaleString('en-IN')"/> with Gold Membership</span>
+                                    </div>
+
+                                    <p class="cc-detail-description"><t t-esc="state.selectedProduct.description"/></p>
+
+                                    <!-- Stock Availability -->
+                                    <div class="cc-detail-stock-row">
+                                        <t t-if="state.selectedProduct.stock > 0">
+                                            <span class="cc-stock-badge in-stock">
+                                                <span class="cc-dot"></span> Available: <t t-esc="state.selectedProduct.stock"/> units in stock
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="cc-stock-badge out-stock">
+                                                <span class="cc-dot-red"></span> Out of Stock
+                                            </span>
+                                        </t>
+                                    </div>
+
+                                    <t t-if="state.error">
+                                        <div class="cc-error-small"><t t-esc="state.error"/></div>
+                                    </t>
+
+                                    <!-- QuantitySelector Component -->
+                                    <t t-if="state.selectedProduct.stock > 0">
+                                        <div class="cc-qty-action-row">
+                                            <div class="cc-qty-selector">
+                                                <button class="cc-qty-btn" t-on-click="decrementDetailQty">−</button>
+                                                <span class="cc-qty-val"><t t-esc="state.detailQuantity"/></span>
+                                                <button class="cc-qty-btn" t-on-click="incrementDetailQty">+</button>
+                                            </div>
+
+                                            <button class="cc-btn-primary cc-btn-add-detail" 
+                                                    t-on-click="() => this.addToCart(state.selectedProduct, state.detailQuantity)">
+                                                Add to Cart • ₹<t t-esc="(state.selectedProduct.price * state.detailQuantity).toLocaleString('en-IN')"/>
+                                            </button>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <button class="cc-btn-primary disabled" disabled="1">
+                                            Currently Unavailable
+                                        </button>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- SLIDE-OVER DRAWER: Cart Component -->
+                <t t-if="state.isCartOpen">
+                    <div class="cc-drawer-backdrop" t-on-click="closeCart">
+                        <div class="cc-cart-drawer" t-on-click.stop="">
+                            <div class="cc-drawer-header">
+                                <h3 class="cc-drawer-title">Shopping Cart (<t t-esc="cartCount"/>)</h3>
+                                <button class="cc-drawer-close" t-on-click="closeCart">✕</button>
+                            </div>
+
+                            <t t-if="state.cart.length === 0">
+                                <div class="cc-cart-empty">
+                                    <span class="cc-empty-icon">🛒</span>
+                                    <h4>Your cart is empty</h4>
+                                    <p>Browse our pro-shop equipment and gear to add items.</p>
+                                    <button class="cc-btn-primary" t-on-click="closeCart">Start Shopping</button>
+                                </div>
+                            </t>
+
+                            <t t-else="">
+                                <!-- Cart Items List -->
+                                <div class="cc-cart-items-list">
+                                    <t t-foreach="state.cart" t-as="item" t-key="item.product.id">
+                                        <!-- CartItem Component -->
+                                        <div class="cc-cart-item-row">
+                                            <div class="cc-item-icon"><t t-esc="item.product.image_icon"/></div>
+                                            <div class="cc-item-info">
+                                                <h4 class="cc-item-name"><t t-esc="item.product.name"/></h4>
+                                                <span class="cc-item-price">₹<t t-esc="item.product.price.toLocaleString('en-IN')"/> each</span>
+
+                                                <div class="cc-cart-qty-ctrl">
+                                                    <button class="cc-qty-btn-sm" t-on-click="() => this.updateCartItemQty(item.product.id, -1)">−</button>
+                                                    <span class="cc-qty-val-sm"><t t-esc="item.qty"/></span>
+                                                    <button class="cc-qty-btn-sm" t-on-click="() => this.updateCartItemQty(item.product.id, 1)">+</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="cc-item-right">
+                                                <span class="cc-item-subtotal">₹<t t-esc="(item.product.price * item.qty).toLocaleString('en-IN')"/></span>
+                                                <button class="cc-item-remove" t-on-click="() => this.removeCartItem(item.product.id)">✕</button>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <!-- Cart Pricing & Member Discount Breakdown -->
+                                <div class="cc-drawer-footer">
+                                    <div class="cc-drawer-price-row">
+                                        <span>Subtotal</span>
+                                        <span>₹<t t-esc="cartSubtotal.toLocaleString('en-IN')"/></span>
+                                    </div>
+                                    <div class="cc-drawer-price-row discount">
+                                        <span>Gold Member Discount (20%)</span>
+                                        <span class="cc-discount-text">-₹<t t-esc="memberDiscountAmount.toLocaleString('en-IN')"/></span>
+                                    </div>
+                                    <div class="cc-drawer-price-row total">
+                                        <span>Total</span>
+                                        <span class="cc-total-amount">₹<t t-esc="cartTotal.toLocaleString('en-IN')"/></span>
+                                    </div>
+
+                                    <div class="cc-drawer-actions">
+                                        <button class="cc-btn-secondary" t-on-click="closeCart">Continue Shopping</button>
+                                        <button class="cc-btn-primary" t-on-click="proceedToCheckout">Checkout</button>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </main>
+        </div>
+    </t>
+</templates>

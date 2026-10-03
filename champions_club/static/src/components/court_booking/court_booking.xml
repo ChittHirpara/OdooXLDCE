@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="champions_club.CourtBookingPage">
+        <div class="cc-booking-app">
+            <!-- 1. Top Navigation Bar -->
+            <header class="cc-header">
+                <div class="cc-header-inner">
+                    <a href="#dashboard" class="cc-brand">
+                        <div class="cc-brand-emblem">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="2" x2="12" y2="22"/>
+                                <path d="M12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6"/>
+                            </svg>
+                        </div>
+                        <h1 class="cc-brand-title">Champions Club</h1>
+                    </a>
+
+                    <nav class="cc-nav">
+                        <a href="#dashboard" class="cc-nav-link">Dashboard</a>
+                        <a href="#members" class="cc-nav-link">Members</a>
+                        <a href="#memberships" class="cc-nav-link">Memberships</a>
+                        <a href="#courts" class="cc-nav-link active">Courts</a>
+                        <a href="#shop" class="cc-nav-link">Shop</a>
+                        <a href="#pos" class="cc-nav-link">POS</a>
+                        <a href="#reports" class="cc-nav-link">Reports</a>
+                    </nav>
+
+                    <div class="cc-header-right">
+                        <div class="cc-user-profile" title="Current Member Profile">
+                            <div class="cc-user-avatar">CH</div>
+                            <div class="cc-user-info">
+                                <span class="cc-user-name"><t t-esc="member.name"/></span>
+                                <span class="cc-user-role"><t t-esc="member.plan"/> Member</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="cc-main-container">
+                <!-- View Switcher Tabs: Grid vs My Bookings -->
+                <div class="cc-view-switcher">
+                    <button t-att-class="'cc-view-btn ' + (state.currentView === 'grid' ? 'active' : '')" 
+                            t-on-click="() => this.setView('grid')">
+                        Book a Court
+                    </button>
+                    <button t-att-class="'cc-view-btn ' + (state.currentView === 'my_bookings' ? 'active' : '')" 
+                            t-on-click="() => this.setView('my_bookings')">
+                        My Bookings
+                        <span class="cc-counter-pill"><t t-esc="state.myBookings.length"/></span>
+                    </button>
+                </div>
+
+                <!-- VIEW 1: COURT BOOKING GRID -->
+                <t t-if="state.currentView === 'grid'">
+                    <!-- Hero / Page Header -->
+                    <section class="cc-page-header">
+                        <div class="cc-header-text">
+                            <h2 class="cc-page-title">Book a Court</h2>
+                            <p class="cc-page-subtitle">Choose a court and time that works for you.</p>
+                        </div>
+
+                        <!-- Date Selector Component -->
+                        <div class="cc-date-selector">
+                            <button t-att-class="'cc-date-pill ' + (state.selectedDate === todayDateStr ? 'active' : '')"
+                                    t-on-click="() => this.selectDate(todayDateStr)">
+                                Today
+                            </button>
+                            <button t-att-class="'cc-date-pill ' + (state.selectedDate === tomorrowDateStr ? 'active' : '')"
+                                    t-on-click="() => this.selectDate(tomorrowDateStr)">
+                                Tomorrow
+                            </button>
+                            <div class="cc-date-picker-wrap">
+                                <input type="date" 
+                                       t-att-value="state.selectedDate"
+                                       t-on-change="(e) => this.selectDate(e.target.value)"
+                                       class="cc-date-input"/>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Graceful Error Banner -->
+                    <t t-if="state.error">
+                        <div class="cc-error-banner">
+                            <div class="cc-error-content">
+                                <span class="cc-error-icon">⚠</span>
+                                <span><t t-esc="state.error"/></span>
+                            </div>
+                            <button class="cc-error-dismiss" t-on-click="() => this.state.error = null">✕</button>
+                        </div>
+                    </t>
+
+                    <!-- Loading State / Skeleton -->
+                    <t t-if="state.loading">
+                        <div class="cc-skeleton-loader">
+                            <div class="cc-spinner"></div>
+                            <span>Refreshing court availability...</span>
+                        </div>
+                    </t>
+
+                    <!-- Grid Legend -->
+                    <div class="cc-grid-legend">
+                        <div class="cc-legend-item">
+                            <span class="cc-legend-box available"></span>
+                            <span>Available</span>
+                        </div>
+                        <div class="cc-legend-item">
+                            <span class="cc-legend-box booked"></span>
+                            <span>Booked</span>
+                        </div>
+                        <div class="cc-legend-item">
+                            <span class="cc-legend-box selected"></span>
+                            <span>Selected</span>
+                        </div>
+                        <div class="cc-legend-note">
+                            <span>* 1 hour per booking • Starts every 30 mins</span>
+                        </div>
+                    </div>
+
+                    <!-- CourtGrid Component -->
+                    <div class="cc-court-grid-container">
+                        <div class="cc-court-grid">
+                            <!-- Time Header Row -->
+                            <div class="cc-grid-row cc-header-row">
+                                <div class="cc-court-label-cell cc-sticky-col">
+                                    <span>Court</span>
+                                </div>
+                                <t t-foreach="state.timeSlots" t-as="time" t-key="time">
+                                    <div class="cc-time-header-cell">
+                                        <span><t t-esc="time"/></span>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Court Rows (CourtRow & TimeSlot components) -->
+                            <t t-foreach="state.courts" t-as="court" t-key="court.id">
+                                <div class="cc-grid-row">
+                                    <!-- Sticky Court Label Cell -->
+                                    <div class="cc-court-label-cell cc-sticky-col">
+                                        <div class="cc-court-meta">
+                                            <span class="cc-court-name"><t t-esc="court.name"/></span>
+                                            <span class="cc-court-surface"><t t-esc="court.surface"/></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Time Slots -->
+                                    <t t-foreach="state.timeSlots" t-as="time" t-key="time">
+                                        <div t-att-class="'cc-slot-cell ' + 
+                                                          (isSlotSelected(court.id, time) ? 'selected ' : '') + 
+                                                          (isSlotBooked(court.id, time) ? 'booked ' : 'available ')"
+                                             t-on-click="() => this.handleSlotClick(court, time)"
+                                             t-att-title="court.name + ' at ' + time">
+                                            
+                                            <t t-if="isSlotSelected(court.id, time)">
+                                                <span class="cc-slot-indicator selected">✓</span>
+                                            </t>
+                                            <t t-elif="isSlotBooked(court.id, time)">
+                                                <span class="cc-slot-indicator booked">Booked</span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="cc-slot-indicator available">Open</span>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Floating Slot Selection Action Bar -->
+                    <t t-if="state.selectedCourt and state.selectedSlot">
+                        <div class="cc-selection-bar">
+                            <div class="cc-selection-details">
+                                <div class="cc-selection-icon">🎾</div>
+                                <div class="cc-selection-text">
+                                    <div class="cc-selection-title">
+                                        <t t-esc="state.selectedCourt.name"/>
+                                        <span class="cc-dot-divider">•</span>
+                                        <t t-esc="formatTimeDisplay(state.selectedSlot)"/> – <t t-esc="formatTimeDisplay(state.slotEndTime)"/>
+                                    </div>
+                                    <div class="cc-selection-subtitle">
+                                        <t t-esc="formatDateDisplay(state.selectedDate)"/>
+                                        <span class="cc-dot-divider">•</span>
+                                        <span class="cc-tag-gold"><t t-esc="member.plan"/> Member</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cc-selection-actions">
+                                <button class="cc-btn-secondary" t-on-click="clearSelection">Clear</button>
+                                <button class="cc-btn-primary" t-on-click="openBookingModal">
+                                    Continue
+                                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+
+                <!-- VIEW 2: MY BOOKINGS -->
+                <t t-if="state.currentView === 'my_bookings'">
+                    <section class="cc-my-bookings-container">
+                        <div class="cc-page-header">
+                            <div>
+                                <h2 class="cc-page-title">My Bookings</h2>
+                                <p class="cc-page-subtitle">View and manage your upcoming court reservations.</p>
+                            </div>
+                        </div>
+
+                        <!-- Bookings Status Tabs -->
+                        <div class="cc-tabs-bar">
+                            <button t-att-class="'cc-tab-pill ' + (state.bookingsTab === 'upcoming' ? 'active' : '')"
+                                    t-on-click="() => this.switchTab('upcoming')">
+                                Upcoming
+                            </button>
+                            <button t-att-class="'cc-tab-pill ' + (state.bookingsTab === 'completed' ? 'active' : '')"
+                                    t-on-click="() => this.switchTab('completed')">
+                                Completed
+                            </button>
+                            <button t-att-class="'cc-tab-pill ' + (state.bookingsTab === 'cancelled' ? 'active' : '')"
+                                    t-on-click="() => this.switchTab('cancelled')">
+                                Cancelled
+                            </button>
+                        </div>
+
+                        <!-- Bookings Cards List -->
+                        <t t-if="filteredMyBookings.length === 0">
+                            <div class="cc-empty-state">
+                                <span class="cc-empty-icon">📅</span>
+                                <h3>No <t t-esc="state.bookingsTab"/> bookings found</h3>
+                                <p>You have no reservations under this category.</p>
+                                <button class="cc-btn-primary" t-on-click="() => this.setView('grid')">
+                                    Reserve a Court Now
+                                </button>
+                            </div>
+                        </t>
+
+                        <t t-else="">
+                            <div class="cc-bookings-grid">
+                                <t t-foreach="filteredMyBookings" t-as="b" t-key="b.id">
+                                    <!-- BookingCard Component -->
+                                    <div class="cc-booking-card">
+                                        <div class="cc-booking-card-top">
+                                            <div class="cc-booking-court-info">
+                                                <h3 class="cc-b-court-name"><t t-esc="b.court_name"/></h3>
+                                                <span class="cc-b-id"><t t-esc="b.id"/></span>
+                                            </div>
+                                            <span t-att-class="'cc-status-badge ' + b.state">
+                                                <t t-esc="b.state.toUpperCase()"/>
+                                            </span>
+                                        </div>
+
+                                        <div class="cc-booking-time-details">
+                                            <div class="cc-b-detail-row">
+                                                <span class="cc-b-icon">🗓️</span>
+                                                <span><t t-esc="formatDateDisplay(b.date)"/></span>
+                                            </div>
+                                            <div class="cc-b-detail-row">
+                                                <span class="cc-b-icon">⏰</span>
+                                                <span><t t-esc="formatTimeDisplay(b.start_time)"/> – <t t-esc="formatTimeDisplay(b.end_time)"/></span>
+                                            </div>
+                                            <div class="cc-b-detail-row">
+                                                <span class="cc-b-icon">💳</span>
+                                                <span>Fee: <strong><t t-esc="b.price"/></strong> (<t t-esc="b.plan_name"/>)</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="cc-booking-card-bottom">
+                                            <t t-if="b.state === 'confirmed'">
+                                                <button class="cc-btn-cancel-booking" t-on-click="() => this.promptCancelBooking(b)">
+                                                    Cancel Booking
+                                                </button>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="cc-inactive-note">Reservation <t t-esc="b.state"/></span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </section>
+                </t>
+
+                <!-- MODAL 1: BookingConfirmationModal -->
+                <t t-if="state.isModalOpen">
+                    <div class="cc-modal-backdrop" t-on-click="closeModal">
+                        <div class="cc-modal-dialog" t-on-click.stop="">
+                            <button class="cc-modal-close" t-on-click="closeModal">✕</button>
+
+                            <div class="cc-modal-header">
+                                <h3 class="cc-modal-title">Confirm Court Reservation</h3>
+                                <p class="cc-modal-subtitle">Review your reservation details before confirming.</p>
+                            </div>
+
+                            <div class="cc-modal-summary-box">
+                                <div class="cc-summary-row">
+                                    <span class="cc-label">Court:</span>
+                                    <span class="cc-val bold"><t t-esc="state.selectedCourt.name"/> (<t t-esc="state.selectedCourt.surface"/>)</span>
+                                </div>
+                                <div class="cc-summary-row">
+                                    <span class="cc-label">Date:</span>
+                                    <span class="cc-val"><t t-esc="formatDateDisplay(state.selectedDate)"/></span>
+                                </div>
+                                <div class="cc-summary-row">
+                                    <span class="cc-label">Time:</span>
+                                    <span class="cc-val bold"><t t-esc="formatTimeDisplay(state.selectedSlot)"/> – <t t-esc="formatTimeDisplay(state.slotEndTime)"/> (1 hr)</span>
+                                </div>
+                                <div class="cc-summary-row">
+                                    <span class="cc-label">Member:</span>
+                                    <span class="cc-val"><t t-esc="member.name"/></span>
+                                </div>
+                                <div class="cc-summary-row">
+                                    <span class="cc-label">Plan:</span>
+                                    <span class="cc-val"><span class="cc-tag-gold"><t t-esc="member.plan"/> Member</span></span>
+                                </div>
+                                <div class="cc-summary-divider"></div>
+                                <div class="cc-summary-row cc-price-row">
+                                    <span class="cc-label">Total Price:</span>
+                                    <span class="cc-price-highlight"><t t-esc="state.modalPrice"/></span>
+                                </div>
+                            </div>
+
+                            <div class="cc-modal-footer">
+                                <button type="button" class="cc-btn-secondary" t-on-click="closeModal">Cancel</button>
+                                <button type="button" class="cc-btn-primary" t-on-click="confirmBooking">
+                                    Confirm Booking
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- MODAL 2: Booking Confirmed Screen -->
+                <t t-if="state.isConfirmationOpen">
+                    <div class="cc-modal-backdrop">
+                        <div class="cc-modal-dialog cc-confirmed-dialog">
+                            <div class="cc-confirmed-badge">✓</div>
+                            <h3 class="cc-confirmed-title">Booking Confirmed</h3>
+                            
+                            <div class="cc-confirmed-card">
+                                <h4 class="cc-conf-court"><t t-esc="state.lastConfirmedBooking.court_name"/></h4>
+                                <div class="cc-conf-date"><t t-esc="formatDateDisplay(state.lastConfirmedBooking.date)"/></div>
+                                <div class="cc-conf-time"><t t-esc="formatTimeDisplay(state.lastConfirmedBooking.start_time)"/> – <t t-esc="formatTimeDisplay(state.lastConfirmedBooking.end_time)"/></div>
+                                <div class="cc-conf-id">Booking ID: <strong><t t-esc="state.lastConfirmedBooking.id"/></strong></div>
+                            </div>
+
+                            <button class="cc-btn-primary cc-btn-full" t-on-click="dismissConfirmation">
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- MODAL 3: Cancel Confirmation Dialog -->
+                <t t-if="state.isCancelModalOpen">
+                    <div class="cc-modal-backdrop" t-on-click="closeCancelModal">
+                        <div class="cc-modal-dialog cc-cancel-dialog" t-on-click.stop="">
+                            <h3 class="cc-modal-title">Cancel this booking?</h3>
+                            <p class="cc-modal-subtitle">
+                                Are you sure you want to cancel your reservation for 
+                                <strong><t t-esc="state.bookingToCancel.court_name"/></strong> on 
+                                <strong><t t-esc="formatDateDisplay(state.bookingToCancel.date)"/></strong>?
+                                The court slot will become immediately available for other members.
+                            </p>
+
+                            <div class="cc-modal-footer">
+                                <button type="button" class="cc-btn-secondary" t-on-click="closeCancelModal">
+                                    Keep Booking
+                                </button>
+                                <button type="button" class="cc-btn-danger" t-on-click="confirmCancelBooking">
+                                    Cancel Booking
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </main>
+        </div>
+    </t>
+</templates>

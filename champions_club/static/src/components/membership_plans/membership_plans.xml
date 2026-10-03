@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="champions_club.MembershipPlans">
+        <div class="cc-membership-page-wrapper">
+            <!-- 1. Header Component -->
+            <header class="cc-header">
+                <div class="cc-header-inner">
+                    <a href="#dashboard" class="cc-brand">
+                        <div class="cc-brand-emblem">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
+                            </svg>
+                        </div>
+                        <h1 class="cc-brand-title">Champions Club</h1>
+                    </a>
+
+                    <nav class="cc-nav">
+                        <a href="#dashboard" class="cc-nav-link">Dashboard</a>
+                        <a href="#members" class="cc-nav-link">Members</a>
+                        <a href="#memberships" class="cc-nav-link active">Memberships</a>
+                        <a href="#courts" class="cc-nav-link">Courts</a>
+                        <a href="#shop" class="cc-nav-link">Shop</a>
+                        <a href="#pos" class="cc-nav-link">POS</a>
+                        <a href="#reports" class="cc-nav-link">Reports</a>
+                    </nav>
+
+                    <div class="cc-header-right">
+                        <button class="cc-notification-btn" title="Notifications">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            <span class="cc-notification-badge"></span>
+                        </button>
+
+                        <div class="cc-user-profile">
+                            <div class="cc-user-avatar">VM</div>
+                            <div class="cc-user-info">
+                                <span class="cc-user-name">Vikram Mehta</span>
+                                <span class="cc-user-role">Club Operations Director</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="cc-main-container">
+                <!-- 2. Hero Section Component -->
+                <section class="cc-hero">
+                    <span class="cc-hero-pill">Memberships</span>
+                    <h1 class="cc-hero-heading">Choose Your Membership</h1>
+                    <p class="cc-hero-text">
+                        Get access to the club, courts and member benefits with a plan that fits you.
+                    </p>
+                </section>
+
+                <!-- 3. Membership Cards Grid (GOLD -> SILVER -> JUNIOR) -->
+                <section class="cc-cards-grid">
+                    <t t-foreach="state.plans" t-as="plan" t-key="plan.id">
+                        <div t-att-class="'cc-card cc-card-' + plan.id + (state.selectedPlanId === plan.id ? ' selected' : '')"
+                             t-on-click="() => this.selectPlan(plan.id)">
+                            
+                            <!-- Badges -->
+                            <t t-if="plan.id === 'gold' and plan.badge">
+                                <div class="cc-badge-popular"><t t-esc="plan.badge"/></div>
+                            </t>
+                            <t t-if="plan.id === 'junior' and plan.badge">
+                                <div class="cc-badge-junior"><t t-esc="plan.badge"/></div>
+                            </t>
+
+                            <!-- Header -->
+                            <div class="cc-card-header">
+                                <h3 class="cc-tier-name"><t t-esc="plan.name"/></h3>
+                                <p class="cc-tier-desc"><t t-esc="plan.description"/></p>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="cc-price-wrap">
+                                <span class="cc-price-curr"><t t-esc="plan.currency"/></span>
+                                <span class="cc-price-amount"><t t-esc="plan.price.toLocaleString('en-IN')"/></span>
+                                <span class="cc-price-period">/ <t t-esc="plan.billing_period"/></span>
+                            </div>
+
+                            <!-- Benefits List Component -->
+                            <ul class="cc-benefits-list">
+                                <t t-foreach="plan.benefits" t-as="benefit" t-key="benefit">
+                                    <li class="cc-benefit-item">
+                                        <svg class="cc-check-icon" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span><t t-esc="benefit"/></span>
+                                    </li>
+                                </t>
+                            </ul>
+
+                            <!-- Select Button -->
+                            <button class="cc-btn-select" t-att-id="'btn-select-' + plan.id">
+                                <t t-if="state.selectedPlanId === plan.id">
+                                    <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span>Selected</span>
+                                </t>
+                                <t t-else="">
+                                    <span>Choose <t t-esc="plan.name.charAt(0) + plan.name.slice(1).toLowerCase()"/></span>
+                                </t>
+                            </button>
+                        </div>
+                    </t>
+                </section>
+
+                <!-- 4. Comparison Section Component -->
+                <section class="cc-comparison-card">
+                    <div class="cc-comparison-header">
+                        <h2 class="cc-comparison-title">Membership Comparison</h2>
+                        <p class="cc-comparison-subtitle">
+                            Compare access privileges, court benefits, and club discounts across all tiers.
+                        </p>
+                    </div>
+
+                    <div class="cc-table-wrapper">
+                        <table class="cc-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-feature">Feature</th>
+                                    <th t-att-class="'col-gold' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">Gold</th>
+                                    <th t-att-class="'col-silver' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Silver</th>
+                                    <th t-att-class="'col-junior' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">Junior</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="col-feature">Club access</td>
+                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">Full club access (All facilities &amp; lounges)</td>
+                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Standard club access (Courts &amp; locker room)</td>
+                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">Junior access (Academy &amp; off-peak hours)</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-feature">Court benefits</td>
+                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">Priority prime-time booking &amp; 7 days advance</td>
+                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Standard booking window (4 days advance)</td>
+                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">Discounted court rates (Off-peak &amp; clinics)</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-feature">Shop benefits</td>
+                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">20% member discount on all gear</td>
+                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">10% member discount on gear</td>
+                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">5% discount on junior equipment</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-feature">Bar benefits</td>
+                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">15% discount at cafeteria &amp; sports bar</td>
+                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Standard member rates (No discount)</td>
+                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">10% smoothie bar &amp; snacks discount</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-feature">Membership type</td>
+                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">Premium / Full Access VIP</td>
+                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Standard Adult Membership</td>
+                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">Youth &amp; Academy (&lt; 18 yrs)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </t>
+</templates>
