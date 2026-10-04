@@ -34,7 +34,7 @@ function remembered() {
  */
 export class ClubMemberPicker extends Component {
     static template = "club_management.ClubMemberPicker";
-    static props = { onChange: Function, label: { type: String, optional: true } };
+    static props = { onChange: Function, label: { type: String, optional: true }, guestLabel: { type: String, optional: true }, guestHint: { type: String, optional: true } };
 
     setup() {
         this.orm = useService("orm");
@@ -75,7 +75,7 @@ export class ClubMemberPicker extends Component {
 
     optionLabel(member) {
         if (!member.id) {
-            return member.name;
+            return this.props.guestLabel || member.name;
         }
         const ended = member.status === "expired" ? ", expired" : "";
         return `${member.name} (${member.memberId}, ${member.plan}${ended})`;

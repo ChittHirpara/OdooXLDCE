@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 from odoo import api, fields, models
 from odoo.exceptions import AccessError
+from odoo.tools import html_escape
 
 from .booking import club_today
 from .club_support import FEEDBACK_AREAS
@@ -331,8 +332,7 @@ class ClubDashboard(models.AbstractModel):
             raise AccessError("Only club staff can open the club home page.")
         env = self.sudo().env
         today = club_today()
-        low_stock = len(env['stock.warehouse.orderpoint'].search([]).filtered(
-            lambda op: op.product_id.qty_available < op.product_min_qty))
+        low_stock = len(self._low_stock_points())
         days = int(env['ir.config_parameter'].get_param('club_management.reminder_days', DEFAULT_REMINDER_DAYS))
         return {
             'user': self.env.user.name,
@@ -437,3 +437,29 @@ class ClubDashboard(models.AbstractModel):
             'overall': 'alert' if 'alert' in statuses else ('warn' if 'warn' in statuses else 'ok'),
             'checks': checks,
         }
+
+    @api.model
+    def _low_stock_points(self):
+        return self.sudo().env['stock.warehouse.orderpoint'].search([]).filtered(
+            lambda op: op.product_id.qty_available < op.product_min_qty)
+
+    @api.model
+    def _cron_low_stock_alert(self):
+        """Daily: tell the managers which products are below their reorder minimum (nothing if none)."""
+        points = self._low_stock_points()
+        if not points:
+            return 0
+        managers = self.env.ref('club_management.group_club_manager').sudo().users.filtered(
+            lambda u: u.active and u.email and not u.share)
+        if not managers:
+            return 0
+        rows = ''.join('<tr><td>%s</td><td>%d on hand</td><td>minimum %d</td></tr>' % (
+            html_escape(op.product_id.name), op.product_id.qty_available, op.product_min_qty) for op in points)
+        self.env['mail.mail'].sudo().create({
+            'subject': 'Low stock: %d product(s) need reordering' % len(points),
+            'email_to': ','.join(managers.mapped('email')),
+            'body_html': '<p>These products are below their reorder minimum:</p>'
+                         '<table cellpadding="4">%s</table><p>The Champions Club</p>' % rows,
+            'auto_delete': True,
+        }).send()
+        return len(points)

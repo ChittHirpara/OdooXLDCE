@@ -11,7 +11,7 @@
             <span class="cc-acting-hint" t-if="selected.id">
                 <t t-esc="selected.plan"/> member prices apply<t t-if="selected.status === 'expired'"> (membership ended: standard prices)</t>
             </span>
-            <span class="cc-acting-hint" t-else="">Walk-in: full price. Pick a member to apply their plan.</span>
+            <span class="cc-acting-hint" t-else="" t-esc="props.guestHint or 'Walk-in: full price. Pick a member to apply their plan.'"/>
         </div>
     </t>
 </templates>

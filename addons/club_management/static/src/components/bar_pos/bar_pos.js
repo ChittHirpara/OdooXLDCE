@@ -104,27 +104,22 @@ export class BarPOSPage extends Component {
 
             // Shift data
             shiftData: {
-                session_id: "SESH-2026-004",
-                staff_name: "Rahul Verma",
-                start_time: "Today, 08:30 AM",
-                orders_count: 42,
-                cash_sales: 8500,
-                card_sales: 6200,
-                upi_sales: 7800,
-                total_sales: 22500,
-                formatted_cash: "₹8,500",
-                formatted_card: "₹6,200",
-                formatted_upi: "₹7,800",
-                formatted_total: "₹22,500"
+                session_id: "",
+                staff_name: "",
+                start_time: "",
+                orders_count: 0,
+                cash_sales: 0,
+                card_sales: 0,
+                upi_sales: 0,
+                total_sales: 0,
+                formatted_cash: "₹0",
+                formatted_card: "₹0",
+                formatted_upi: "₹0",
+                formatted_total: "₹0",
             },
 
             // Order History Log
-            orderHistory: [
-                { order_ref: "POS-00124", table: "Table 05", member: "Rohan Shah", amount: "₹250.00", method: "CASH", status: "Paid", time: "10:14 AM" },
-                { order_ref: "POS-00123", table: "Table 03", member: "Chitt Hirpara", amount: "₹780.00", method: "UPI", status: "Paid", time: "09:48 AM" },
-                { order_ref: "POS-00122", table: "Bar 01", member: "Walk-in Guest", amount: "₹180.00", method: "CARD", status: "Paid", time: "09:20 AM" },
-                { order_ref: "POS-00121", table: "Table 01", member: "Aarav Patel", amount: "₹420.00", method: "UPI", status: "Paid", time: "08:55 AM" },
-            ],
+            orderHistory: [],
 
             loading: false,
             error: null,

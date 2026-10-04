@@ -67,7 +67,42 @@
                     </t>
                 </section>
 
+                <t t-if="state.error">
+                    <section class="cc-enrol"><p class="cc-enrol-error" t-esc="state.error"/></section>
+                </t>
+                <!-- Enrol at the desk -->
+                <section class="cc-enrol" t-if="selectedPlan">
+                    <h2 class="cc-enrol-title">Enrol at the desk</h2>
+                    <p class="cc-enrol-sub">
+                        Plan: <strong t-esc="selectedPlan.name"/> for <t t-esc="selectedPlan.currency"/><t t-esc="selectedPlan.price.toLocaleString('en-IN')"/>.
+                        The invoice, member card, welcome e-mail and sign-in link are created for you.
+                    </p>
+                    <ClubMemberPicker t-key="state.formKey" label="'Enrolling'" guestLabel="'New person (not a member yet)'" guestHint="'Pick an existing member to renew, or enter the new person below.'" onChange.bind="onMemberChange"/>
+                    <div class="cc-enrol-form" t-if="isNewPerson" t-key="state.formKey">
+                        <input class="cc-enrol-input" placeholder="Full name" t-model="state.person.name"/>
+                        <input class="cc-enrol-input" type="email" placeholder="E-mail" t-model="state.person.email"/>
+                        <input class="cc-enrol-input" placeholder="Phone (optional)" t-model="state.person.phone"/>
+                        <label class="cc-enrol-dob" t-if="selectedPlan.code === 'junior'">Date of birth
+                            <input class="cc-enrol-input" type="date" t-model="state.person.dob"/>
+                        </label>
+                    </div>
+                    <div class="cc-enrol-actions">
+                        <select class="cc-enrol-input" t-model="state.method">
+                            <option value="cash">Paid in cash</option>
+                            <option value="card">Paid by card</option>
+                            <option value="upi">Paid by UPI</option>
+                        </select>
+                        <button class="cc-enrol-btn" t-att-disabled="state.busy" t-on-click="enrol">
+                            <i class="fa fa-check-circle"/> <t t-esc="state.busy ? 'Working...' : enrolLabel"/>
+                        </button>
+                    </div>
+                    <p class="cc-enrol-done" t-if="state.done">
+                        <i class="fa fa-check"/> <t t-esc="state.done.message"/> Invoice <t t-esc="state.done.invoice"/> is paid.
+                    </p>
+                </section>
+
                 <!-- 4. Comparison Section Component -->
+
                 <section class="cc-comparison-card">
                     <div class="cc-comparison-header">
                         <h2 class="cc-comparison-title">Membership Comparison</h2>
@@ -81,43 +116,22 @@
                             <thead>
                                 <tr>
                                     <th class="col-feature">Feature</th>
-                                    <th t-att-class="'col-gold' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">Gold</th>
-                                    <th t-att-class="'col-silver' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Silver</th>
-                                    <th t-att-class="'col-junior' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">Junior</th>
+                                    <t t-foreach="state.plans" t-as="plan" t-key="plan.id">
+                                        <th t-att-class="'col-' + plan.id + (state.selectedPlanId === plan.id ? ' selected-col' : '')"><t t-esc="plan.name.charAt(0) + plan.name.slice(1).toLowerCase()"/></th>
+                                    </t>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="col-feature">Club access</td>
-                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">Full club access (All facilities &amp; lounges)</td>
-                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Standard club access (Courts &amp; locker room)</td>
-                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">Junior access (Academy &amp; off-peak hours)</td>
-                                </tr>
-                                <tr>
-                                    <td class="col-feature">Court benefits</td>
-                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">Priority prime-time booking &amp; 7 days advance</td>
-                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Standard booking window (4 days advance)</td>
-                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">Discounted court rates (Off-peak &amp; clinics)</td>
-                                </tr>
-                                <tr>
-                                    <td class="col-feature">Shop benefits</td>
-                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">20% member discount on all gear</td>
-                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">10% member discount on gear</td>
-                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">5% discount on junior equipment</td>
-                                </tr>
-                                <tr>
-                                    <td class="col-feature">Bar benefits</td>
-                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">15% discount at cafeteria &amp; sports bar</td>
-                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Standard member rates (No discount)</td>
-                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">10% smoothie bar &amp; snacks discount</td>
-                                </tr>
-                                <tr>
-                                    <td class="col-feature">Membership type</td>
-                                    <td t-att-class="'col-gold col-val highlight' + (state.selectedPlanId === 'gold' ? ' selected-col' : '')">Premium / Full Access VIP</td>
-                                    <td t-att-class="'col-silver col-val' + (state.selectedPlanId === 'silver' ? ' selected-col' : '')">Standard Adult Membership</td>
-                                    <td t-att-class="'col-junior col-val' + (state.selectedPlanId === 'junior' ? ' selected-col' : '')">Youth &amp; Academy (&lt; 18 yrs)</td>
-                                </tr>
+                                <t t-foreach="comparisonRows" t-as="row" t-key="row.key">
+                                    <tr>
+                                        <td class="col-feature"><t t-esc="row.label"/></td>
+                                        <t t-foreach="state.plans" t-as="plan" t-key="plan.id">
+                                            <td t-att-class="'col-' + plan.id + ' col-val' + (plan.id === 'gold' ? ' highlight' : '') + (state.selectedPlanId === plan.id ? ' selected-col' : '')"><t t-esc="plan.features[row.key]"/></td>
+                                        </t>
+                                    </tr>
+                                </t>
                             </tbody>
+
                         </table>
                     </div>
                 </section>

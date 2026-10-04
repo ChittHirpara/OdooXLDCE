@@ -12,7 +12,7 @@ import re
 from datetime import date, timedelta
 
 from odoo import Command, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError
 
 from .booking import club_today
 from .res_partner import JUNIOR_AGE_LIMIT
@@ -118,6 +118,64 @@ class ClubMembershipPurchase(models.AbstractModel):
             self._pay(invoice, last4)
         return {'partner': partner, 'invoice': invoice, 'renewal': renewal, 'created': created, 'plan': plan}
 
+    @api.model
+    def desk_enroll(self, plan_code, partner_id=None, name=None, email=None, phone=None,
+                    date_of_birth=None, method='cash'):
+        """Front desk: enrol or renew someone in person and take the payment at the desk.
+
+        Same chain as the website (enquiry -> quotation -> invoice -> member -> payment) so the
+        CRM, accounting and e-mails look identical; only staff can use it and nobody needs a
+        card. A new person gets the welcome e-mail and the "set your password" invitation.
+        """
+        if not self.env.user.has_group('club_management.group_club_staff'):
+            raise AccessError("Only club staff can enrol members at the desk.")
+        plan = self.env['club.membership.plan'].sudo().search([('code', '=', plan_code)], limit=1)
+        if not plan:
+            raise ValidationError("Unknown membership plan.")
+        Partner = self.env['res.partner'].sudo()
+        partner = Partner.browse(int(partner_id)).exists() if partner_id else Partner
+        dob = fields.Date.to_date(date_of_birth) if date_of_birth else False
+        if not partner:
+            email = (email or '').strip()
+            if not (name or '').strip():
+                raise ValidationError("Enter the person's name.")
+            if not email:
+                raise ValidationError("Enter an e-mail address: the member card and sign-in link are sent there.")
+            partner = Partner.search([('email', '=ilike', email)], limit=1)
+        if plan.code == 'junior':
+            born = dob or partner.date_of_birth
+            if not born:
+                raise ValidationError("A Junior membership needs the child's date of birth.")
+            today = club_today()
+            if today.year - born.year - ((today.month, today.day) < (born.month, born.day)) >= JUNIOR_AGE_LIMIT:
+                raise ValidationError("Junior memberships are for children under %d. Please choose another plan." % JUNIOR_AGE_LIMIT)
+        with self.env.cr.savepoint():
+            if not partner:
+                partner = Partner.create({'name': name.strip()[:100], 'email': email,
+                                          'phone': (phone or '').strip()[:30] or False, 'date_of_birth': dob or False})
+            elif dob and not partner.date_of_birth:
+                partner.date_of_birth = dob
+            renewal = bool(partner.is_member)
+            invoice = self._renew(partner, plan) if renewal else self._join(partner, plan, phone)
+            self._pay(invoice, note="Paid at the front desk (%s)" % (method or 'cash'))
+        return {'partner': partner, 'invoice': invoice, 'renewal': renewal, 'plan': plan}
+
+    @api.model
+    def desk_enroll_api(self, plan_code, partner_id=None, name=None, email=None, phone=None,
+                        date_of_birth=None, method='cash'):
+        """JSON-friendly wrapper of `desk_enroll` for the staff screen."""
+        res = self.desk_enroll(plan_code, partner_id=partner_id, name=name, email=email, phone=phone,
+                               date_of_birth=date_of_birth, method=method)
+        partner, plan, invoice = res['partner'], res['plan'], res['invoice']
+        verb = "renewed" if res['renewal'] else "joined"
+        return {
+            'partner_id': partner.id, 'member_id': partner.member_id, 'name': partner.name,
+            'plan': plan.name, 'renewal': res['renewal'], 'invoice': invoice.name if invoice else False,
+            'expiry': partner.expiry_date.isoformat() if partner.expiry_date else False,
+            'message': "%s %s the %s plan (%s). Valid until %s." % (
+                partner.name, verb, plan.name, partner.member_id, partner.expiry_date),
+        }
+
     def _plan_order(self, partner, plan, lead=None):
         if not plan.product_id:
             plan._sync_product()
@@ -158,7 +216,7 @@ class ClubMembershipPurchase(models.AbstractModel):
                              subtype_xmlid='mail.mt_note')
         return invoices[:1]
 
-    def _pay(self, invoice, last4):
+    def _pay(self, invoice, last4=None, note=None):
         """Record the payment against the posted invoice. Accounting problems are logged, not fatal:
         the customer has paid and is a member either way."""
         if not invoice or invoice.state != 'posted':
@@ -173,7 +231,7 @@ class ClubMembershipPurchase(models.AbstractModel):
             with self.env.cr.savepoint():
                 self.env['account.payment.register'].sudo().with_context(
                     active_model='account.move', active_ids=invoice.ids).create({
-                        'journal_id': journal.id, 'communication': "Online card payment ****%s (test mode)" % last4,
+                        'journal_id': journal.id, 'communication': note or "Online card payment ****%s (test mode)" % last4,
                 }).action_create_payments()
         except Exception:    # noqa: BLE001
             _logger.exception("Could not record the payment of %s", invoice.name)

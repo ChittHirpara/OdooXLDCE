@@ -536,11 +536,11 @@ The pro-shop on the website is browse-and-reserve (pay at the club); there is **
 
 Judges respect candour. These are true today:
 
-- **No online payment** on the website. Shop is "reserve for pickup"; membership is quote, then accept.
-- **The OWL screens run under staff sessions.** There is no member self-service login yet.
-- **"Choose plan" on the plans screen** only shows a notification; joining goes through the enquiry form.
+- **Payments are test mode.** Membership is bought online with a test card gateway (nothing is charged); shop orders are paid at the club or on delivery. A real provider can replace `check_card`.
+- **The OWL screens run under staff sessions.** Members have their own login and self-service page (My Club, /my/club).
+- **Desk enrolment** on the Membership Plans screen takes payment as cash, card or UPI by staff declaration; no terminal is integrated.
 - **Rupees** apply only to databases built with `scripts/create_demo_db.sh` (Odoo's own accounting demo data blocks a currency change, so a plain install with Odoo demo data stays in dollars).
-- **Accounting is basic:** court bookings can create draft invoices; shop and bar orders are recorded as club orders and stock moves, not as posted accounting entries. A real deployment would map these to a chart of accounts and taxes.
+- **Accounting is simple:** membership, shop and bar sales raise a posted invoice with the payment registered on the bank journal, and a court booking becomes an invoice from the booking form (Create Invoice); a real deployment would map them to a full chart of accounts and taxes.
 - The `preview/` folder is an **offline mock-up** of the screens (no Odoo needed), kept for design reference; the real screens live in `addons/club_management/static/src/components`.
 
 ---

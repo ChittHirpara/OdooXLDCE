@@ -201,4 +201,25 @@
 </div>
         </field>
     </record>
+    <record id="mail_template_booking_reminder" model="mail.template">
+        <field name="name">Club: court booking reminder (day before)</field>
+        <field name="model_id" ref="model_club_booking"/>
+        <field name="subject">Reminder: {{ object.court_id.name }} tomorrow at {{ format_datetime(object.start_datetime, tz='Asia/Kolkata', dt_format='HH:mm') }} ({{ object.name }})</field>
+        <field name="email_to">{{ object.partner_id.email or object.guest_email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.partner_id.name or object.walkin_name or ''"/>,</p>
+    <p>A reminder that you have a court booked tomorrow.</p>
+    <table cellpadding="4" style="border-collapse:collapse">
+        <tr><td><strong>Court</strong></td><td><t t-out="object.court_id.name"/></td></tr>
+        <tr><td><strong>When</strong></td><td><t t-out="format_datetime(object.start_datetime, tz='Asia/Kolkata', dt_format='EEEE d MMMM y, HH:mm')"/></td></tr>
+    </table>
+    <t t-if="object.access_token">
+        <p>Can't make it? <a t-attf-href="{{ object.get_base_url() }}/booking/{{ object.access_token }}">Cancel here</a> so someone else can play.</p>
+    </t>
+    <p>The Champions Club</p>
+</div>
+        </field>
+    </record>
 </odoo>

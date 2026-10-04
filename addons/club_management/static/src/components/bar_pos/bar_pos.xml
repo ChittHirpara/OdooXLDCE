@@ -41,7 +41,7 @@
                     </button>
 
                     <div class="cc-staff-profile">
-                        <div class="cc-staff-avatar">RV</div>
+                        <div class="cc-staff-avatar"><t t-esc="initials(state.shiftData.staff_name)"/></div>
                         <div class="cc-staff-info">
                             <span class="cc-staff-name"><t t-esc="state.shiftData.staff_name"/></span>
                             <span class="cc-staff-role">POS Cashier</span>

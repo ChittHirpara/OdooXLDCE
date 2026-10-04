@@ -77,7 +77,7 @@ class TestPurchase(TransactionCase):
         self.assertEqual(invoice.club_source, 'membership')
         self.assertEqual(invoice.amount_total, self.gold.price)
         self.assertEqual(invoice.payment_state, 'paid')
-        payment = self.env['account.payment'].search([('reconciled_invoice_ids', 'in', invoice.id)])
+        payment = invoice._get_reconciled_payments()
         self.assertIn('****4242', payment.ref or '')
         self.assertNotIn('4242 4242', payment.ref or '', "only the last four digits are kept")
 

@@ -490,3 +490,39 @@
     }
   }
 }
+
+// Enrol at the desk
+.cc-enrol {
+  max-width: 1100px;
+  margin: 1.5rem auto;
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  color: #0f172a;
+
+  .cc-enrol-title { font-size: 1.25rem; font-weight: 800; margin: 0 0 0.25rem; }
+  .cc-enrol-sub { color: #64748b; margin: 0 0 1rem; }
+  .cc-enrol-error { color: #b91c1c; margin: 0; }
+  .cc-enrol-form, .cc-enrol-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; align-items: flex-end; }
+  .cc-enrol-input {
+    flex: 1 1 14rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #0f172a;
+  }
+  .cc-enrol-dob { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; font-size: 0.85rem; }
+  .cc-enrol-btn {
+    flex: 1 1 18rem;
+    padding: 0.6rem 1.1rem;
+    border: 0;
+    border-radius: 999px;
+    background: #059669;
+    color: #ffffff;
+    font-weight: 700;
+    &:disabled { opacity: 0.6; }
+  }
+  .cc-enrol-done { margin: 1rem 0 0; color: #047857; font-weight: 600; }
+}
