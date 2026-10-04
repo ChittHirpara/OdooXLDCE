@@ -2,48 +2,6 @@
 <templates xml:space="preserve">
     <t t-name="club_management.MembershipPlans">
         <div class="cc-membership-page-wrapper">
-            <!-- 1. Header Component -->
-            <header class="cc-header">
-                <div class="cc-header-inner">
-                    <a href="#dashboard" class="cc-brand">
-                        <div class="cc-brand-emblem">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
-                            </svg>
-                        </div>
-                        <h1 class="cc-brand-title">Champions Club</h1>
-                    </a>
-
-                    <nav class="cc-nav">
-                        <a href="#dashboard" class="cc-nav-link">Dashboard</a>
-                        <a href="#members" class="cc-nav-link">Members</a>
-                        <a href="#memberships" class="cc-nav-link active">Memberships</a>
-                        <a href="#courts" class="cc-nav-link">Courts</a>
-                        <a href="#shop" class="cc-nav-link">Shop</a>
-                        <a href="#pos" class="cc-nav-link">POS</a>
-                        <a href="#reports" class="cc-nav-link">Reports</a>
-                    </nav>
-
-                    <div class="cc-header-right">
-                        <button class="cc-notification-btn" title="Notifications">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                            </svg>
-                            <span class="cc-notification-badge"></span>
-                        </button>
-
-                        <div class="cc-user-profile">
-                            <div class="cc-user-avatar">VM</div>
-                            <div class="cc-user-info">
-                                <span class="cc-user-name">Vikram Mehta</span>
-                                <span class="cc-user-role">Club Operations Director</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
             <main class="cc-main-container">
                 <!-- 2. Hero Section Component -->
                 <section class="cc-hero">

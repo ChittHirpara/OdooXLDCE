@@ -2,56 +2,8 @@
 <templates xml:space="preserve">
     <t t-name="club_management.ShopPage">
         <div class="cc-shop-app">
-            <!-- 1. Top Navigation Bar -->
-            <header class="cc-header">
-                <div class="cc-header-inner">
-                    <a href="#dashboard" class="cc-brand">
-                        <div class="cc-brand-emblem">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                                <line x1="3" y1="6" x2="21" y2="6"/>
-                                <path d="M16 10a4 4 0 0 1-8 0"/>
-                            </svg>
-                        </div>
-                        <h1 class="cc-brand-title">Champions Club Shop</h1>
-                    </a>
-
-                    <nav class="cc-nav">
-                        <a href="#dashboard" class="cc-nav-link">Dashboard</a>
-                        <a href="#members" class="cc-nav-link">Members</a>
-                        <a href="#memberships" class="cc-nav-link">Memberships</a>
-                        <a href="#courts" class="cc-nav-link">Courts</a>
-                        <a href="#shop" class="cc-nav-link active">Shop</a>
-                        <a href="#pos" class="cc-nav-link">POS</a>
-                        <a href="#reports" class="cc-nav-link">Reports</a>
-                    </nav>
-
-                    <div class="cc-header-right">
-                        <!-- Cart Trigger Button -->
-                        <button class="cc-cart-trigger-btn" t-on-click="openCart" title="View Cart">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="9" cy="21" r="1"/>
-                                <circle cx="20" cy="21" r="1"/>
-                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                            </svg>
-                            <span>Cart</span>
-                            <t t-if="cartCount > 0">
-                                <span class="cc-cart-badge"><t t-esc="cartCount"/></span>
-                            </t>
-                        </button>
-
-                        <div class="cc-user-profile" title="Member Profile">
-                            <div class="cc-user-avatar">CH</div>
-                            <div class="cc-user-info">
-                                <span class="cc-user-name"><t t-esc="member.name"/></span>
-                                <span class="cc-user-role"><t t-esc="member.plan"/> Member (20% Off)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
             <main class="cc-main-container">
+                <ClubMemberPicker onChange.bind="onMemberChange" label="'Selling to'"/>
                 <!-- VIEW 1: CATALOG & SHOPPING -->
                 <t t-if="state.currentView === 'catalog'">
                     <!-- Shop Hero & Search Controls -->
@@ -152,7 +104,7 @@
                                         <div class="cc-card-price-row">
                                             <div class="cc-card-pricing">
                                                 <span class="cc-price-main">₹<t t-esc="product.price.toLocaleString('en-IN')"/></span>
-                                                <span class="cc-member-price-sub">₹<t t-esc="Math.round(product.price * 0.8).toLocaleString('en-IN')"/> (Gold)</span>
+                                                <span class="cc-member-price-sub" t-if="member.id and product.member_price !== undefined and product.member_price &lt; product.price">₹<t t-esc="Math.round(product.member_price).toLocaleString('en-IN')"/> (<t t-esc="member.plan"/>)</span>
                                             </div>
 
                                             <t t-if="product.stock > 0">
@@ -200,7 +152,7 @@
                                         <div class="cc-m-avatar">CH</div>
                                         <div class="cc-m-details">
                                             <h4 class="cc-m-name"><t t-esc="member.name"/></h4>
-                                            <span class="cc-m-plan"><t t-esc="member.plan"/> Member Account • 20% Pro-Shop Discount Applied</span>
+                                            <span class="cc-m-plan"><t t-if="member.id"><t t-esc="member.plan"/> Member Account • <t t-esc="member.discountPct"/>% Pro-Shop Discount Applied</t><t t-else="">Walk-in guest • full price</t></span>
                                         </div>
                                     </div>
                                 </div>
@@ -275,8 +227,8 @@
                                         <span>Subtotal</span>
                                         <span>₹<t t-esc="cartSubtotal.toLocaleString('en-IN')"/></span>
                                     </div>
-                                    <div class="cc-price-row discount-row">
-                                        <span>Gold Member Discount (20%)</span>
+                                    <div class="cc-price-row discount-row" t-if="memberDiscountAmount">
+                                        <span><t t-esc="member.plan"/> Member Discount (<t t-esc="member.discountPct"/>%)</span>
                                         <span class="cc-discount-text">-₹<t t-esc="memberDiscountAmount.toLocaleString('en-IN')"/></span>
                                     </div>
                                     <div class="cc-price-row">
@@ -356,7 +308,7 @@
 
                                     <div class="cc-detail-pricing">
                                         <span class="cc-detail-price">₹<t t-esc="state.selectedProduct.price.toLocaleString('en-IN')"/></span>
-                                        <span class="cc-member-badge">₹<t t-esc="Math.round(state.selectedProduct.price * 0.8).toLocaleString('en-IN')"/> with Gold Membership</span>
+                                        <span class="cc-member-badge" t-if="member.id and state.selectedProduct.member_price !== undefined and state.selectedProduct.member_price &lt; state.selectedProduct.price">₹<t t-esc="Math.round(state.selectedProduct.member_price).toLocaleString('en-IN')"/> with <t t-esc="member.plan"/> Membership</span>
                                     </div>
 
                                     <p class="cc-detail-description"><t t-esc="state.selectedProduct.description"/></p>
@@ -455,8 +407,8 @@
                                         <span>Subtotal</span>
                                         <span>₹<t t-esc="cartSubtotal.toLocaleString('en-IN')"/></span>
                                     </div>
-                                    <div class="cc-drawer-price-row discount">
-                                        <span>Gold Member Discount (20%)</span>
+                                    <div class="cc-drawer-price-row discount" t-if="memberDiscountAmount">
+                                        <span><t t-esc="member.plan"/> Member Discount (<t t-esc="member.discountPct"/>%)</span>
                                         <span class="cc-discount-text">-₹<t t-esc="memberDiscountAmount.toLocaleString('en-IN')"/></span>
                                     </div>
                                     <div class="cc-drawer-price-row total">

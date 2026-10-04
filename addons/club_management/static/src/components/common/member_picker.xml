@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.ClubMemberPicker">
+        <div class="cc-actingbar">
+            <label for="cc-acting-member"><i class="fa fa-user-circle-o"/> <t t-esc="props.label or 'Booking for'"/></label>
+            <select id="cc-acting-member" class="cc-acting-select" t-on-change="onSelect">
+                <t t-foreach="state.members" t-as="m" t-key="m.id">
+                    <option t-att-value="m.id" t-att-selected="m.id === state.selectedId"><t t-esc="optionLabel(m)"/></option>
+                </t>
+            </select>
+            <span class="cc-acting-hint" t-if="selected.id">
+                <t t-esc="selected.plan"/> member prices apply<t t-if="selected.status === 'expired'"> (membership ended: standard prices)</t>
+            </span>
+            <span class="cc-acting-hint" t-else="">Walk-in: full price. Pick a member to apply their plan.</span>
+        </div>
+    </t>
+</templates>

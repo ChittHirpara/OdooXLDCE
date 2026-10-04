@@ -42,6 +42,9 @@
     'assets': {
         'web.assets_backend': [
             'club_management/static/src/scss/champions_variables.scss',
+            'club_management/static/src/components/common/member_picker.scss',
+            'club_management/static/src/components/common/member_picker.xml',
+            'club_management/static/src/components/common/member_picker.js',
             'club_management/static/src/components/membership_plans/membership_plans.scss',
             'club_management/static/src/components/membership_plans/membership_plans.xml',
             'club_management/static/src/components/membership_plans/membership_plans.js',

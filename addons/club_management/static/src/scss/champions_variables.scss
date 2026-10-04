@@ -4,17 +4,17 @@
   --cc-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* Surfaces & Backgrounds (Modern Athletic Luxury) */
-  --cc-bg-canvas: #090D14;
-  --cc-bg-surface: #0F172A;
-  --cc-bg-card: #151F32;
-  --cc-bg-card-hover: #1A2740;
-  --cc-bg-elevated: #1E293B;
-  --cc-bg-glass: rgba(21, 31, 50, 0.85);
+  --cc-bg-canvas: #F8FAFC;
+  --cc-bg-surface: #FFFFFF;
+  --cc-bg-card: #FFFFFF;
+  --cc-bg-card-hover: #F1F5F9;
+  --cc-bg-elevated: #F1F5F9;
+  --cc-bg-glass: rgba(255, 255, 255, 0.9);
 
   /* Border Tokens */
-  --cc-border-subtle: #1E293B;
-  --cc-border-default: #2A3950;
-  --cc-border-hover: #3B4E6C;
+  --cc-border-subtle: #E2E8F0;
+  --cc-border-default: #CBD5E1;
+  --cc-border-hover: #94A3B8;
   --cc-border-accent: #10B981;
 
   /* Athletic & Tier Accent Tokens */
@@ -35,8 +35,8 @@
   --cc-junior-glow: rgba(6, 182, 212, 0.15);
 
   /* Text & Readability */
-  --cc-text-primary: #F8FAFC;
-  --cc-text-secondary: #94A3B8;
+  --cc-text-primary: #0F172A;
+  --cc-text-secondary: #475569;
   --cc-text-muted: #64748B;
   --cc-text-inverse: #090D14;
 
@@ -48,8 +48,8 @@
   --cc-radius-pill: 9999px;
 
   --cc-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --cc-shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35);
-  --cc-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --cc-shadow-md: 0 6px 16px rgba(15, 23, 42, 0.10);
+  --cc-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.14);
   --cc-shadow-gold: 0 10px 30px rgba(245, 158, 11, 0.15);
   --cc-shadow-emerald: 0 10px 30px rgba(16, 185, 129, 0.15);
 

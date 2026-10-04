@@ -2,43 +2,8 @@
 <templates xml:space="preserve">
     <t t-name="club_management.CourtBookingPage">
         <div class="cc-booking-app">
-            <!-- 1. Top Navigation Bar -->
-            <header class="cc-header">
-                <div class="cc-header-inner">
-                    <a href="#dashboard" class="cc-brand">
-                        <div class="cc-brand-emblem">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="12" y1="2" x2="12" y2="22"/>
-                                <path d="M12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6"/>
-                            </svg>
-                        </div>
-                        <h1 class="cc-brand-title">Champions Club</h1>
-                    </a>
-
-                    <nav class="cc-nav">
-                        <a href="#dashboard" class="cc-nav-link">Dashboard</a>
-                        <a href="#members" class="cc-nav-link">Members</a>
-                        <a href="#memberships" class="cc-nav-link">Memberships</a>
-                        <a href="#courts" class="cc-nav-link active">Courts</a>
-                        <a href="#shop" class="cc-nav-link">Shop</a>
-                        <a href="#pos" class="cc-nav-link">POS</a>
-                        <a href="#reports" class="cc-nav-link">Reports</a>
-                    </nav>
-
-                    <div class="cc-header-right">
-                        <div class="cc-user-profile" title="Current Member Profile">
-                            <div class="cc-user-avatar">CH</div>
-                            <div class="cc-user-info">
-                                <span class="cc-user-name"><t t-esc="member.name"/></span>
-                                <span class="cc-user-role"><t t-esc="member.plan"/> Member</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
             <main class="cc-main-container">
+                <ClubMemberPicker onChange.bind="onMemberChange" label="'Booking for'"/>
                 <!-- View Switcher Tabs: Grid vs My Bookings -->
                 <div class="cc-view-switcher">
                     <button t-att-class="'cc-view-btn ' + (state.currentView === 'grid' ? 'active' : '')" 
@@ -47,7 +12,7 @@
                     </button>
                     <button t-att-class="'cc-view-btn ' + (state.currentView === 'my_bookings' ? 'active' : '')" 
                             t-on-click="() => this.setView('my_bookings')">
-                        My Bookings
+                        <t t-esc="member.id ? 'Bookings' : 'Recent bookings'"/>
                         <span class="cc-counter-pill"><t t-esc="state.myBookings.length"/></span>
                     </button>
                 </div>
@@ -182,7 +147,7 @@
                                     <div class="cc-selection-subtitle">
                                         <t t-esc="formatDateDisplay(state.selectedDate)"/>
                                         <span class="cc-dot-divider">•</span>
-                                        <span class="cc-tag-gold"><t t-esc="member.plan"/> Member</span>
+                                        <span class="cc-tag-gold"><t t-esc="member.id ? member.plan + ' Member' : 'Walk-in guest'"/></span>
                                     </div>
                                 </div>
                             </div>
@@ -205,7 +170,7 @@
                     <section class="cc-my-bookings-container">
                         <div class="cc-page-header">
                             <div>
-                                <h2 class="cc-page-title">My Bookings</h2>
+                                <h2 class="cc-page-title"><t t-esc="member.id ? 'Bookings for ' + member.name : 'Recent bookings at the club'"/></h2>
                                 <p class="cc-page-subtitle">View and manage your upcoming court reservations.</p>
                             </div>
                         </div>
@@ -315,7 +280,7 @@
                                 </div>
                                 <div class="cc-summary-row">
                                     <span class="cc-label">Plan:</span>
-                                    <span class="cc-val"><span class="cc-tag-gold"><t t-esc="member.plan"/> Member</span></span>
+                                    <span class="cc-val"><span class="cc-tag-gold"><t t-esc="member.id ? member.plan + ' Member' : 'Walk-in guest'"/></span></span>
                                 </div>
                                 <div class="cc-summary-divider"></div>
                                 <div class="cc-summary-row cc-price-row">

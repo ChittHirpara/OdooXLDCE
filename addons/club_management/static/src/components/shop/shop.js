@@ -3,6 +3,7 @@
 import { Component, useState, onWillStart } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
+import { ClubMemberPicker, WALK_IN } from "../common/member_picker";
 
 // Comprehensive Catalog for Pro-Shop
 const DEFAULT_PRODUCTS = [
@@ -147,15 +148,9 @@ const CATEGORIES = [
     { id: "apparel", label: "Apparel" },
 ];
 
-const CURRENT_MEMBER = {
-    name: "Chitt Hirpara",
-    plan: "Gold",
-    planCode: "gold",
-    discountPct: 20, // 20% discount on Pro-Shop as per Gold Plan
-};
-
 export class ShopPage extends Component {
     static template = "club_management.ShopPage";
+    static components = { ClubMemberPicker };
 
     setup() {
         try {
@@ -186,6 +181,7 @@ export class ShopPage extends Component {
             // Checkout & Order
             fulfillment: "club_pickup", // "club_pickup" | "home_delivery"
             deliveryAddress: "",
+            member: { ...WALK_IN },
             paymentMethod: "member_account", // "member_account" | "upi_card"
             confirmedOrder: null,
 
@@ -195,32 +191,19 @@ export class ShopPage extends Component {
         });
 
         onWillStart(async () => {
-            await this.loadMember();
             await this.loadCatalog();
         });
     }
 
-    /** The logged-in member and their shop discount come from Odoo (constants are offline preview only). */
-    async loadMember() {
-        if (!this.orm) return;
-        try {
-            const member = await this.orm.call("res.partner", "get_current_member", []);
-            if (member && member.id) {
-                Object.assign(CURRENT_MEMBER, {
-                    id: member.id,
-                    name: member.name,
-                    plan: member.plan,
-                    planCode: member.plan_code,
-                    discountPct: member.shop_discount,
-                });
-            }
-        } catch (err) {
-            console.warn("[Shop OWL] Could not load the member profile:", err);
-        }
+    /** Who the desk is selling to changed: reload the catalog with their prices. */
+    async onMemberChange(member) {
+        this.state.member = { ...member };
+        await this.loadCatalog();
     }
 
     get member() {
-        return CURRENT_MEMBER;
+        const member = this.state.member;
+        return { ...member, discountPct: member.shopDiscountPct || 0 };
     }
 
     get cartCount() {
@@ -258,7 +241,7 @@ export class ShopPage extends Component {
                 const res = await this.orm.call("club.shop.product", "get_shop_catalog", [
                     "all",
                     "",
-                    CURRENT_MEMBER.id,
+                    this.state.member.id,
                 ]);
                 // Always take the server's list, even if empty: the sample catalog is only
                 // for the offline preview.
@@ -403,7 +386,7 @@ export class ShopPage extends Component {
             let res;
             try {
                 res = await this.orm.call("club.shop.order", "place_order", [{
-                    partner_id: CURRENT_MEMBER.id,
+                    partner_id: this.state.member.id,
                     items: this.state.cart.map((i) => ({ product_id: i.product.id, qty: i.qty })),
                     fulfillment: this.state.fulfillment === "club_pickup" ? "Collect at Club" : "Home Delivery",
                     delivery_address: this.state.deliveryAddress,
