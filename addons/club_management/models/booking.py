@@ -1,3 +1,4 @@
+import logging
 import re
 import uuid
 from datetime import datetime, timedelta
@@ -7,6 +8,8 @@ import pytz
 from odoo import Command, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import email_normalize
+
+_logger = logging.getLogger(__name__)
 
 CLUB_TZ = pytz.timezone('Asia/Kolkata')
 SLOT_MINUTES = 30
@@ -47,6 +50,7 @@ class Booking(models.Model):
     booking_date = fields.Date(compute='_compute_times', store=True, string='Date (club time)')
     is_social = fields.Boolean(compute='_compute_times', store=True, string='Friday Social Play')
     players = fields.Integer(default=1)
+    reminder_sent = fields.Boolean(copy=False, readonly=True, help="The day-before reminder e-mail went out.")
     state = fields.Selection(
         [('draft', 'Draft'), ('confirmed', 'Confirmed'), ('cancelled', 'Cancelled'), ('done', 'Done')],
         default='draft', required=True, tracking=True)
@@ -212,6 +216,27 @@ class Booking(models.Model):
                     "Booking %s has a posted invoice (%s). Issue a credit note before cancelling."
                     % (booking.name, booking.invoice_id.name))
         self.state = 'cancelled'
+        self._send_cancellation()
+
+    @api.model
+    def _cron_send_booking_reminders(self):
+        """E-mail everyone with a confirmed booking tomorrow (club time), once per booking."""
+        template = self.env.ref('club_management.mail_template_booking_reminder', raise_if_not_found=False)
+        if not template:
+            return 0
+        due = self.search([('state', '=', 'confirmed'), ('booking_date', '=', club_today() + timedelta(days=1)),
+                           ('reminder_sent', '=', False)]).filtered(
+            lambda b: b.partner_id.email or b.guest_email)
+        for booking in due:
+            template.sudo().send_mail(booking.id)
+            booking.sudo().reminder_sent = True
+        return len(due)
+
+    def _send_cancellation(self):
+        template = self.env.ref('club_management.mail_template_booking_cancelled', raise_if_not_found=False)
+        for booking in self:
+            if template and (booking.partner_id.email or booking.guest_email):
+                template.sudo().send_mail(booking.id)
 
     def action_create_invoice(self):
         """Create a draft customer invoice for the booking price.
@@ -234,6 +259,7 @@ class Booking(models.Model):
                 label += " (%s)" % booking.walkin_name
             booking.invoice_id = self.env['account.move'].with_company(booking.company_id).create({
                 'move_type': 'out_invoice',
+                'club_source': 'court',
                 'partner_id': (booking.partner_id or walkin_partner).id,
                 'invoice_origin': booking.name,
                 'invoice_line_ids': [Command.create({
@@ -255,8 +281,39 @@ class Booking(models.Model):
         }
 
     def action_done(self):
+        """The session was played: close the booking and take the court fee at the club.
+
+        A paid booking gets its invoice posted and paid (cash), so Court -> Payment -> Accounting ->
+        Dashboard is one chain. Free bookings (Gold) have nothing to invoice. Accounting problems
+        are logged and never block staff from closing a session.
+        """
         self._require_state('confirmed')
         self.state = 'done'
+        for booking in self.filtered(lambda b: b.price > 0):
+            booking._settle_at_club()
+
+    def _settle_at_club(self):
+        self.ensure_one()
+        try:
+            with self.env.cr.savepoint():
+                if not self.invoice_id:
+                    self.action_create_invoice()
+                move = self.invoice_id
+                if move.state == 'draft':
+                    move.action_post()
+                if move.state == 'posted' and move.payment_state not in ('paid', 'in_payment'):
+                    Journal = self.env['account.journal']
+                    domain = [('company_id', '=', self.company_id.id)]
+                    journal = Journal.search(domain + [('type', '=', 'cash')], limit=1) \
+                        or Journal.search(domain + [('type', '=', 'bank')], limit=1)
+                    if journal:
+                        self.env['account.payment.register'].with_context(
+                            active_model='account.move', active_ids=move.ids).create(
+                            {'journal_id': journal.id, 'communication': "Paid at the club: %s" % self.name}
+                        )._create_payments()
+        except Exception:  # noqa: BLE001 - see docstring
+            _logger.exception("Could not invoice and settle booking %s", self.name)
+
 
     def action_draft(self):
         self._require_state('cancelled')
@@ -461,7 +518,7 @@ class Booking(models.Model):
 
     @api.model
     def create_public_booking(self, court_id, date_str, time_str, name, phone=None, email=None,
-                              players=1, member_ref=None, member_email=None):
+                              players=1, member_ref=None, member_email=None, member=None):
         """Book a court online, instantly confirmed, for a website visitor.
 
         A guest pays the court's list price. A member who gives their member ID and the
@@ -478,7 +535,10 @@ class Booking(models.Model):
         start = self._club_start_utc(date_str, time_str)
         self._check_public_window(start)
         partner = self.env['res.partner']
-        if member_ref:
+        if member:      # a signed-in member: the website already knows who they are
+            partner = member.sudo()
+            name = partner.name
+        elif member_ref:
             partner = self.env['res.partner']._club_verify_member(member_ref, member_email)
             name = partner.name
         else:

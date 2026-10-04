@@ -6,8 +6,17 @@ services:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo
       POSTGRES_DB: postgres
+    # Host port 5433 so pgAdmin can connect (5432 is usually taken by a local Postgres).
+    ports:
+      - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+  # A mail catcher for development and demos: Odoo's emails land here instead of the internet.
+  # Web inbox: http://localhost:8025
+  mail:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
   odoo:
     image: odoo:17.0
     # The web server shows the club database (built by scripts/create_demo_db.sh), so that
@@ -16,6 +25,7 @@ services:
     command: odoo -d club --db-filter=^club$$
     depends_on:
       - db
+      - mail
     ports:
       - "8069:8069"
     environment:

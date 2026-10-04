@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================= Feedback ================= -->
+    <template id="feedback_page" name="Share your feedback">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_feedback'"/>
+            <div id="wrap" class="club-site club-feedback">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'Feedback'"/>
+                    <t t-set="title" t-value="'How did we do?'"/>
+                    <t t-set="subtitle" t-value="'Rate the courts, the bar, the shop or the club as a whole. It takes a minute and we read every one.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container club-form-wrap">
+                        <form action="/feedback/submit" method="post" class="club-form" novalidate="novalidate">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="booking" t-att-value="form['booking']"/>
+                            <input type="hidden" name="order" t-att-value="form['order']"/>
+                            <div class="alert alert-danger" role="alert" t-if="error" t-esc="error"/>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="fb-area">What are you rating?</label>
+                                    <select id="fb-area" name="area" class="form-select">
+                                        <t t-foreach="areas" t-as="area">
+                                            <option t-att-value="area[0]" t-esc="area[1]"
+                                                    t-att-selected="'selected' if form['area'] == area[0] else None"/>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label d-block">Your rating *</label>
+                                    <div class="club-stars">
+                                        <t t-foreach="[5, 4, 3, 2, 1]" t-as="star">
+                                            <input type="radio" name="rating" t-att-id="'star-%d' % star" t-att-value="star"
+                                                   t-att-checked="'checked' if str(form['rating']) == str(star) else None"/>
+                                            <label t-att-for="'star-%d' % star" t-att-title="'%d star%s' % (star, '' if star == 1 else 's')">
+                                                <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">
+                                                    <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.400l6.600-.9z"/>
+                                                </svg>
+                                            </label>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="fb-comment">Tell us more (optional)</label>
+                                    <textarea id="fb-comment" name="comment" rows="4" maxlength="2000" class="form-control" t-esc="form['comment']"/>
+                                </div>
+                                <t t-if="request.env.user._is_public()">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="fb-name">Your name (optional)</label>
+                                        <input id="fb-name" type="text" name="name" class="form-control" maxlength="100" t-att-value="form['name']"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="fb-email">Email (optional)</label>
+                                        <input id="fb-email" type="email" name="email" class="form-control" t-att-value="form['email']"/>
+                                    </div>
+                                </t>
+                                <div class="club-hp" aria-hidden="true">
+                                    <label for="fb-website">Leave this empty</label>
+                                    <input id="fb-website" type="text" name="website_url" tabindex="-1" autocomplete="off"/>
+                                </div>
+                                <div class="col-12"><button type="submit" class="btn btn-club-primary btn-lg">Send feedback</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="feedback_thanks_page" name="Feedback sent">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_feedback_thanks'"/>
+            <div id="wrap" class="club-site club-feedback">
+                <section class="club-section">
+                    <div class="container club-form-wrap text-center club-success">
+                        <div class="club-check">✓</div>
+                        <h1>Thank you!</h1>
+                        <p class="club-lead-dark">Your feedback helps us make the club better.</p>
+                        <p t-if="rating and rating &lt;= 2">We are sorry it fell short.
+                            If something needs fixing, <a href="/support">tell our support team</a> and we will follow up.</p>
+                        <p class="mt-4"><a href="/courts">Book a court</a> · <a href="/club-shop">Visit the shop</a></p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- ================= Support ================= -->
+    <template id="support_page" name="Help and support">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_support'"/>
+            <div id="wrap" class="club-site club-support">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'Support'"/>
+                    <t t-set="title" t-value="'How can we help?'"/>
+                    <t t-set="subtitle" t-value="'A problem with a booking or an order, a complaint or a refund request: tell us and we will make it right.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container club-form-wrap">
+                        <form action="/support/submit" method="post" class="club-form" novalidate="novalidate">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="booking" t-att-value="form['booking']"/>
+                            <input type="hidden" name="order" t-att-value="form['order']"/>
+                            <div class="alert alert-danger" role="alert" t-if="error" t-esc="error"/>
+                            <div class="alert alert-info" t-if="form['booking'] or form['order']">
+                                This request will be linked to your <t t-esc="form['booking'] and 'booking' or 'order'"/>.
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="sp-name">Your name *</label>
+                                    <input id="sp-name" type="text" name="name" class="form-control" maxlength="100" t-att-value="form['name']"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="sp-category">What is it about? *</label>
+                                    <select id="sp-category" name="category" class="form-select">
+                                        <t t-foreach="categories" t-as="cat">
+                                            <option t-att-value="cat[0]" t-esc="cat[1]"
+                                                    t-att-selected="'selected' if form['category'] == cat[0] else None"/>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="sp-email">Email</label>
+                                    <input id="sp-email" type="email" name="email" class="form-control" t-att-value="form['email']"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="sp-phone">Phone</label>
+                                    <input id="sp-phone" type="tel" name="phone" class="form-control" maxlength="30" t-att-value="form['phone']"/>
+                                    <div class="form-text">Email or phone, so we can reply.</div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="sp-subject">Short title *</label>
+                                    <input id="sp-subject" type="text" name="subject" class="form-control" maxlength="150" t-att-value="form['subject']"/>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="sp-description">What happened?</label>
+                                    <textarea id="sp-description" name="description" rows="5" maxlength="2000" class="form-control" t-esc="form['description']"/>
+                                </div>
+                                <div class="club-hp" aria-hidden="true">
+                                    <label for="sp-website">Leave this empty</label>
+                                    <input id="sp-website" type="text" name="website_url" tabindex="-1" autocomplete="off"/>
+                                </div>
+                                <div class="col-12"><button type="submit" class="btn btn-club-primary btn-lg">Send request</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="ticket_page" name="Support request status">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_ticket'"/>
+            <div id="wrap" class="club-site club-status">
+                <section class="club-section">
+                    <div class="container club-form-wrap">
+                        <div class="club-check" t-if="new">✓</div>
+                        <p class="club-eyebrow-dark">Request <span class="club-ref" t-esc="status['reference']"/></p>
+                        <h1 t-esc="status['state']"/>
+                        <p class="club-lead-dark" t-esc="status['subject']"/>
+                        <ol class="club-timeline">
+                            <li t-foreach="steps" t-as="step"
+                                t-attf-class="club-step #{step_index &lt; current and 'done' or ''} #{step_index == current and 'current' or ''}">
+                                <span class="club-step-dot"/><span t-esc="step[1]"/>
+                            </li>
+                        </ol>
+                        <p class="club-muted"><t t-esc="status['category']"/> · received <t t-esc="status['received'][:10]"/></p>
+                        <div class="club-summary" t-if="status['resolution']">
+                            <h5>What we did</h5>
+                            <p t-esc="status['resolution']"/>
+                        </div>
+                        <p class="club-muted">Keep this page: the link is private to you. We will also email you when it is resolved.</p>
+                        <p><a href="/feedback">Rate your experience</a> · <a href="/support">Send another request</a></p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

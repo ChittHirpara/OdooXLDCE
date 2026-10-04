@@ -248,7 +248,7 @@ class TestQuotation(CrmCommon):
         self.assertEqual(self.silver.product_id.list_price, 3500.0)
         lead = self.enquire(plan='silver')
         order = self.env['sale.order'].browse(lead.action_create_membership_quote()['res_id'])
-        self.assertEqual(order.amount_untaxed, 3500.0)
+        self.assertEqual(order.amount_total, 3500.0)
 
 
 @tagged('post_install', '-at_install', 'club_management')

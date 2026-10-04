@@ -73,7 +73,13 @@ class ProductProduct(models.Model):
         ('snacks', 'Snacks')
     ], string='Club Subcategory')
 
-    image_icon = fields.Char(string='Emoji Icon', default='🎾')
+    def _club_image_url(self):
+        """The product picture for staff screens, with the write date so a new picture shows at once."""
+        self.ensure_one()
+        if not self.image_128:
+            return ''
+        return '/web/image/product.product/%d/image_512?unique=%s' % (
+            self.id, fields.Datetime.to_string(self.write_date) if self.write_date else '')
 
     def _club_stock(self):
         """Real units on hand for stock-tracked products; a fixed 'available' number otherwise."""
@@ -111,7 +117,8 @@ class ProductProduct(models.Model):
                 'member_price': round(member_price, 2),
                 'stock': p._club_stock(),
                 'description': p.description_sale or p.name,
-                'image_icon': p.image_icon or '🎾',
+                'has_image': bool(p.image_128),
+                'image_url': p._club_image_url(),
             })
         return result
 
@@ -130,7 +137,8 @@ class ProductProduct(models.Model):
                 'price': p.list_price,
                 'stock': stock,
                 'is_available': stock > 0,
-                'image_icon': p.image_icon or '☕',
+                'has_image': bool(p.image_128),
+                'image_url': p._club_image_url(),
             })
         return result
 
@@ -220,7 +228,7 @@ class ClubOrderService(models.AbstractModel):
     @api.model
     def _create_order(self, channel, lines, plan, partner, **vals):
         self._check_and_deduct_stock(lines)
-        return self.env['club.order'].create(dict(
+        order = self.env['club.order'].create(dict(
             vals,
             channel=channel,
             partner_id=partner.id,
@@ -230,6 +238,8 @@ class ClubOrderService(models.AbstractModel):
                 'list_price': l['list_price'], 'unit_price': l['unit_price'],
             }) for l in lines],
         ))
+        order._create_invoice()
+        return order
 
     @api.model
     def process_pos_payment(self, vals):
@@ -265,7 +275,7 @@ class ClubOrderService(models.AbstractModel):
 
     @api.model
     def place_public_order(self, items, name, phone=None, email=None, fulfillment='collect',
-                           address=None, member_ref=None, member_email=None):
+                           address=None, member_ref=None, member_email=None, member=None):
         """A website visitor's pro-shop order: priced on the server, stock deducted, paid at the
         club (collect) or on delivery. A member who gives their member ID and the e-mail on file
         gets their tier price. Only products sold in the public shop can be ordered this way.
@@ -275,7 +285,11 @@ class ClubOrderService(models.AbstractModel):
         phone = re.sub(r'[^\d+]', '', phone or '')
         email = email_normalize((email or '').strip()) or False
         partner = self.env['res.partner']
-        if member_ref:
+        if member:      # a signed-in member: the website already knows who they are
+            partner = member.sudo()
+            name = partner.name
+            email = email or email_normalize(partner.email or '') or False
+        elif member_ref:
             partner = self.env['res.partner']._club_verify_member(member_ref, member_email)
             name = partner.name
         else:

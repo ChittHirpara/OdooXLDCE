@@ -1,0 +1,36 @@
+// "Booking for" / "Selling to" bar shared by the court, shop and plans screens.
+.cc-actingbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #0f172a;
+
+  label {
+    margin: 0;
+    font-weight: 700;
+    color: #059669;
+    white-space: nowrap;
+  }
+
+  .cc-acting-select {
+    min-width: 18rem;
+    max-width: 100%;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  .cc-acting-hint {
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+}

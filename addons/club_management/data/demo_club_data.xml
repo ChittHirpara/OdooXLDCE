@@ -86,7 +86,6 @@
         <field name="categ_id" ref="club_management.product_category_shop"/>
         <field name="club_category">rackets</field>
         <field name="list_price">12500.0</field>
-        <field name="image_icon">🏓</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -96,7 +95,6 @@
         <field name="categ_id" ref="club_management.product_category_shop"/>
         <field name="club_category">rackets</field>
         <field name="list_price">14200.0</field>
-        <field name="image_icon">🎾</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -106,7 +104,6 @@
         <field name="categ_id" ref="club_management.product_category_shop"/>
         <field name="club_category">rackets</field>
         <field name="list_price">8900.0</field>
-        <field name="image_icon">🏸</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -116,7 +113,6 @@
         <field name="categ_id" ref="club_management.product_category_shop"/>
         <field name="club_category">balls</field>
         <field name="list_price">550.0</field>
-        <field name="image_icon">🎾</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -126,7 +122,6 @@
         <field name="categ_id" ref="club_management.product_category_shop"/>
         <field name="club_category">balls</field>
         <field name="list_price">620.0</field>
-        <field name="image_icon">🏓</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -136,7 +131,6 @@
         <field name="categ_id" ref="club_management.product_category_shop"/>
         <field name="club_category">balls</field>
         <field name="list_price">1850.0</field>
-        <field name="image_icon">🏸</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -147,7 +141,6 @@
         <field name="categ_id" ref="club_management.product_category_bar"/>
         <field name="club_category">coffee</field>
         <field name="list_price">80.0</field>
-        <field name="image_icon">☕</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -157,7 +150,6 @@
         <field name="categ_id" ref="club_management.product_category_bar"/>
         <field name="club_category">coffee</field>
         <field name="list_price">140.0</field>
-        <field name="image_icon">☕</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -167,7 +159,6 @@
         <field name="categ_id" ref="club_management.product_category_bar"/>
         <field name="club_category">shakes</field>
         <field name="list_price">220.0</field>
-        <field name="image_icon">🥤</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -177,7 +168,6 @@
         <field name="categ_id" ref="club_management.product_category_bar"/>
         <field name="club_category">drinks</field>
         <field name="list_price">60.0</field>
-        <field name="image_icon">💧</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -187,7 +177,6 @@
         <field name="categ_id" ref="club_management.product_category_bar"/>
         <field name="club_category">food</field>
         <field name="list_price">250.0</field>
-        <field name="image_icon">🍔</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -197,7 +186,6 @@
         <field name="categ_id" ref="club_management.product_category_bar"/>
         <field name="club_category">food</field>
         <field name="list_price">210.0</field>
-        <field name="image_icon">🌯</field>
         <field name="detailed_type">consu</field>
         <field name="sale_ok" eval="True"/>
     </record>
@@ -232,4 +220,7 @@
         <field name="capacity">6</field>
         <field name="status">available</field>
     </record>
+    <!-- Product pictures (idempotent: only products without a picture get one). -->
+    <function model="club.demo" name="load_product_images"/>
+    <function model="club.finance" name="ensure_tax"/>
 </odoo>

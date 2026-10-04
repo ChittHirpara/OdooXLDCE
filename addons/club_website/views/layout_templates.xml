@@ -45,17 +45,26 @@
                     <t t-else="">Bar and cafeteria at standard prices</t>
                 </li>
             </ul>
-            <a t-attf-href="/join?type=membership&amp;plan=#{plan.code}"
+            <a t-attf-href="/membership/buy/#{plan.code}"
                t-attf-class="btn #{plan.code == 'gold' and 'btn-club-primary' or 'btn-club-outline'} w-100">
-                Join <t t-esc="plan.name"/>
+                Get <t t-esc="plan.name"/> now
             </a>
+            <a t-attf-href="/join?type=membership&amp;plan=#{plan.code}" class="club-plan-ask">Questions first? Ask us</a>
         </div>
+    </template>
+
+    <!-- A product picture, or a neutral icon while the product has none. Param: product (dict) -->
+    <template id="product_image" name="Club product image">
+        <img t-if="product['has_image']" t-att-src="'/club-shop/image/%d' % product['id']"
+             t-att-alt="product['name']" loading="lazy"/>
+        <span class="club-no-image" t-else=""><t t-call="club_website.icon">
+            <t t-set="name" t-value="'box'"/><t t-set="size" t-value="48"/></t></span>
     </template>
 
     <!-- One shop product. Params: product (dict), site (club.website.data) -->
     <template id="product_card" name="Club product card">
         <a t-attf-href="/club-shop/#{product['id']}" class="club-product text-decoration-none">
-            <div class="club-product-icon" t-esc="product['image_icon']"/>
+            <div class="club-product-img"><t t-call="club_website.product_image"/></div>
             <span class="club-product-cat" t-esc="product['category_label']"/>
             <h4 class="club-product-name" t-esc="product['name']"/>
             <div class="club-product-foot">
@@ -82,6 +91,8 @@
                             <li><a href="/courts">Court availability</a></li>
                             <li><a href="/club-shop">Pro-Shop</a></li>
                             <li><a href="/about">About the club</a></li>
+                            <li><a href="/feedback">Share your feedback</a></li>
+                            <li><a href="/support">Help and support</a></li>
                         </ul>
                     </div>
                     <div class="col-md-4">
@@ -100,6 +111,11 @@
                 </div>
             </div>
         </section>
+    </template>
+
+    <!-- No "Powered by Odoo / Create a free website" promotion in the club's footer -->
+    <template id="no_brand_promotion" inherit_id="website.brand_promotion" name="Club: no Odoo promotion">
+        <xpath expr="//t[@t-call='web.brand_promotion_message']" position="replace"/>
     </template>
 
     <template id="footer" inherit_id="website.footer_custom" name="Club footer (site-wide)">

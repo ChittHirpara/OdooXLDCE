@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.OwnerDashboard">
+        <div class="o_club_dashboard p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h2 class="m-0">Owner Dashboard</h2>
+                <div class="btn-group">
+                    <t t-foreach="periods" t-as="p" t-key="p.key">
+                        <button class="btn"
+                                t-att-class="state.period === p.key ? 'btn-primary' : 'btn-outline-primary'"
+                                t-on-click="() => this.setPeriod(p.key)" t-esc="p.label"/>
+                    </t>
+                </div>
+            </div>
+            <t t-if="state.data">
+                <h6 class="text-muted text-uppercase mb-2">Revenue</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-lg"><div class="card p-3 h-100">
+                        <div class="text-muted">Total revenue</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.total_revenue)"/>
+                    </div></div>
+                    <div class="col-6 col-lg"><div class="card p-3 h-100">
+                        <div class="text-muted">Membership revenue</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.membership_revenue)"/>
+                    </div></div>
+                    <div class="col-6 col-lg"><div class="card p-3 h-100">
+                        <div class="text-muted">Court revenue</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.court_revenue)"/>
+                    </div></div>
+                    <div class="col-6 col-lg"><div class="card p-3 h-100">
+                        <div class="text-muted">Shop revenue</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.shop_sales)"/>
+                    </div></div>
+                    <div class="col-6 col-lg"><div class="card p-3 h-100">
+                        <div class="text-muted">Bar revenue</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.bar_sales)"/>
+                    </div></div>
+                </div>
+
+                <h6 class="text-muted text-uppercase mb-2">Members and today</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Active members</div>
+                        <div class="fs-3 fw-bold" t-esc="state.data.active_members"/>
+                        <div class="small text-muted">
+                            <t t-foreach="state.data.members_by_plan" t-as="plan" t-key="plan.name">
+                                <span class="me-2"><t t-esc="plan.name"/>: <t t-esc="plan.count"/></span>
+                            </t>
+                        </div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Expired memberships</div>
+                        <div class="fs-3 fw-bold" t-att-class="state.data.expired_members ? 'text-warning' : ''" t-esc="state.data.expired_members"/>
+                        <div class="small text-muted">to renew</div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Today's bookings</div>
+                        <div class="fs-3 fw-bold" t-esc="state.data.todays_bookings"/>
+                        <div class="small text-muted">courts booked today</div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Today's sales</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.todays_sales)"/>
+                        <div class="small text-muted">all revenue streams</div>
+                    </div></div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6"><div class="card p-3 h-100">
+                        <h5>Revenue by source</h5>
+                        <t t-foreach="state.data.by_source" t-as="src" t-key="src.key">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span t-esc="src.label"/>
+                                    <span><t t-esc="money(src.amount)"/> (<t t-esc="src.share"/>%)</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar" t-att-style="'width:' + src.share + '%'"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div></div>
+                    <div class="col-md-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Court utilization</div>
+                        <div class="fs-2 fw-bold"><t t-esc="state.data.court_utilization"/>%</div>
+                        <div class="small text-muted"><t t-esc="state.data.court_bookings"/> bookings</div>
+                    </div></div>
+                    <div class="col-md-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Outstanding payments</div>
+                        <div class="fs-2 fw-bold text-danger" t-esc="money(state.data.outstanding_amount)"/>
+                        <div class="small text-muted"><t t-esc="state.data.outstanding_count"/> unpaid invoices</div>
+                    </div></div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6"><div class="card p-3 h-100">
+                        <div class="text-muted">Member satisfaction</div>
+                        <div class="fs-2 fw-bold">
+                            <t t-if="state.data.ratings.count"><t t-esc="state.data.ratings.average"/> / 5</t>
+                            <t t-else="">No ratings yet</t>
+                        </div>
+                        <div class="small text-muted" t-if="state.data.ratings.count">
+                            <t t-foreach="state.data.ratings.rows" t-as="row" t-key="row.area">
+                                <span class="me-3" t-if="row.count"><t t-esc="row.label"/>: <b t-esc="row.average"/> (<t t-esc="row.count"/>)</span>
+                            </t>
+                        </div>
+                    </div></div>
+                    <div class="col-md-6"><div class="card p-3 h-100">
+                        <div class="text-muted">Open support tickets</div>
+                        <div class="fs-2 fw-bold" t-att-class="state.data.open_tickets ? 'text-warning' : ''" t-esc="state.data.open_tickets"/>
+                        <div class="small text-muted">complaints, booking, refund and order issues</div>
+                    </div></div>
+                </div>
+                <h6 class="text-muted text-uppercase mb-2">What we owe, taxes and business clients</h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">We owe suppliers and staff</div>
+                        <div class="fs-3 fw-bold" t-att-class="state.data.money.owed_total ? 'text-danger' : ''" t-esc="money(state.data.money.owed_total)"/>
+                        <div class="small text-muted">
+                            Bills <t t-esc="money(state.data.money.owed_bills)"/> · Salaries <t t-esc="money(state.data.money.owed_salaries)"/>
+                        </div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">GST in sales (to report)</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.money.tax_collected)"/>
+                        <div class="small text-muted">tax included in the prices, this period</div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Business clients billed</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.money.business_billed)"/>
+                        <div class="small text-muted">
+                            <t t-esc="state.data.money.business_clients"/> clients · <t t-esc="money(state.data.money.business_open)"/> unpaid
+                        </div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Payroll this month</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.money.payroll_total)"/>
+                        <div class="small text-muted">
+                            <t t-esc="state.data.money.payroll_state"/> · <t t-esc="state.data.money.employees"/> employees ·
+                            <a href="#" t-on-click.prevent="openLeave"><t t-esc="state.data.money.pending_leave"/> leave to approve</a>
+                        </div>
+                    </div></div>
+                </div>
+                <div class="card p-3 mb-3">
+                    <h6 class="mb-2">Share these numbers</h6>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <button class="btn btn-outline-primary" t-on-click="downloadCsv"><i class="fa fa-download"/> Download (CSV)</button>
+                        <input class="form-control" style="max-width: 20rem;" type="email" placeholder="E-mail the report to..." t-model="state.shareTo"/>
+                        <button class="btn btn-primary" t-att-disabled="state.sharing" t-on-click="emailReport"><i class="fa fa-envelope-o"/> Send</button>
+                        <span class="text-muted small" t-if="state.shareMessage" t-esc="state.shareMessage"/>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button class="btn btn-link" t-on-click="openReports">Open Reports &amp; Analytics <i class="fa fa-arrow-right"/></button>
+                </div>
+            </t>
+            <div t-elif="state.loading" class="text-muted">Loading...</div>
+        </div>
+    </t>
+</templates>

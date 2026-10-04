@@ -7,8 +7,10 @@ from datetime import datetime, timedelta
 
 from odoo import http
 from odoo.addons.club_management.models.booking import to_club_time
+from odoo.addons.club_website.controllers.member import member_card, signed_in_defaults, signed_in_member
 from odoo.exceptions import ValidationError
 from odoo.http import request
+from werkzeug.urls import url_quote
 
 CART = 'club_cart'
 
@@ -22,6 +24,9 @@ class ClubOnline(http.Controller):
     # ------------------------------------------------------------------
     # small helpers
     # ------------------------------------------------------------------
+    def _login_url(self):
+        return '/web/login?redirect=' + url_quote(request.httprequest.full_path.rstrip('?'), safe='')
+
     def _flash(self, message):
         request.session['club_flash'] = message
 
@@ -48,8 +53,10 @@ class ClubOnline(http.Controller):
                 window_error = exc.args[0]
         local = to_club_time(start) if start else None
         values = {'name': '', 'phone': '', 'email': '', 'players': '1', 'member_ref': '', 'member_email': ''}
+        values.update(signed_in_defaults())
         values.update({key: (value or '') for key, value in (form or {}).items()})
         return {
+            'member': member_card(signed_in_member()), 'login_url': self._login_url(),
             'court': court, 'book_date': date or '', 'book_time': time or '', 'form': values,
             'error': error or window_error, 'can_book': bool(court and not window_error),
             'when': local.strftime('%A %d %B %Y') if local else '',
@@ -75,7 +82,8 @@ class ClubOnline(http.Controller):
         try:
             booking = request.env['club.booking'].create_public_booking(
                 int(court_id or 0), date, time, name, phone=phone, email=email,
-                players=players, member_ref=member_ref, member_email=member_email)
+                players=players, member_ref=member_ref, member_email=member_email,
+                member=signed_in_member() or None)
         except ValidationError as error:
             response = request.render('club_website.book_page',
                                       self._book_values(court_id, date, time, form, error.args[0]))
@@ -123,7 +131,7 @@ class ClubOnline(http.Controller):
         values = {
             'lines': lines, 'count': sum(line['qty'] for line in lines),
             'subtotal': sum(line['total'] for line in lines), 'flash': self._take_flash(),
-            'site': self.site,
+            'site': self.site, 'member': member_card(signed_in_member()), 'login_url': self._login_url(),
         }
         values.update(extra)
         return values
@@ -174,6 +182,7 @@ class ClubOnline(http.Controller):
     def _checkout_form(self, **overrides):
         form = {'name': '', 'phone': '', 'email': '', 'fulfillment': 'collect', 'address': '',
                 'member_ref': '', 'member_email': ''}
+        form.update(signed_in_defaults())
         form.update({key: (value or '') for key, value in overrides.items()})
         return form
 
@@ -195,7 +204,7 @@ class ClubOnline(http.Controller):
         try:
             order = request.env['club.order.service'].place_public_order(
                 items, name, phone=phone, email=email, fulfillment=fulfillment, address=address,
-                member_ref=member_ref, member_email=member_email)
+                member_ref=member_ref, member_email=member_email, member=signed_in_member() or None)
         except ValidationError as error:
             response = request.render('club_website.checkout_page', self._cart_values(
                 form=form, error=error.args[0]))

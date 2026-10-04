@@ -1,4 +1,8 @@
-from odoo import api, fields, models
+import logging
+
+from odoo import Command, api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class ClubOrder(models.Model):
@@ -29,6 +33,7 @@ class ClubOrder(models.Model):
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company, required=True)
     currency_id = fields.Many2one(related='company_id.currency_id')
     line_ids = fields.One2many('club.order.line', 'order_id', readonly=True)
+    invoice_id = fields.Many2one('account.move', string='Invoice', copy=False, readonly=True)
     subtotal = fields.Monetary(compute='_compute_totals', store=True)
     discount = fields.Monetary(compute='_compute_totals', store=True)
     total = fields.Monetary(compute='_compute_totals', store=True)
@@ -51,6 +56,42 @@ class ClubOrder(models.Model):
     def get_by_token(self, token):
         token = (token or '').strip()
         return self.sudo().search([('access_token', '=', token)], limit=1) if len(token) >= 16 else self.browse()
+
+    def _create_invoice(self):
+        """Post a customer invoice for the order and register the payment already taken.
+
+        Accounting must never block a sale at the till, so a failure (for example a company
+        without a chart of accounts) is logged and the order simply stays without an invoice.
+        """
+        walkin = self.env.ref('club_management.partner_walkin', raise_if_not_found=False)
+        for order in self.filtered(lambda o: not o.invoice_id and o.line_ids):
+            try:
+                with self.env.cr.savepoint():
+                    move = self.env['account.move'].with_company(order.company_id).create({
+                        'move_type': 'out_invoice',
+                        'club_source': order.channel,
+                        'partner_id': (order.partner_id or walkin).id,
+                        'invoice_origin': order.name,
+                        'invoice_line_ids': [Command.create({
+                            'product_id': line.product_id.id,
+                            'quantity': line.qty,
+                            'price_unit': line.unit_price,
+                        }) for line in order.line_ids],
+                    })
+                    move.action_post()
+                    order.invoice_id = move
+                    order._register_payment(move)
+            except Exception:  # noqa: BLE001 - see docstring
+                _logger.exception("Could not invoice club order %s", order.name)
+
+    def _register_payment(self, move):
+        journal_type = 'cash' if self.payment_method == 'cash' else 'bank'
+        journal = self.env['account.journal'].search(
+            [('company_id', '=', self.company_id.id), ('type', '=', journal_type)], limit=1)
+        if journal and move.state == 'posted':
+            self.env['account.payment.register'].with_context(
+                active_model='account.move', active_ids=move.ids,
+            ).create({'journal_id': journal.id})._create_payments()
 
     def _send_confirmation(self):
         template = self.env.ref('club_management.mail_template_order_confirmed', raise_if_not_found=False)

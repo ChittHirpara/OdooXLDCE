@@ -72,6 +72,7 @@ class MembershipPlan(models.Model):
                 plan.product_id.write(vals)
             else:
                 plan.product_id = self.env['product.product'].create(vals)
+            self.env['club.finance'].apply_tax(plan.product_id)
 
     def _sync_pricelist(self):
         """Keep one pricelist per plan: shop % on the Club Shop category and
@@ -114,7 +115,7 @@ class MembershipPlan(models.Model):
                 'court_benefits': "Priority prime-time booking & 7 days advance (Rate: ₹0/hr)" if p.code == "gold" else (
                     f"Standard booking window (Rate: ₹{int(p.court_rate)}/hr)" if p.code == "silver" else f"Discounted court rates (Rate: ₹{int(p.court_rate)}/hr)"),
                 'shop_benefits': f"{int(p.shop_discount)}% member discount on gear",
-                'bar_discount': f"{int(p.bar_discount)}% discount at cafeteria & sports bar" if p.bar_discount > 0 else "Standard member rates (No discount)",
+                'bar_benefits': f"{int(p.bar_discount)}% discount at cafeteria & sports bar" if p.bar_discount > 0 else "Standard member rates (No discount)",
                 'membership_type': "Premium / Full Access VIP" if p.code == "gold" else (
                     "Standard Adult Membership" if p.code == "silver" else "Youth & Academy (< 18 yrs)"),
             }
@@ -122,7 +123,7 @@ class MembershipPlan(models.Model):
                 features['club_access'],
                 features['court_benefits'],
                 features['shop_benefits'],
-                features['bar_discount'],
+                features['bar_benefits'],
             ]
             result.append({
                 'id': p.code,

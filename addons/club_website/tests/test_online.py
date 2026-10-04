@@ -74,8 +74,10 @@ class TestBookingPages(OnlineCase):
         self.assertIn('Online Test Court', html)
         self.assertIn('10:00 to 11:00', html)
         self.assertIn('₹700', html)
-        for name in ('name', 'phone', 'email', 'member_ref', 'member_email', 'website_url', 'csrf_token'):
+        for name in ('name', 'phone', 'email', 'website_url', 'csrf_token'):
             self.assertIn('name="%s"' % name, html)
+        self.assertNotIn('name="member_ref"', html, "no member ID box: members just sign in")
+        self.assertIn('Sign in', html)
         self.assertIn('Confirm booking', html)
         self.assertNotIn('name="players"', html)                 # only on Fridays
         # the hidden fields the form posts back must carry the real values (they once rendered
@@ -195,11 +197,10 @@ class TestBookingPages(OnlineCase):
         self.assertEqual((booking.partner_id, booking.tier), (self.member, 'gold'))
         self.assertEqual(self.env['crm.lead'].search_count([('email_from', '=', 'online.member@example.com')]), 0)
 
-    def test_a_wrong_member_check_is_refused_and_the_box_stays_open(self):
+    def test_a_wrong_member_check_is_refused(self):
         response = self.book(member_ref=self.member.member_id, member_email='someone.else@example.com')
         self.assertEqual(response.status_code, 400)
         self.assertIn('could not verify', response.text)
-        self.assertRegex(response.text, r'<details[^>]*open')
 
     # --- the private booking page: view and cancel -------------------------
     def test_an_unknown_booking_link_is_404(self):
@@ -328,7 +329,7 @@ class TestShopCart(OnlineCase):
         self.add(self.balls, 2)
         html = self.get('/club-shop/checkout')
         for expected in ('Webtest Balls', '₹800', 'Place order', 'Collect at the club', 'Home delivery',
-                         'name="member_ref"', 'name="website_url"', 'pay at the club'):
+                         'Sign in', 'name="website_url"', 'pay at the club'):
             self.assertIn(expected, html)
 
     def checkout(self, **data):

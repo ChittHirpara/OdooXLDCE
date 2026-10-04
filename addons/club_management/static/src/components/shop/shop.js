@@ -3,6 +3,7 @@
 import { Component, useState, onWillStart } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
+import { ClubMemberPicker, WALK_IN } from "../common/member_picker";
 
 // Comprehensive Catalog for Pro-Shop
 const DEFAULT_PRODUCTS = [
@@ -14,7 +15,7 @@ const DEFAULT_PRODUCTS = [
         price: 12500,
         stock: 8,
         description: "Engineered for elite power and precision. Features high-density foam core, carbon weave face, and Tri-Hex grip texture for maximum spin.",
-        image_icon: "🏓",
+       
     },
     {
         id: 2,
@@ -24,7 +25,7 @@ const DEFAULT_PRODUCTS = [
         price: 14200,
         stock: 6,
         description: "Built for fast-swinging tournament players. Auxetic 2.0 construction provides sensational feel and controlled power on heavy groundstrokes.",
-        image_icon: "🎾",
+       
     },
     {
         id: 3,
@@ -34,7 +35,7 @@ const DEFAULT_PRODUCTS = [
         price: 8900,
         stock: 12,
         description: "Heavy smash power racket favored by world doubles champions. Rotational Generator System balances swing weight effortlessly.",
-        image_icon: "🏸",
+       
     },
     {
         id: 4,
@@ -44,7 +45,7 @@ const DEFAULT_PRODUCTS = [
         price: 550,
         stock: 45,
         description: "The official ball of the US Open since 1978. Premium woven felt engineered for optimal performance and durability on hard courts.",
-        image_icon: "🎾",
+       
     },
     {
         id: 5,
@@ -54,7 +55,7 @@ const DEFAULT_PRODUCTS = [
         price: 620,
         stock: 30,
         description: "High-speed core designed specifically for padel glass courts with lively bounce and pressure retention.",
-        image_icon: "🏓",
+       
     },
     {
         id: 6,
@@ -64,7 +65,7 @@ const DEFAULT_PRODUCTS = [
         price: 1850,
         stock: 25,
         description: "Grade 1 natural goose feather shuttlecocks certified for international tournament play.",
-        image_icon: "🏸",
+       
     },
     {
         id: 7,
@@ -74,7 +75,7 @@ const DEFAULT_PRODUCTS = [
         price: 9999,
         stock: 5,
         description: "Dynawall technology for unmatched lateral stability and sliding confidence on clay courts.",
-        image_icon: "👟",
+       
     },
     {
         id: 8,
@@ -84,7 +85,7 @@ const DEFAULT_PRODUCTS = [
         price: 10499,
         stock: 4,
         description: "Developed exclusively with Michelin rubber outsole for 360-degree rapid pivot agility on sand-turf.",
-        image_icon: "👟",
+       
     },
     {
         id: 9,
@@ -94,7 +95,7 @@ const DEFAULT_PRODUCTS = [
         price: 1499,
         stock: 20,
         description: "Ultra-breathable micro-mesh athletic tee with moisture-wicking technology and club crest.",
-        image_icon: "👕",
+       
     },
     {
         id: 10,
@@ -104,7 +105,7 @@ const DEFAULT_PRODUCTS = [
         price: 1299,
         stock: 18,
         description: "4-way stretch court shorts equipped with deep ball-security pockets and ergonomic waistband.",
-        image_icon: "🩳",
+       
     },
     {
         id: 11,
@@ -114,7 +115,7 @@ const DEFAULT_PRODUCTS = [
         price: 5400,
         stock: 7,
         description: "Isothermal compartment shields string tension from heat. Separate ventilated shoe pocket.",
-        image_icon: "🎒",
+       
     },
     {
         id: 12,
@@ -124,7 +125,7 @@ const DEFAULT_PRODUCTS = [
         price: 450,
         stock: 50,
         description: "Tacky non-slip overgrips offering exceptional sweat absorption and vibration dampening.",
-        image_icon: "🎗️",
+       
     },
     {
         id: 13,
@@ -134,7 +135,7 @@ const DEFAULT_PRODUCTS = [
         price: 2800,
         stock: 0, // OUT OF STOCK DEMO
         description: "Lightweight junior development frame tailored for young players building clean technique.",
-        image_icon: "🎾",
+       
     }
 ];
 
@@ -147,15 +148,9 @@ const CATEGORIES = [
     { id: "apparel", label: "Apparel" },
 ];
 
-const CURRENT_MEMBER = {
-    name: "Chitt Hirpara",
-    plan: "Gold",
-    planCode: "gold",
-    discountPct: 20, // 20% discount on Pro-Shop as per Gold Plan
-};
-
 export class ShopPage extends Component {
     static template = "club_management.ShopPage";
+    static components = { ClubMemberPicker };
 
     setup() {
         try {
@@ -186,6 +181,7 @@ export class ShopPage extends Component {
             // Checkout & Order
             fulfillment: "club_pickup", // "club_pickup" | "home_delivery"
             deliveryAddress: "",
+            member: { ...WALK_IN },
             paymentMethod: "member_account", // "member_account" | "upi_card"
             confirmedOrder: null,
 
@@ -195,32 +191,19 @@ export class ShopPage extends Component {
         });
 
         onWillStart(async () => {
-            await this.loadMember();
             await this.loadCatalog();
         });
     }
 
-    /** The logged-in member and their shop discount come from Odoo (constants are offline preview only). */
-    async loadMember() {
-        if (!this.orm) return;
-        try {
-            const member = await this.orm.call("res.partner", "get_current_member", []);
-            if (member && member.id) {
-                Object.assign(CURRENT_MEMBER, {
-                    id: member.id,
-                    name: member.name,
-                    plan: member.plan,
-                    planCode: member.plan_code,
-                    discountPct: member.shop_discount,
-                });
-            }
-        } catch (err) {
-            console.warn("[Shop OWL] Could not load the member profile:", err);
-        }
+    /** Who the desk is selling to changed: reload the catalog with their prices. */
+    async onMemberChange(member) {
+        this.state.member = { ...member };
+        await this.loadCatalog();
     }
 
     get member() {
-        return CURRENT_MEMBER;
+        const member = this.state.member;
+        return { ...member, discountPct: member.shopDiscountPct || 0 };
     }
 
     get cartCount() {
@@ -258,7 +241,7 @@ export class ShopPage extends Component {
                 const res = await this.orm.call("club.shop.product", "get_shop_catalog", [
                     "all",
                     "",
-                    CURRENT_MEMBER.id,
+                    this.state.member.id,
                 ]);
                 // Always take the server's list, even if empty: the sample catalog is only
                 // for the offline preview.
@@ -303,7 +286,7 @@ export class ShopPage extends Component {
     incrementDetailQty() {
         if (!this.state.selectedProduct) return;
         if (this.state.detailQuantity >= this.state.selectedProduct.stock) {
-            this.state.error = `⚠ Only ${this.state.selectedProduct.stock} units are available.`;
+            this.state.error = `Only ${this.state.selectedProduct.stock} units are available.`;
             return;
         }
         this.state.detailQuantity += 1;
@@ -320,7 +303,7 @@ export class ShopPage extends Component {
     addToCart(product, qty = 1) {
         this.state.error = null;
         if (product.stock <= 0) {
-            this.state.error = "⚠ This product is currently out of stock.";
+            this.state.error = "This product is currently out of stock.";
             return;
         }
 
@@ -328,7 +311,7 @@ export class ShopPage extends Component {
         const currentQtyInCart = existing ? existing.qty : 0;
 
         if (currentQtyInCart + qty > product.stock) {
-            this.state.error = `⚠ Only ${product.stock} units are available in stock.`;
+            this.state.error = `Only ${product.stock} units are available in stock.`;
             return;
         }
 
@@ -352,7 +335,7 @@ export class ShopPage extends Component {
 
         if (delta > 0) {
             if (item.qty + 1 > item.product.stock) {
-                this.state.error = `⚠ Only ${item.product.stock} units are available.`;
+                this.state.error = `Only ${item.product.stock} units are available.`;
                 return;
             }
             item.qty += 1;
@@ -393,7 +376,7 @@ export class ShopPage extends Component {
         for (const item of this.state.cart) {
             if (item.qty > item.product.stock) {
                 this.state.loading = false;
-                this.state.error = "⚠ Stock availability changed. Please review your cart.";
+                this.state.error = "Stock availability changed. Please review your cart.";
                 return;
             }
         }
@@ -403,7 +386,7 @@ export class ShopPage extends Component {
             let res;
             try {
                 res = await this.orm.call("club.shop.order", "place_order", [{
-                    partner_id: CURRENT_MEMBER.id,
+                    partner_id: this.state.member.id,
                     items: this.state.cart.map((i) => ({ product_id: i.product.id, qty: i.qty })),
                     fulfillment: this.state.fulfillment === "club_pickup" ? "Collect at Club" : "Home Delivery",
                     delivery_address: this.state.deliveryAddress,
@@ -415,7 +398,7 @@ export class ShopPage extends Component {
             }
             if (!res || !res.success) {
                 this.state.loading = false;
-                this.state.error = "⚠ " + (res?.message || "The order could not be placed.");
+                this.state.error = "" + (res?.message || "The order could not be placed.");
                 await this.loadCatalog();
                 return;
             }

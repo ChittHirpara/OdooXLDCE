@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================= Support tickets ================= -->
+    <record id="view_club_ticket_tree" model="ir.ui.view">
+        <field name="name">club.ticket.tree</field>
+        <field name="model">club.ticket</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="priority == '2'" decoration-warning="priority == '1' and state in ('new', 'progress')"
+                  decoration-muted="state in ('resolved', 'closed')">
+                <field name="name"/>
+                <field name="create_date" string="Received"/>
+                <field name="subject"/>
+                <field name="category"/>
+                <field name="contact_name"/>
+                <field name="priority" widget="badge" optional="show"/>
+                <field name="user_id" optional="show"/>
+                <field name="age_days" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'new'"
+                       decoration-warning="state == 'progress'" decoration-success="state in ('resolved', 'closed')"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_club_ticket_form" model="ir.ui.view">
+        <field name="name">club.ticket.form</field>
+        <field name="model">club.ticket</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start" type="object" string="Start" class="btn-primary"
+                            invisible="state != 'new'"/>
+                    <button name="action_resolve" type="object" string="Resolve" class="btn-primary"
+                            invisible="state not in ('new', 'progress')"/>
+                    <button name="action_close" type="object" string="Close" invisible="state == 'closed'"/>
+                    <button name="action_reopen" type="object" string="Reopen" invisible="state not in ('resolved', 'closed')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="new,progress,resolved,closed"/>
+                </header>
+                <sheet>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="subject"/>
+                            <field name="category"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="contact_name"/>
+                            <field name="contact_email" widget="email"/>
+                            <field name="contact_phone" widget="phone"/>
+                            <field name="source"/>
+                        </group>
+                    </group>
+                    <group string="Related">
+                        <group>
+                            <field name="booking_id"/>
+                            <field name="order_id"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="refund_amount" invisible="category not in ('refund', 'order', 'booking')"/>
+                        </group>
+                    </group>
+                    <field name="company_id" invisible="1"/>
+                    <group string="What happened"><field name="description" nolabel="1"/></group>
+                    <group string="Resolution (sent to the customer when resolved)">
+                        <field name="resolution" nolabel="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_club_ticket_search" model="ir.ui.view">
+        <field name="name">club.ticket.search</field>
+        <field name="model">club.ticket</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="subject"/>
+                <field name="contact_name"/>
+                <field name="partner_id"/>
+                <filter name="open" string="Open" domain="[('state', 'in', ('new', 'progress'))]"/>
+                <filter name="mine" string="Assigned to me" domain="[('user_id', '=', uid)]"/>
+                <filter name="refunds" string="Refund requests" domain="[('category', '=', 'refund')]"/>
+                <filter name="urgent" string="High or urgent" domain="[('priority', 'in', ('1', '2'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_category" string="Category" context="{'group_by': 'category'}"/>
+                    <filter name="group_user" string="Assigned to" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_club_ticket_graph" model="ir.ui.view">
+        <field name="name">club.ticket.graph</field>
+        <field name="model">club.ticket</field>
+        <field name="arch" type="xml">
+            <graph type="bar"><field name="category"/><field name="state"/></graph>
+        </field>
+    </record>
+
+    <record id="action_club_tickets" model="ir.actions.act_window">
+        <field name="name">Support Tickets</field>
+        <field name="res_model">club.ticket</field>
+        <field name="view_mode">tree,form,graph</field>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No support tickets</p>
+            <p>Members and visitors send complaints, booking or order problems and refund requests
+               from the website. They appear here; press Start when you pick one up and Resolve
+               when it is done, and the customer is told by email.</p>
+        </field>
+    </record>
+
+    <!-- ================= Feedback ================= -->
+    <record id="view_club_feedback_tree" model="ir.ui.view">
+        <field name="name">club.feedback.tree</field>
+        <field name="model">club.feedback</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="rating &lt;= 2 and not reviewed" decoration-muted="reviewed">
+                <field name="create_date" string="Date"/>
+                <field name="area"/>
+                <field name="stars"/>
+                <field name="rating" column_invisible="1"/>
+                <field name="name"/>
+                <field name="comment"/>
+                <field name="booking_id" optional="hide"/>
+                <field name="order_id" optional="hide"/>
+                <field name="reviewed" widget="boolean_toggle"/>
+                <field name="public" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_club_feedback_form" model="ir.ui.view">
+        <field name="name">club.feedback.form</field>
+        <field name="model">club.feedback</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="area"/>
+                            <field name="rating"/>
+                            <field name="stars"/>
+                            <field name="reviewed"/>
+                            <field name="public"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="name"/>
+                            <field name="email"/>
+                            <field name="booking_id"/>
+                            <field name="order_id"/>
+                            <field name="source"/>
+                        </group>
+                    </group>
+                    <group string="Comment"><field name="comment" nolabel="1"/></group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_club_feedback_search" model="ir.ui.view">
+        <field name="name">club.feedback.search</field>
+        <field name="model">club.feedback</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="comment"/>
+                <filter name="low" string="Low ratings (1-2)" domain="[('rating', '&lt;=', 2)]"/>
+                <filter name="unreviewed" string="Not reviewed" domain="[('reviewed', '=', False)]"/>
+                <filter name="public" string="Shown on website" domain="[('public', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_area" string="Area" context="{'group_by': 'area'}"/>
+                    <filter name="group_rating" string="Rating" context="{'group_by': 'rating'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_club_feedback_pivot" model="ir.ui.view">
+        <field name="name">club.feedback.pivot</field>
+        <field name="model">club.feedback</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="area" type="row"/>
+                <field name="create_date" interval="month" type="col"/>
+                <field name="rating" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_club_feedback_graph" model="ir.ui.view">
+        <field name="name">club.feedback.graph</field>
+        <field name="model">club.feedback</field>
+        <field name="arch" type="xml">
+            <graph type="bar"><field name="area"/><field name="rating" type="measure"/></graph>
+        </field>
+    </record>
+
+    <record id="action_club_feedback" model="ir.actions.act_window">
+        <field name="name">Feedback</field>
+        <field name="res_model">club.feedback</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No feedback yet</p>
+            <p>Star ratings and comments from the website land here. Tick "Show on website" on a
+               4 or 5 star comment to feature it on the home page.</p>
+        </field>
+    </record>
+
+    <record id="action_club_feedback_analysis" model="ir.actions.act_window">
+        <field name="name">Average Rating by Area</field>
+        <field name="res_model">club.feedback</field>
+        <field name="view_mode">graph,pivot</field>
+    </record>
+
+    <!-- ================= Monitoring (OWL screen) ================= -->
+    <record id="action_club_monitoring" model="ir.actions.client">
+        <field name="name">System Monitoring</field>
+        <field name="tag">club_management.monitoring</field>
+        <field name="target">main</field>
+    </record>
+
+    <!-- ================= Menus ================= -->
+    <menuitem id="menu_club_support" name="Feedback &amp; Support" parent="menu_club_root" sequence="84"/>
+    <menuitem id="menu_club_tickets" name="Support Tickets" parent="menu_club_support"
+              action="action_club_tickets" sequence="10"/>
+    <menuitem id="menu_club_feedback" name="Feedback &amp; Ratings" parent="menu_club_support"
+              action="action_club_feedback" sequence="20"/>
+    <menuitem id="menu_club_feedback_analysis" name="Ratings Analysis" parent="menu_club_support"
+              action="action_club_feedback_analysis" sequence="30" groups="group_club_manager"/>
+    <menuitem id="menu_club_monitoring" name="System Monitoring" parent="menu_club_root" sequence="88"
+              action="action_club_monitoring" groups="group_club_manager"/>
+</odoo>

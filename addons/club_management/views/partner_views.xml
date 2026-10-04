@@ -26,6 +26,10 @@
                     <button name="action_activate_membership" type="object"
                             string="Activate / Renew Membership" class="btn-primary"
                             invisible="not plan_id"/>
+                    <button name="action_send_portal_invitation" type="object"
+                            string="Send Sign-in Invitation" class="btn-secondary ms-2"
+                            invisible="not is_member or not email"
+                            help="Creates the member's website login (their e-mail) and e-mails the link to choose a password."/>
                 </page>
             </xpath>
         </field>

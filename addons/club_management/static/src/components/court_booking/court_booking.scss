@@ -5,14 +5,14 @@
 
 .cc-booking-app {
   min-height: 100vh;
-  background-color: #090C10;
-  color: #F9FAFB;
+  background-color: #F8FAFC;
+  color: #0F172A;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Header */
   .cc-header {
-    background-color: #0D1117;
-    border-bottom: 1px solid #18202E;
+    background-color: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -36,8 +36,8 @@
         .cc-brand-emblem {
           width: 30px;
           height: 30px;
-          background-color: #121A26;
-          border: 1px solid #1E2738;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
           border-radius: 6px;
           display: flex;
           align-items: center;
@@ -51,7 +51,7 @@
           letter-spacing: 0.02em;
           text-transform: uppercase;
           margin: 0;
-          color: #FFFFFF;
+          color: #0F172A;
         }
       }
 
@@ -61,7 +61,7 @@
         gap: 0.35rem;
 
         .cc-nav-link {
-          color: #9CA3AF;
+          color: #64748B;
           text-decoration: none;
           font-size: 0.84rem;
           font-weight: 500;
@@ -70,14 +70,14 @@
           transition: all 0.18s ease;
 
           &:hover {
-            color: #FFFFFF;
-            background-color: rgba(255, 255, 255, 0.03);
+            color: #0F172A;
+            background-color: rgba(15, 23, 42, 0.03);
           }
 
           &.active {
-            color: #FFFFFF;
+            color: #0F172A;
             font-weight: 600;
-            background-color: rgba(255, 255, 255, 0.07);
+            background-color: rgba(15, 23, 42, 0.07);
           }
         }
       }
@@ -96,14 +96,14 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background-color: #1A2230;
-            border: 1px solid #1E2738;
+            background-color: #F8FAFC;
+            border: 1px solid #E2E8F0;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.72rem;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
           }
 
           .cc-user-info {
@@ -113,7 +113,7 @@
             .cc-user-name {
               font-size: 0.82rem;
               font-weight: 600;
-              color: #F9FAFB;
+              color: #0F172A;
               line-height: 1.2;
             }
 
@@ -139,13 +139,13 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 2rem;
-    border-bottom: 1px solid #18202E;
+    border-bottom: 1px solid #E2E8F0;
     padding-bottom: 0.75rem;
 
     .cc-view-btn {
       background: transparent;
       border: 1px solid transparent;
-      color: #9CA3AF;
+      color: #64748B;
       padding: 0.5rem 1rem;
       border-radius: 6px;
       font-size: 0.86rem;
@@ -157,19 +157,19 @@
       transition: all 0.18s ease;
 
       &:hover {
-        color: #F9FAFB;
-        background-color: rgba(255, 255, 255, 0.02);
+        color: #0F172A;
+        background-color: rgba(15, 23, 42, 0.02);
       }
 
       &.active {
-        color: #FFFFFF;
-        background-color: #121720;
-        border-color: #1E2738;
+        color: #0F172A;
+        background-color: #F8FAFC;
+        border-color: #E2E8F0;
       }
 
       .cc-counter-pill {
-        background-color: #1E2738;
-        color: #D1D5DB;
+        background-color: #FFFFFF;
+        color: #0F172A;
         font-size: 0.72rem;
         padding: 0.1rem 0.45rem;
         border-radius: 9999px;
@@ -191,12 +191,12 @@
       font-weight: 700;
       letter-spacing: -0.02em;
       margin: 0 0 0.35rem 0;
-      color: #FFFFFF;
+      color: #0F172A;
     }
 
     .cc-page-subtitle {
       font-size: 0.92rem;
-      color: #9CA3AF;
+      color: #64748B;
       margin: 0;
     }
 
@@ -204,15 +204,15 @@
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      background-color: #121720;
-      border: 1px solid #1E2738;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
       padding: 0.3rem;
       border-radius: 8px;
 
       .cc-date-pill {
         background: transparent;
         border: none;
-        color: #9CA3AF;
+        color: #64748B;
         padding: 0.45rem 0.9rem;
         border-radius: 6px;
         font-size: 0.82rem;
@@ -221,24 +221,24 @@
         transition: all 0.16s ease;
 
         &:hover {
-          color: #FFFFFF;
+          color: #0F172A;
         }
 
         &.active {
-          background-color: #1A2230;
-          color: #FFFFFF;
+          background-color: #F8FAFC;
+          color: #0F172A;
         }
       }
 
       .cc-date-picker-wrap {
-        border-left: 1px solid #1E2738;
+        border-left: 1px solid #E2E8F0;
         padding-left: 0.4rem;
         margin-left: 0.2rem;
 
         .cc-date-input {
           background: transparent;
           border: none;
-          color: #9CA3AF;
+          color: #64748B;
           font-family: inherit;
           font-size: 0.82rem;
           font-weight: 500;
@@ -247,7 +247,7 @@
           padding: 0.35rem 0.5rem;
 
           &:hover {
-            color: #FFFFFF;
+            color: #0F172A;
           }
         }
       }
@@ -289,13 +289,13 @@
     align-items: center;
     gap: 0.75rem;
     padding: 1rem 0;
-    color: #9CA3AF;
+    color: #64748B;
     font-size: 0.85rem;
 
     .cc-spinner {
       width: 16px;
       height: 16px;
-      border: 2px solid #1E2738;
+      border: 2px solid #E2E8F0;
       border-top-color: #10B981;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
@@ -313,7 +313,7 @@
     gap: 1.5rem;
     margin-bottom: 1rem;
     font-size: 0.8rem;
-    color: #9CA3AF;
+    color: #64748B;
     flex-wrap: wrap;
 
     .cc-legend-item {
@@ -327,14 +327,14 @@
         border-radius: 3px;
 
         &.available {
-          background-color: #121720;
-          border: 1px solid #1E2738;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
         }
 
         &.booked {
-          background-color: #19202E;
-          border: 1px solid #232D40;
-          background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255, 255, 255, 0.04) 3px, rgba(255, 255, 255, 0.04) 6px);
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(15, 23, 42, 0.04) 3px, rgba(15, 23, 42, 0.04) 6px);
         }
 
         &.selected {
@@ -346,15 +346,15 @@
 
     .cc-legend-note {
       margin-left: auto;
-      color: #6B7280;
+      color: #64748B;
       font-size: 0.76rem;
     }
   }
 
   /* CourtGrid Container */
   .cc-court-grid-container {
-    background-color: #121720;
-    border: 1px solid #1E2738;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
     border-radius: 12px;
     overflow-x: auto;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
@@ -369,15 +369,15 @@
 
     .cc-grid-row {
       display: flex;
-      border-bottom: 1px solid #18202E;
+      border-bottom: 1px solid #E2E8F0;
 
       &:last-child {
         border-bottom: none;
       }
 
       &.cc-header-row {
-        background-color: #0E131C;
-        border-bottom: 1px solid #1E2738;
+        background-color: #F8FAFC;
+        border-bottom: 1px solid #E2E8F0;
 
         .cc-time-header-cell {
           width: 72px;
@@ -386,8 +386,8 @@
           text-align: center;
           font-size: 0.72rem;
           font-weight: 600;
-          color: #9CA3AF;
-          border-left: 1px solid #18202E;
+          color: #64748B;
+          border-left: 1px solid #E2E8F0;
         }
       }
 
@@ -398,7 +398,7 @@
         padding: 0.85rem 1.1rem;
         display: flex;
         align-items: center;
-        background-color: #121720;
+        background-color: #F8FAFC;
         z-index: 2;
 
         &.cc-sticky-col {
@@ -414,12 +414,12 @@
           .cc-court-name {
             font-size: 0.92rem;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
           }
 
           .cc-court-surface {
             font-size: 0.72rem;
-            color: #9CA3AF;
+            color: #64748B;
             margin-top: 2px;
           }
         }
@@ -430,7 +430,7 @@
         width: 72px;
         min-width: 72px;
         height: 58px;
-        border-left: 1px solid #18202E;
+        border-left: 1px solid #E2E8F0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -439,23 +439,23 @@
         position: relative;
 
         &.available {
-          background-color: #121720;
+          background-color: #F8FAFC;
 
           &:hover {
-            background-color: #1A2333;
-            border-color: #2D3A52;
+            background-color: #FFFFFF;
+            border-color: #E2E8F0;
           }
 
           .cc-slot-indicator.available {
             font-size: 0.68rem;
-            color: #6B7280;
+            color: #64748B;
             font-weight: 500;
           }
         }
 
         &.booked {
-          background-color: #161D29;
-          background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255, 255, 255, 0.025) 3px, rgba(255, 255, 255, 0.025) 6px);
+          background-color: #F8FAFC;
+          background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(15, 23, 42, 0.025) 3px, rgba(15, 23, 42, 0.025) 6px);
           cursor: not-allowed;
           opacity: 0.65;
 
@@ -489,7 +489,7 @@
     bottom: 1.75rem;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #121824;
+    background-color: #F8FAFC;
     border: 1px solid #10B981;
     border-radius: 12px;
     padding: 0.85rem 1.35rem;
@@ -518,7 +518,7 @@
         .cc-selection-title {
           font-size: 0.95rem;
           font-weight: 700;
-          color: #FFFFFF;
+          color: #0F172A;
           display: flex;
           align-items: center;
           gap: 0.45rem;
@@ -526,7 +526,7 @@
 
         .cc-selection-subtitle {
           font-size: 0.78rem;
-          color: #9CA3AF;
+          color: #64748B;
           display: flex;
           align-items: center;
           gap: 0.45rem;
@@ -576,9 +576,9 @@
   }
 
   .cc-btn-secondary {
-    background-color: #18202E;
-    border: 1px solid #28354A;
-    color: #D1D5DB;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #0F172A;
     font-size: 0.86rem;
     font-weight: 600;
     padding: 0.55rem 1rem;
@@ -587,8 +587,8 @@
     transition: all 0.16s ease;
 
     &:hover {
-      background-color: #222C3D;
-      color: #FFFFFF;
+      background-color: #FFFFFF;
+      color: #0F172A;
     }
   }
 
@@ -630,8 +630,8 @@
     padding: 1.5rem;
 
     .cc-modal-dialog {
-      background-color: #121720;
-      border: 1px solid #1E2738;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
       border-radius: 12px;
       width: 100%;
       max-width: 480px;
@@ -645,12 +645,12 @@
         right: 1.25rem;
         background: transparent;
         border: none;
-        color: #6B7280;
+        color: #64748B;
         font-size: 1.25rem;
         cursor: pointer;
 
         &:hover {
-          color: #FFFFFF;
+          color: #0F172A;
         }
       }
 
@@ -658,19 +658,19 @@
         font-size: 1.25rem;
         font-weight: 700;
         margin: 0 0 0.35rem 0;
-        color: #FFFFFF;
+        color: #0F172A;
       }
 
       .cc-modal-subtitle {
         font-size: 0.84rem;
-        color: #9CA3AF;
+        color: #64748B;
         margin: 0 0 1.5rem 0;
         line-height: 1.5;
       }
 
       .cc-modal-summary-box {
-        background-color: #18202E;
-        border: 1px solid #232D40;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
         padding: 1.1rem 1.25rem;
         margin-bottom: 1.5rem;
@@ -686,11 +686,11 @@
           }
 
           .cc-label {
-            color: #9CA3AF;
+            color: #64748B;
           }
 
           .cc-val {
-            color: #FFFFFF;
+            color: #0F172A;
 
             &.bold {
               font-weight: 600;
@@ -711,7 +711,7 @@
 
         .cc-summary-divider {
           height: 1px;
-          background-color: #242E42;
+          background-color: #FFFFFF;
           margin: 0.75rem 0;
         }
       }
@@ -744,12 +744,12 @@
           font-size: 1.4rem;
           font-weight: 700;
           margin: 0 0 1.25rem 0;
-          color: #FFFFFF;
+          color: #0F172A;
         }
 
         .cc-confirmed-card {
-          background-color: #18202E;
-          border: 1px solid #232D40;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
           border-radius: 8px;
           padding: 1.25rem;
           margin-bottom: 1.5rem;
@@ -758,12 +758,12 @@
             font-size: 1.1rem;
             font-weight: 700;
             margin: 0 0 0.4rem 0;
-            color: #FFFFFF;
+            color: #0F172A;
           }
 
           .cc-conf-date {
             font-size: 0.86rem;
-            color: #9CA3AF;
+            color: #64748B;
             margin-bottom: 0.2rem;
           }
 
@@ -776,8 +776,8 @@
 
           .cc-conf-id {
             font-size: 0.78rem;
-            color: #6B7280;
-            border-top: 1px solid #242E42;
+            color: #64748B;
+            border-top: 1px solid #E2E8F0;
             padding-top: 0.6rem;
           }
         }
@@ -793,9 +793,9 @@
       margin-bottom: 1.75rem;
 
       .cc-tab-pill {
-        background-color: #121720;
-        border: 1px solid #1E2738;
-        color: #9CA3AF;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #64748B;
         padding: 0.45rem 1rem;
         border-radius: 6px;
         font-size: 0.84rem;
@@ -804,20 +804,20 @@
         transition: all 0.16s ease;
 
         &:hover {
-          color: #FFFFFF;
+          color: #0F172A;
         }
 
         &.active {
-          background-color: #1E2738;
-          color: #FFFFFF;
-          border-color: #2D3A50;
+          background-color: #FFFFFF;
+          color: #0F172A;
+          border-color: #E2E8F0;
         }
       }
     }
 
     .cc-empty-state {
-      background-color: #121720;
-      border: 1px solid #1E2738;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
       border-radius: 12px;
       padding: 3.5rem 2rem;
       text-align: center;
@@ -839,7 +839,7 @@
       p {
         margin: 0 0 1.5rem 0;
         font-size: 0.86rem;
-        color: #9CA3AF;
+        color: #64748B;
       }
     }
 
@@ -849,8 +849,8 @@
       gap: 1.25rem;
 
       .cc-booking-card {
-        background-color: #121720;
-        border: 1px solid #1E2738;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-radius: 10px;
         padding: 1.5rem;
         display: flex;
@@ -859,7 +859,7 @@
         transition: all 0.16s ease;
 
         &:hover {
-          border-color: #2E3B52;
+          border-color: #E2E8F0;
         }
 
         .cc-booking-card-top {
@@ -872,12 +872,12 @@
             font-size: 1.15rem;
             font-weight: 700;
             margin: 0 0 0.15rem 0;
-            color: #FFFFFF;
+            color: #0F172A;
           }
 
           .cc-b-id {
             font-size: 0.72rem;
-            color: #6B7280;
+            color: #64748B;
             font-family: monospace;
           }
 
@@ -896,7 +896,7 @@
 
             &.completed {
               background-color: rgba(148, 163, 184, 0.12);
-              color: #94A3B8;
+              color: #64748B;
               border: 1px solid rgba(148, 163, 184, 0.25);
             }
 
@@ -914,7 +914,7 @@
           gap: 0.5rem;
           margin-bottom: 1.25rem;
           font-size: 0.85rem;
-          color: #D1D5DB;
+          color: #0F172A;
 
           .cc-b-detail-row {
             display: flex;
@@ -928,7 +928,7 @@
         }
 
         .cc-booking-card-bottom {
-          border-top: 1px solid #18202E;
+          border-top: 1px solid #E2E8F0;
           padding-top: 1rem;
 
           .cc-btn-cancel-booking {
@@ -951,7 +951,7 @@
 
           .cc-inactive-note {
             font-size: 0.76rem;
-            color: #6B7280;
+            color: #64748B;
             text-align: center;
             display: block;
           }

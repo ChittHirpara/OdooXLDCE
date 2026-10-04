@@ -5,14 +5,14 @@
 
 .cc-shop-app {
   min-height: 100vh;
-  background-color: #090C10;
-  color: #F9FAFB;
+  background-color: #F8FAFC;
+  color: #0F172A;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Header */
   .cc-header {
-    background-color: #0D1117;
-    border-bottom: 1px solid #18202E;
+    background-color: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -36,8 +36,8 @@
         .cc-brand-emblem {
           width: 30px;
           height: 30px;
-          background-color: #121A26;
-          border: 1px solid #1E2738;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
           border-radius: 6px;
           display: flex;
           align-items: center;
@@ -51,7 +51,7 @@
           letter-spacing: 0.02em;
           text-transform: uppercase;
           margin: 0;
-          color: #FFFFFF;
+          color: #0F172A;
         }
       }
 
@@ -61,7 +61,7 @@
         gap: 0.35rem;
 
         .cc-nav-link {
-          color: #9CA3AF;
+          color: #64748B;
           text-decoration: none;
           font-size: 0.84rem;
           font-weight: 500;
@@ -70,14 +70,14 @@
           transition: all 0.18s ease;
 
           &:hover {
-            color: #FFFFFF;
-            background-color: rgba(255, 255, 255, 0.03);
+            color: #0F172A;
+            background-color: rgba(15, 23, 42, 0.03);
           }
 
           &.active {
-            color: #FFFFFF;
+            color: #0F172A;
             font-weight: 600;
-            background-color: rgba(255, 255, 255, 0.07);
+            background-color: rgba(15, 23, 42, 0.07);
           }
         }
       }
@@ -88,9 +88,9 @@
         gap: 1.1rem;
 
         .cc-cart-trigger-btn {
-          background-color: #121720;
-          border: 1px solid #1E2738;
-          color: #F9FAFB;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          color: #0F172A;
           padding: 0.45rem 0.85rem;
           border-radius: 6px;
           font-size: 0.84rem;
@@ -102,8 +102,8 @@
           transition: all 0.16s ease;
 
           &:hover {
-            background-color: #1A2230;
-            border-color: #2E3B52;
+            background-color: #F8FAFC;
+            border-color: #E2E8F0;
           }
 
           .cc-cart-badge {
@@ -125,14 +125,14 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background-color: #1A2230;
-            border: 1px solid #1E2738;
+            background-color: #F8FAFC;
+            border: 1px solid #E2E8F0;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.72rem;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
           }
 
           .cc-user-info {
@@ -142,7 +142,7 @@
             .cc-user-name {
               font-size: 0.82rem;
               font-weight: 600;
-              color: #F9FAFB;
+              color: #0F172A;
               line-height: 1.2;
             }
 
@@ -177,12 +177,12 @@
       font-weight: 700;
       letter-spacing: -0.02em;
       margin: 0 0 0.35rem 0;
-      color: #FFFFFF;
+      color: #0F172A;
     }
 
     .cc-page-subtitle {
       font-size: 0.92rem;
-      color: #9CA3AF;
+      color: #64748B;
       margin: 0;
     }
 
@@ -196,16 +196,16 @@
         top: 50%;
         left: 0.85rem;
         transform: translateY(-50%);
-        color: #6B7280;
+        color: #64748B;
       }
 
       .cc-search-input {
         width: 100%;
-        background-color: #121720;
-        border: 1px solid #1E2738;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
         padding: 0.6rem 2.2rem 0.6rem 2.5rem;
-        color: #F9FAFB;
+        color: #0F172A;
         font-family: inherit;
         font-size: 0.86rem;
         outline: none;
@@ -217,7 +217,7 @@
         }
 
         &::placeholder {
-          color: #6B7280;
+          color: #64748B;
         }
       }
 
@@ -228,7 +228,7 @@
         transform: translateY(-50%);
         background: transparent;
         border: none;
-        color: #9CA3AF;
+        color: #64748B;
         cursor: pointer;
         font-size: 0.85rem;
       }
@@ -240,7 +240,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #18202E;
+    border-bottom: 1px solid #E2E8F0;
     padding-bottom: 1rem;
     margin-bottom: 2rem;
     flex-wrap: wrap;
@@ -252,9 +252,9 @@
       flex-wrap: wrap;
 
       .cc-cat-pill {
-        background-color: #121720;
-        border: 1px solid #1E2738;
-        color: #9CA3AF;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #64748B;
         padding: 0.4rem 0.85rem;
         border-radius: 6px;
         font-size: 0.82rem;
@@ -263,13 +263,13 @@
         transition: all 0.16s ease;
 
         &:hover {
-          color: #FFFFFF;
-          border-color: #2E3B52;
+          color: #0F172A;
+          border-color: #E2E8F0;
         }
 
         &.active {
-          background-color: #1A2230;
-          color: #FFFFFF;
+          background-color: #F8FAFC;
+          color: #0F172A;
           border-color: #10B981;
         }
       }
@@ -281,7 +281,7 @@
         align-items: center;
         gap: 0.5rem;
         font-size: 0.82rem;
-        color: #9CA3AF;
+        color: #64748B;
         cursor: pointer;
 
         input[type="checkbox"] {
@@ -335,8 +335,8 @@
 
   /* Product Card */
   .cc-product-card {
-    background-color: #121720;
-    border: 1px solid #1E2738;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
     border-radius: 12px;
     overflow: hidden;
     display: flex;
@@ -346,7 +346,7 @@
 
     &:hover {
       transform: translateY(-2px);
-      border-color: #2E3B52;
+      border-color: #E2E8F0;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 
       .cc-btn-add-card {
@@ -355,16 +355,29 @@
     }
 
     .cc-card-img-wrap {
-      background-color: #161D29;
+      background-color: #F8FAFC;
       height: 180px;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
 
+      overflow: hidden;
+
       .cc-product-emoji-icon {
-        font-size: 3.5rem;
-        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+        font-size: 2.75rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
       }
 
       .cc-stock-badge {
@@ -418,14 +431,14 @@
         font-weight: 600;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: #6B7280;
+        color: #64748B;
         margin-bottom: 0.35rem;
       }
 
       .cc-card-title {
         font-size: 0.95rem;
         font-weight: 700;
-        color: #FFFFFF;
+        color: #0F172A;
         line-height: 1.35;
         margin: 0 0 1rem 0;
         min-height: 2.6rem;
@@ -436,7 +449,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-top: 1px solid #18202E;
+        border-top: 1px solid #E2E8F0;
         padding-top: 0.85rem;
 
         .cc-card-pricing {
@@ -446,7 +459,7 @@
           .cc-price-main {
             font-size: 1.1rem;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
           }
 
           .cc-member-price-sub {
@@ -457,9 +470,9 @@
         }
 
         .cc-btn-add-card {
-          background-color: #18202E;
-          border: 1px solid #28354A;
-          color: #F9FAFB;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          color: #0F172A;
           font-size: 0.8rem;
           font-weight: 600;
           padding: 0.4rem 0.85rem;
@@ -475,8 +488,8 @@
 
           &.disabled {
             background-color: transparent;
-            border-color: #232D40;
-            color: #6B7280;
+            border-color: #E2E8F0;
+            color: #64748B;
             cursor: not-allowed;
           }
         }
@@ -492,11 +505,11 @@
 
     .cc-skeleton-card {
       height: 310px;
-      background: linear-gradient(90deg, #121720 25%, #18202E 50%, #121720 75%);
+      background: linear-gradient(90deg, #F8FAFC 25%, #F8FAFC 50%, #F8FAFC 75%);
       background-size: 200% 100%;
       animation: shimmer 1.2s infinite;
       border-radius: 12px;
-      border: 1px solid #1E2738;
+      border: 1px solid #E2E8F0;
     }
   }
 
@@ -507,8 +520,8 @@
 
   /* Empty State */
   .cc-empty-state {
-    background-color: #121720;
-    border: 1px solid #1E2738;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
     border-radius: 12px;
     padding: 3.5rem 2rem;
     text-align: center;
@@ -529,7 +542,7 @@
 
     p {
       font-size: 0.86rem;
-      color: #9CA3AF;
+      color: #64748B;
       margin: 0 0 1.5rem 0;
     }
   }
@@ -550,8 +563,8 @@
     padding: 1.5rem;
 
     .cc-modal-dialog {
-      background-color: #121720;
-      border: 1px solid #1E2738;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
       border-radius: 12px;
       width: 100%;
       max-width: 680px;
@@ -565,12 +578,12 @@
         right: 1.25rem;
         background: transparent;
         border: none;
-        color: #6B7280;
+        color: #64748B;
         font-size: 1.25rem;
         cursor: pointer;
 
         &:hover {
-          color: #FFFFFF;
+          color: #0F172A;
         }
       }
 
@@ -584,7 +597,7 @@
         }
 
         .cc-detail-img-box {
-          background-color: #161D29;
+          background-color: #F8FAFC;
           border-radius: 10px;
           display: flex;
           align-items: center;
@@ -592,7 +605,15 @@
           min-height: 240px;
 
           .cc-detail-large-icon {
-            font-size: 4.5rem;
+            font-size: 4rem;
+            color: #64748b;
+
+            img {
+              max-width: 100%;
+              max-height: 240px;
+              object-fit: contain;
+              border-radius: 8px;
+            }
           }
         }
 
@@ -603,7 +624,7 @@
           .cc-detail-title {
             font-size: 1.35rem;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
             margin: 0.25rem 0 0.75rem 0;
             line-height: 1.3;
           }
@@ -617,7 +638,7 @@
             .cc-detail-price {
               font-size: 1.5rem;
               font-weight: 700;
-              color: #FFFFFF;
+              color: #0F172A;
             }
 
             .cc-member-badge {
@@ -632,7 +653,7 @@
 
           .cc-detail-description {
             font-size: 0.86rem;
-            color: #9CA3AF;
+            color: #64748B;
             line-height: 1.55;
             margin: 0 0 1.25rem 0;
           }
@@ -656,27 +677,27 @@
             .cc-qty-selector {
               display: flex;
               align-items: center;
-              border: 1px solid #1E2738;
-              background-color: #18202E;
+              border: 1px solid #E2E8F0;
+              background-color: #F8FAFC;
               border-radius: 8px;
 
               .cc-qty-btn {
                 background: transparent;
                 border: none;
-                color: #FFFFFF;
+                color: #0F172A;
                 font-size: 1rem;
                 padding: 0.5rem 0.85rem;
                 cursor: pointer;
 
                 &:hover {
-                  background-color: #222C3D;
+                  background-color: #FFFFFF;
                 }
               }
 
               .cc-qty-val {
                 font-size: 0.92rem;
                 font-weight: 700;
-                color: #FFFFFF;
+                color: #0F172A;
                 min-width: 28px;
                 text-align: center;
               }
@@ -706,8 +727,8 @@
     justify-content: flex-end;
 
     .cc-cart-drawer {
-      background-color: #121720;
-      border-left: 1px solid #1E2738;
+      background-color: #F8FAFC;
+      border-left: 1px solid #E2E8F0;
       width: 100%;
       max-width: 440px;
       height: 100%;
@@ -717,7 +738,7 @@
 
       .cc-drawer-header {
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #18202E;
+        border-bottom: 1px solid #E2E8F0;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -726,18 +747,18 @@
           font-size: 1.15rem;
           font-weight: 700;
           margin: 0;
-          color: #FFFFFF;
+          color: #0F172A;
         }
 
         .cc-drawer-close {
           background: transparent;
           border: none;
-          color: #6B7280;
+          color: #64748B;
           font-size: 1.25rem;
           cursor: pointer;
 
           &:hover {
-            color: #FFFFFF;
+            color: #0F172A;
           }
         }
       }
@@ -760,7 +781,7 @@
 
         p {
           font-size: 0.85rem;
-          color: #9CA3AF;
+          color: #64748B;
           margin: 0 0 1.5rem 0;
         }
       }
@@ -774,17 +795,26 @@
           display: flex;
           gap: 1rem;
           padding: 1rem 0;
-          border-bottom: 1px solid #18202E;
+          border-bottom: 1px solid #E2E8F0;
 
           &:last-child {
             border-bottom: none;
           }
 
           .cc-item-icon {
-            font-size: 1.75rem;
+            font-size: 1.1rem;
+            color: #64748b;
+            overflow: hidden;
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+
             width: 44px;
             height: 44px;
-            background-color: #161D29;
+            background-color: #F8FAFC;
             border-radius: 6px;
             display: flex;
             align-items: center;
@@ -798,14 +828,14 @@
             .cc-item-name {
               font-size: 0.88rem;
               font-weight: 600;
-              color: #FFFFFF;
+              color: #0F172A;
               margin: 0 0 0.2rem 0;
               line-height: 1.3;
             }
 
             .cc-item-price {
               font-size: 0.76rem;
-              color: #9CA3AF;
+              color: #64748B;
               display: block;
               margin-bottom: 0.5rem;
             }
@@ -813,14 +843,14 @@
             .cc-cart-qty-ctrl {
               display: inline-flex;
               align-items: center;
-              border: 1px solid #1E2738;
-              background-color: #161D29;
+              border: 1px solid #E2E8F0;
+              background-color: #F8FAFC;
               border-radius: 4px;
 
               .cc-qty-btn-sm {
                 background: transparent;
                 border: none;
-                color: #FFFFFF;
+                color: #0F172A;
                 padding: 0.2rem 0.5rem;
                 cursor: pointer;
                 font-size: 0.85rem;
@@ -843,13 +873,13 @@
             .cc-item-subtotal {
               font-size: 0.95rem;
               font-weight: 700;
-              color: #FFFFFF;
+              color: #0F172A;
             }
 
             .cc-item-remove {
               background: transparent;
               border: none;
-              color: #6B7280;
+              color: #64748B;
               cursor: pointer;
               font-size: 0.85rem;
 
@@ -863,15 +893,15 @@
 
       .cc-drawer-footer {
         padding: 1.25rem 1.5rem;
-        background-color: #0E131C;
-        border-top: 1px solid #1E2738;
+        background-color: #F8FAFC;
+        border-top: 1px solid #E2E8F0;
 
         .cc-drawer-price-row {
           display: flex;
           justify-content: space-between;
           font-size: 0.86rem;
           margin-bottom: 0.5rem;
-          color: #9CA3AF;
+          color: #64748B;
 
           &.discount {
             color: #D4A347;
@@ -883,12 +913,12 @@
           }
 
           &.total {
-            border-top: 1px solid #18202E;
+            border-top: 1px solid #E2E8F0;
             padding-top: 0.75rem;
             margin-top: 0.75rem;
             font-size: 1.15rem;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
 
             .cc-total-amount {
               color: #10B981;
@@ -923,8 +953,8 @@
     }
 
     .cc-checkout-section {
-      background-color: #121720;
-      border: 1px solid #1E2738;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
       border-radius: 10px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
@@ -933,15 +963,15 @@
         font-size: 1.05rem;
         font-weight: 700;
         margin: 0 0 1.15rem 0;
-        color: #FFFFFF;
+        color: #0F172A;
       }
 
       .cc-member-card-box {
         display: flex;
         align-items: center;
         gap: 0.85rem;
-        background-color: #18202E;
-        border: 1px solid #232D40;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
         padding: 0.85rem 1.15rem;
 
@@ -949,7 +979,7 @@
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          background-color: #222C3D;
+          background-color: #FFFFFF;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -980,8 +1010,8 @@
         }
 
         .cc-fulfillment-card {
-          background-color: #161D29;
-          border: 1.5px solid #1E2738;
+          background-color: #F8FAFC;
+          border: 1.5px solid #E2E8F0;
           border-radius: 8px;
           padding: 1rem;
           display: flex;
@@ -1007,12 +1037,12 @@
             .cc-f-title {
               font-size: 0.9rem;
               font-weight: 700;
-              color: #FFFFFF;
+              color: #0F172A;
             }
 
             .cc-f-desc {
               font-size: 0.76rem;
-              color: #9CA3AF;
+              color: #64748B;
               margin-top: 2px;
             }
           }
@@ -1024,18 +1054,18 @@
           display: block;
           font-size: 0.8rem;
           font-weight: 600;
-          color: #9CA3AF;
+          color: #64748B;
           margin-bottom: 0.4rem;
         }
 
         .cc-address-input {
           width: 100%;
           min-height: 80px;
-          background-color: #161D29;
-          border: 1px solid #1E2738;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
           border-radius: 6px;
           padding: 0.65rem 0.85rem;
-          color: #F9FAFB;
+          color: #0F172A;
           font-family: inherit;
           font-size: 0.86rem;
           outline: none;
@@ -1052,8 +1082,8 @@
         gap: 0.75rem;
 
         .cc-payment-radio {
-          background-color: #161D29;
-          border: 1px solid #1E2738;
+          background-color: #F8FAFC;
+          border: 1px solid #E2E8F0;
           padding: 0.85rem 1.1rem;
           border-radius: 8px;
           display: flex;
@@ -1075,8 +1105,8 @@
     }
 
     .cc-checkout-summary-pane {
-      background-color: #121720;
-      border: 1px solid #1E2738;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
       border-radius: 10px;
       padding: 1.5rem;
       height: fit-content;
@@ -1085,13 +1115,13 @@
         font-size: 1.05rem;
         font-weight: 700;
         margin: 0 0 1rem 0;
-        color: #FFFFFF;
+        color: #0F172A;
       }
 
       .cc-summary-items-list {
         max-height: 220px;
         overflow-y: auto;
-        border-bottom: 1px solid #18202E;
+        border-bottom: 1px solid #E2E8F0;
         padding-bottom: 0.75rem;
         margin-bottom: 1rem;
 
@@ -1107,18 +1137,18 @@
 
             .cc-sum-item-name {
               font-weight: 600;
-              color: #FFFFFF;
+              color: #0F172A;
             }
 
             .cc-sum-item-qty {
               font-size: 0.74rem;
-              color: #9CA3AF;
+              color: #64748B;
             }
           }
 
           .cc-sum-item-total {
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
           }
         }
       }
@@ -1128,7 +1158,7 @@
         flex-direction: column;
         gap: 0.5rem;
         font-size: 0.86rem;
-        color: #9CA3AF;
+        color: #64748B;
         margin-bottom: 1.5rem;
 
         .cc-price-row {
@@ -1153,7 +1183,7 @@
           &.total-row {
             font-size: 1.15rem;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
 
             .cc-total-val {
               color: #10B981;
@@ -1163,7 +1193,7 @@
 
         .cc-price-divider {
           height: 1px;
-          background-color: #18202E;
+          background-color: #F8FAFC;
           margin: 0.4rem 0;
         }
       }
@@ -1175,8 +1205,8 @@
     padding: 3rem 1.5rem;
 
     .cc-confirmed-box {
-      background-color: #121720;
-      border: 1px solid #1E2738;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
       border-radius: 12px;
       max-width: 520px;
       margin: 0 auto;
@@ -1201,22 +1231,22 @@
         font-size: 1.5rem;
         font-weight: 700;
         margin: 0 0 0.35rem 0;
-        color: #FFFFFF;
+        color: #0F172A;
       }
 
       .cc-conf-num {
         font-size: 0.95rem;
-        color: #9CA3AF;
+        color: #64748B;
         margin: 0 0 1.75rem 0;
 
         strong {
-          color: #FFFFFF;
+          color: #0F172A;
         }
       }
 
       .cc-conf-details-card {
-        background-color: #161D29;
-        border: 1px solid #1E2738;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
         padding: 1.25rem;
         margin-bottom: 2rem;
@@ -1229,16 +1259,16 @@
         .cc-conf-row {
           display: flex;
           justify-content: space-between;
-          color: #9CA3AF;
+          color: #64748B;
 
           strong {
-            color: #FFFFFF;
+            color: #0F172A;
           }
 
           &.total-row {
             font-size: 1.05rem;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #0F172A;
 
             .cc-total-highlight {
               color: #10B981;
@@ -1248,7 +1278,7 @@
 
         .cc-conf-divider {
           height: 1px;
-          background-color: #1E2738;
+          background-color: #FFFFFF;
           margin: 0.35rem 0;
         }
       }
@@ -1277,9 +1307,9 @@
   }
 
   .cc-btn-secondary {
-    background-color: #18202E;
-    border: 1px solid #28354A;
-    color: #D1D5DB;
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #0F172A;
     font-size: 0.86rem;
     font-weight: 600;
     padding: 0.6rem 1.1rem;
@@ -1288,8 +1318,8 @@
     transition: all 0.16s ease;
 
     &:hover {
-      background-color: #222C3D;
-      color: #FFFFFF;
+      background-color: #FFFFFF;
+      color: #0F172A;
     }
   }
 

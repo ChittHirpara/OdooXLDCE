@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.MemberLookup">
+        <div class="o_club_lookup p-4" style="max-width: 1000px; margin: 0 auto;">
+            <h2 class="mb-1">Member Lookup</h2>
+            <p class="text-muted">Scan the card QR code or type a member ID, name, e-mail or phone.</p>
+            <div class="input-group mb-4">
+                <input class="form-control form-control-lg" t-ref="query" t-model="state.query"
+                       placeholder="e.g. CC-00012 or Priya" t-on-keydown="onKeydown"/>
+                <button class="btn btn-primary" t-att-disabled="state.busy" t-on-click="search"><i class="fa fa-search"/> Find</button>
+                <button class="btn btn-outline-secondary" t-on-click="clear">Clear</button>
+            </div>
+
+            <t t-if="state.matches.length">
+                <div class="list-group mb-3">
+                    <t t-foreach="state.matches" t-as="m" t-key="m.id">
+                        <button class="list-group-item list-group-item-action d-flex justify-content-between" t-on-click="() => this.open(m.id)">
+                            <span><b t-esc="m.name"/> <span class="text-muted" t-esc="m.member_id"/></span>
+                            <span><t t-esc="m.plan"/> · <t t-esc="m.status"/></span>
+                        </button>
+                    </t>
+                </div>
+            </t>
+            <div t-elif="state.searched and !state.member" class="alert alert-secondary">
+                No member found. If they are new, enrol them under Membership Plans.
+            </div>
+
+            <t t-if="state.member">
+                <t t-set="m" t-value="state.member"/>
+                <div t-foreach="m.alerts" t-as="a" t-key="a_index" t-att-class="'alert alert-' + a.level" t-esc="a.text"/>
+                <div class="card p-4 mb-3">
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h3 class="mb-0" t-esc="m.name"/>
+                            <div class="text-muted"><t t-esc="m.member_id"/> · <t t-esc="m.email"/> <t t-if="m.phone">· <t t-esc="m.phone"/></t></div>
+                        </div>
+                        <div class="text-end">
+                            <span t-att-class="'badge fs-6 ' + statusClass"><t t-esc="m.plan"/> · <t t-esc="m.status"/></span>
+                            <div class="small text-muted mt-1" t-if="m.expiry">Valid until <t t-esc="m.expiry"/><t t-if="m.days_left !== null and m.days_left >= 0"> (<t t-esc="m.days_left"/> days)</t></div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-6 col-md-3"><div class="text-muted small">Court rate</div><b t-esc="m.court_rate === null ? 'Full price' : (m.court_rate ? money(m.court_rate) + ' / hr' : 'Free')"/></div>
+                        <div class="col-6 col-md-3"><div class="text-muted small">Shop discount</div><b><t t-esc="m.shop_discount"/>%</b></div>
+                        <div class="col-6 col-md-3"><div class="text-muted small">Bar discount</div><b><t t-esc="m.bar_discount"/>%</b></div>
+                        <div class="col-6 col-md-3"><div class="text-muted small">Member since</div><b t-esc="m.joined or '-'"/></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mt-3">
+                        <button class="btn btn-success" t-on-click="checkIn"><i class="fa fa-check-circle"/> Check in</button>
+                        <span class="text-muted small">
+                            <t t-esc="m.check_in_count"/> check-ins<t t-if="m.last_check_in"> · last <t t-esc="m.last_check_in"/> UTC</t>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4"><div class="card p-3 h-100">
+                        <h6>With the club</h6>
+                        <div><b t-esc="m.visits"/> sessions played</div>
+                        <div><b t-esc="m.order_count"/> shop and bar orders</div>
+                        <div>Spent <b t-esc="money(m.lifetime_spend)"/> in total</div>
+                    </div></div>
+                    <div class="col-md-4"><div class="card p-3 h-100">
+                        <h6>Upcoming bookings</h6>
+                        <div t-if="!m.upcoming.length" class="text-muted">None</div>
+                        <div t-foreach="m.upcoming" t-as="b" t-key="b.id"><b t-esc="b.when"/> · <t t-esc="b.court"/></div>
+                    </div></div>
+                    <div class="col-md-4"><div class="card p-3 h-100">
+                        <h6>Recent sessions</h6>
+                        <div t-if="!m.recent.length" class="text-muted">None</div>
+                        <div t-foreach="m.recent" t-as="b" t-key="b.id"><t t-esc="b.when"/> · <t t-esc="b.court"/> <span class="text-muted">(<t t-esc="b.state"/>)</span></div>
+                    </div></div>
+                    <div class="col-12"><div class="card p-3">
+                        <h6>Recent orders</h6>
+                        <div t-if="!m.orders.length" class="text-muted">None</div>
+                        <div t-foreach="m.orders" t-as="o" t-key="o.name"><t t-esc="o.when"/> · <t t-esc="o.name"/> · <t t-esc="o.channel"/> · <b t-esc="money(o.total)"/></div>
+                    </div></div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

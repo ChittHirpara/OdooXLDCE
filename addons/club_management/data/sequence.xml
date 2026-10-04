@@ -18,6 +18,12 @@
         <field name="prefix">ENQ-</field>
         <field name="padding">5</field>
     </record>
+    <record id="seq_club_ticket" model="ir.sequence">
+        <field name="name">Club Support Ticket</field>
+        <field name="code">club.ticket</field>
+        <field name="prefix">TKT-</field>
+        <field name="padding">5</field>
+    </record>
     <record id="seq_club_order" model="ir.sequence">
         <field name="name">Club Order</field>
         <field name="code">club.order</field>

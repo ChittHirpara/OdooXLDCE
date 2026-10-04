@@ -12,3 +12,9 @@ access_club_order_manager,club.order manager,model_club_order,group_club_manager
 access_club_order_line_staff,club.order.line staff,model_club_order_line,group_club_staff,1,0,1,0
 access_club_order_line_manager,club.order.line manager,model_club_order_line,group_club_manager,1,1,1,1
 access_club_booking_reschedule_staff,club.booking.reschedule staff,model_club_booking_reschedule,group_club_staff,1,1,1,1
+access_club_feedback_staff,club.feedback staff,model_club_feedback,group_club_staff,1,1,1,0
+access_club_feedback_manager,club.feedback manager,model_club_feedback,group_club_manager,1,1,1,1
+access_club_ticket_staff,club.ticket staff,model_club_ticket,group_club_staff,1,1,1,0
+access_club_ticket_manager,club.ticket manager,model_club_ticket,group_club_manager,1,1,1,1
+access_club_payroll_run_manager,club.payroll.run manager,model_club_payroll_run,group_club_manager,1,1,1,1
+access_club_payroll_run_line_manager,club.payroll.run.line manager,model_club_payroll_run_line,group_club_manager,1,1,1,1

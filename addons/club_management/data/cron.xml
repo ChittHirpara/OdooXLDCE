@@ -23,4 +23,27 @@
         <field name="numbercall">-1</field>
         <field name="doall" eval="False"/>
     </record>
+    <record id="ir_cron_booking_reminders" model="ir.cron">
+        <field name="name">Club: court booking reminders (day before)</field>
+        <field name="model_id" ref="model_club_booking"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_send_booking_reminders()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+    </record>
+
+    <record id="ir_cron_low_stock_alert" model="ir.cron">
+        <field name="name">Club: low stock alert to managers</field>
+        <field name="model_id" ref="model_club_dashboard"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_low_stock_alert()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+    </record>
 </odoo>

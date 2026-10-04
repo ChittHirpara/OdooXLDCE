@@ -12,15 +12,20 @@ becomes a CRM lead there.
     'license': 'LGPL-3',
     'depends': ['website', 'club_management'],
     'data': [
+        'views/icon_templates.xml',
         'views/layout_templates.xml',
         'views/home_templates.xml',
         'views/membership_templates.xml',
         'views/court_templates.xml',
         'views/shop_templates.xml',
         'views/online_templates.xml',
+        'views/member_templates.xml',
+        'views/support_templates.xml',
+        'views/buy_templates.xml',
         'views/join_templates.xml',
         'views/page_templates.xml',
         'data/website_data.xml',
+        'data/website_cleanup.xml',
     ],
     'assets': {
         'web.assets_frontend': [

@@ -61,7 +61,8 @@ a.nav-link[href="/join"] {
     .club-feature {
         display: block; text-align: center; background: #fff; border: 1px solid $club-line; border-radius: 1rem;
         padding: 1.5rem .5rem; color: $club-ink; text-decoration: none; height: 100%;
-        span { font-size: 2.2rem; display: block; }
+        .club-feature-icon { display: inline-flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem;
+            border-radius: 50%; background: #ecfdf5; color: $club-green-dark; margin-bottom: .25rem; }
         h5 { margin: .5rem 0 0; font-size: 1rem; font-weight: 700; }
     }
     a.club-feature:hover { border-color: $club-green; }
@@ -109,12 +110,19 @@ a.nav-link[href="/join"] {
         &.active, &:hover { background: $club-green; border-color: $club-green; color: #fff; } }
     .club-product { display: flex; flex-direction: column; height: 100%; background: #fff; border: 1px solid $club-line; border-radius: 1rem; padding: 1.25rem; color: $club-ink;
         &:hover { border-color: $club-green; box-shadow: 0 8px 24px rgba(15, 23, 42, .08); }
-        .club-product-icon { font-size: 2.6rem; }
+        .club-product-img { aspect-ratio: 1 / 1; margin: -.25rem -.25rem 1rem; border-radius: .75rem; overflow: hidden; background: $club-soft;
+            display: flex; align-items: center; justify-content: center;
+            img { width: 100%; height: 100%; object-fit: contain; } }
         .club-product-name { font-size: 1rem; font-weight: 700; margin: .25rem 0 1rem; flex-grow: 1; }
         .club-product-foot { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; } }
     .club-product-cat { color: $club-muted; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
     .club-stock { font-size: .8rem; color: $club-green-dark; font-weight: 600; }
-    .club-product-hero { font-size: 7rem; text-align: center; background: $club-soft; border-radius: 1.25rem; padding: 2rem; }
+    .club-product-hero { aspect-ratio: 1 / 1; background: $club-soft; border-radius: 1.25rem; overflow: hidden; display: flex; align-items: center; justify-content: center;
+        img { width: 100%; height: 100%; object-fit: contain; } }
+    .club-no-image { color: #94a3b8; }
+    .club-thumb { width: 3.5rem; height: 3.5rem; flex: none; border-radius: .6rem; overflow: hidden; background: $club-soft;
+        display: flex; align-items: center; justify-content: center;
+        img { width: 100%; height: 100%; object-fit: contain; } .club-no-image svg { width: 1.5rem; height: 1.5rem; } }
     .club-price-large { font-size: 2rem; font-weight: 800; }
 
     // Forms
@@ -143,3 +151,62 @@ a.nav-link[href="/join"] {
     .club-qty { width: 6rem; }
     .club-cart .club-compare td, .club-cart .club-compare th { vertical-align: middle; }
 }
+
+// My Club (signed-in member)
+.club-site {
+    .club-member-card {
+        background: linear-gradient(135deg, $club-navy 0%, $club-navy-2 70%, #0c2a2a 100%); color: #fff;
+        border-radius: 1.25rem; padding: 1.75rem; margin-bottom: 1rem;
+        h3 { font-weight: 800; }
+        .club-eyebrow { color: $club-green; }
+        .club-qr { width: 6.5rem; height: 6.5rem; background: #fff; padding: .35rem; border-radius: .75rem; }
+        .club-facts { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1.25rem; margin: 1.25rem 0;
+            dt { color: #94a3b8; font-weight: 600; } dd { margin: 0; } }
+        .club-ref { background: rgba(16, 185, 129, .15); color: #6ee7b7; }
+        .club-benefits li { border-bottom-color: rgba(255, 255, 255, .08); }
+    }
+    .club-status { display: inline-block; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+        padding: .2rem .65rem; border-radius: 999px;
+        &.club-status-ok { background: rgba(16, 185, 129, .2); color: #6ee7b7; }
+        &.club-status-off { background: rgba(239, 68, 68, .2); color: #fca5a5; } }
+}
+
+// About page
+.club-site {
+    .club-stats { background: $club-navy; color: #fff; padding: 2rem 0;
+        strong { display: block; font-size: 2rem; font-weight: 800; color: $club-green; line-height: 1.1; }
+        span { color: #94a3b8; font-size: .9rem; } }
+    .club-heading { font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.4rem); }
+    .club-checklist { list-style: none; padding: 0; margin: 0;
+        li { position: relative; padding: .85rem 1rem .85rem 3rem; background: #fff; border: 1px solid $club-line; border-radius: .85rem; margin-bottom: .6rem; font-weight: 500;
+            &::before { content: ""; position: absolute; left: 1rem; top: 50%; width: 1.4rem; height: 1.4rem; margin-top: -.7rem; border-radius: 50%; background: $club-green
+                url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%273.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M5 12l5 5 9-10%27/%3E%3C/svg%3E") center / 70% no-repeat; } } }
+    .club-offer { background: #fff; border: 1px solid $club-line; border-radius: 1.1rem; padding: 1.5rem; height: 100%;
+        h5 { font-weight: 700; margin: .75rem 0 .35rem; } p { color: $club-muted; } a { font-weight: 600; color: $club-green-dark; } }
+    .club-spotlight { background: linear-gradient(135deg, $club-navy 0%, #0c2a2a 100%); color: #fff; border-radius: 1.5rem; padding: 2.5rem;
+        h2 { font-weight: 800; } p { color: #cbd5e1; margin: 0; } }
+    .club-court-card:hover { border-color: $club-green; box-shadow: 0 8px 24px rgba(15, 23, 42, .08); }
+}
+
+.club-site .club-login-box { border-top: 1px dashed $club-line; margin-top: 1.25rem; padding-top: 1rem; }
+
+// Feedback stars (radios in 5..1 order, shown reversed so a click fills the stars to its left)
+.club-site {
+    .club-stars { display: inline-flex; flex-direction: row-reverse; gap: .15rem;
+        input { position: absolute; opacity: 0; pointer-events: none; }
+        label { cursor: pointer; margin: 0; svg { fill: #e2e8f0; stroke: #cbd5e1; stroke-width: 1; transition: fill .12s; } }
+        label:hover svg, label:hover ~ label svg, input:checked ~ label svg { fill: $club-gold; stroke: $club-gold; }
+        input:focus-visible + label svg { outline: 2px solid $club-green; outline-offset: 2px; } }
+    .club-help-links { color: $club-muted; font-size: .9rem; }
+}
+
+.club-site .club-member-on { border-style: solid; border-color: #a7f3d0; background: #ecfdf5; color: #065f46; }
+
+// Home: what members say
+.club-site .club-quote { background: #fff; border: 1px solid $club-line; border-radius: 1.1rem; padding: 1.5rem; height: 100%; margin: 0; display: flex; flex-direction: column;
+    .club-quote-stars svg { fill: #e2e8f0; &.on { fill: $club-gold; } }
+    blockquote { flex-grow: 1; margin: .75rem 0 1rem; color: #334155; font-size: 1rem; }
+    figcaption { font-size: .9rem; } }
+
+.club-site .club-plan-ask { display: block; text-align: center; margin-top: .6rem; font-size: .9rem; color: $club-muted; }
+.club-site .club-note code { background: #fef3c7; padding: .05rem .35rem; border-radius: .3rem; }

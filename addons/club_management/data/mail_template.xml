@@ -116,7 +116,109 @@
         As a member you get your tier court rate and your shop and bar discounts automatically:
         just give your member ID at the front desk, the shop or the bar.
     </p>
+    <t t-if="object.user_ids">
+        <p>
+            You can also sign in on our website with <strong><t t-out="object.email or ''"/></strong> to see your
+            membership, bookings and orders. If you have not chosen a password yet, use the link in our
+            separate email, or Reset Password on the sign-in page.
+        </p>
+    </t>
     <p>See you on the court!<br/>The Champions Club</p>
+</div>
+        </field>
+    </record>
+
+    <record id="mail_template_booking_cancelled" model="mail.template">
+        <field name="name">Club: court booking cancelled</field>
+        <field name="model_id" ref="model_club_booking"/>
+        <field name="subject">Booking cancelled: {{ object.court_id.name }}, {{ format_datetime(object.start_datetime, tz='Asia/Kolkata', dt_format='EEE d MMM, HH:mm') }} ({{ object.name }})</field>
+        <field name="email_to">{{ object.partner_id.email or object.guest_email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.partner_id.name or object.walkin_name or ''"/>,</p>
+    <p>Your booking <strong><t t-out="object.name"/></strong> has been cancelled and the slot is free again.</p>
+    <table cellpadding="4" style="border-collapse:collapse">
+        <tr><td><strong>Court</strong></td><td><t t-out="object.court_id.name"/></td></tr>
+        <tr><td><strong>Was booked for</strong></td><td><t t-out="format_datetime(object.start_datetime, tz='Asia/Kolkata', dt_format='EEEE d MMMM y, HH:mm')"/></td></tr>
+    </table>
+    <p>Want another time? <a t-attf-href="{{ object.get_base_url() }}/courts">See the live availability</a>.</p>
+    <p>The Champions Club</p>
+</div>
+        </field>
+    </record>
+
+    <record id="mail_template_payment_received" model="mail.template">
+        <field name="name">Club: payment received</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">Payment received for {{ object.name }}</field>
+        <field name="email_to">{{ object.partner_id.email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.partner_id.name or ''"/>,</p>
+    <p>
+        Thank you, we have received your payment of
+        <strong><t t-out="object.currency_id.symbol"/><t t-out="'{:,.2f}'.format(object.amount_total)"/></strong>
+        for invoice <strong><t t-out="object.name"/></strong>.
+    </p>
+    <p>The Champions Club</p>
+</div>
+        </field>
+    </record>
+    <record id="mail_template_ticket_received" model="mail.template">
+        <field name="name">Club: support request received</field>
+        <field name="model_id" ref="model_club_ticket"/>
+        <field name="subject">We received your request {{ object.name }}</field>
+        <field name="email_to">{{ object.contact_email or object.partner_id.email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.contact_name or object.partner_id.name or ''"/>,</p>
+    <p>Thank you for telling us. Your request <strong><t t-out="object.name"/></strong>
+        (<t t-out="object.subject"/>) is with our team and we will get back to you shortly.</p>
+    <p><a t-attf-href="{{ object.get_base_url() }}/support/ticket/{{ object.access_token }}">Check the status of my request</a></p>
+    <p>The Champions Club</p>
+</div>
+        </field>
+    </record>
+
+    <record id="mail_template_ticket_resolved" model="mail.template">
+        <field name="name">Club: support request resolved</field>
+        <field name="model_id" ref="model_club_ticket"/>
+        <field name="subject">Your request {{ object.name }} has been resolved</field>
+        <field name="email_to">{{ object.contact_email or object.partner_id.email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.contact_name or object.partner_id.name or ''"/>,</p>
+    <p>We have resolved your request <strong><t t-out="object.name"/></strong> (<t t-out="object.subject"/>).</p>
+    <p t-if="object.resolution"><t t-out="object.resolution"/></p>
+    <p t-if="object.refund_amount">Refund agreed: <strong><t t-out="object.currency_id.symbol"/><t t-out="'{:,.2f}'.format(object.refund_amount)"/></strong>.</p>
+    <p>Not happy with the outcome? Just reply to this email or <a t-attf-href="{{ object.get_base_url() }}/support">send us another request</a>.
+       We would also love to hear how we did: <a t-attf-href="{{ object.get_base_url() }}/feedback">rate your experience</a>.</p>
+    <p>The Champions Club</p>
+</div>
+        </field>
+    </record>
+    <record id="mail_template_booking_reminder" model="mail.template">
+        <field name="name">Club: court booking reminder (day before)</field>
+        <field name="model_id" ref="model_club_booking"/>
+        <field name="subject">Reminder: {{ object.court_id.name }} tomorrow at {{ format_datetime(object.start_datetime, tz='Asia/Kolkata', dt_format='HH:mm') }} ({{ object.name }})</field>
+        <field name="email_to">{{ object.partner_id.email or object.guest_email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div>
+    <p>Hello <t t-out="object.partner_id.name or object.walkin_name or ''"/>,</p>
+    <p>A reminder that you have a court booked tomorrow.</p>
+    <table cellpadding="4" style="border-collapse:collapse">
+        <tr><td><strong>Court</strong></td><td><t t-out="object.court_id.name"/></td></tr>
+        <tr><td><strong>When</strong></td><td><t t-out="format_datetime(object.start_datetime, tz='Asia/Kolkata', dt_format='EEEE d MMMM y, HH:mm')"/></td></tr>
+    </table>
+    <t t-if="object.access_token">
+        <p>Can't make it? <a t-attf-href="{{ object.get_base_url() }}/booking/{{ object.access_token }}">Cancel here</a> so someone else can play.</p>
+    </t>
+    <p>The Champions Club</p>
 </div>
         </field>
     </record>

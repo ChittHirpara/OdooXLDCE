@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- One place that decides how the Club menu reads: daily work first (screens, bookings,
+         members, enquiries, orders), then the owner's view, then support, staff and setup.
+         Names are plain words; the order is the sequence below. -->
+    <record id="menu_club_court_booking_ui" model="ir.ui.menu">
+        <field name="name">Court Booking</field><field name="sequence">5</field>
+    </record>
+    <record id="menu_club_shop_ui" model="ir.ui.menu"><field name="sequence">6</field></record>
+    <record id="menu_club_bar_pos_ui" model="ir.ui.menu"><field name="sequence">7</field></record>
+    <record id="menu_club_membership_plans_ui" model="ir.ui.menu">
+        <field name="name">Membership Plans</field><field name="sequence">8</field>
+    </record>
+    <record id="menu_club_bookings" model="ir.ui.menu"><field name="sequence">10</field></record>
+    <record id="menu_club_members" model="ir.ui.menu"><field name="sequence">20</field></record>
+    <record id="menu_club_enquiries" model="ir.ui.menu">
+        <field name="name">Enquiries</field><field name="sequence">25</field>
+    </record>
+    <record id="menu_club_orders" model="ir.ui.menu"><field name="sequence">30</field></record>
+    <record id="menu_club_owner_dashboard" model="ir.ui.menu"><field name="sequence">40</field></record>
+    <record id="menu_club_reporting" model="ir.ui.menu"><field name="sequence">50</field></record>
+    <record id="menu_club_support" model="ir.ui.menu"><field name="sequence">60</field></record>
+    <record id="menu_club_staff" model="ir.ui.menu"><field name="sequence">70</field></record>
+    <record id="menu_club_notifications" model="ir.ui.menu"><field name="sequence">80</field></record>
+    <record id="menu_club_monitoring" model="ir.ui.menu"><field name="sequence">85</field></record>
+    <record id="menu_club_config" model="ir.ui.menu"><field name="sequence">90</field></record>
+    <!-- Administration: the admin-side plan list is the settings (prices, discounts), the screen above is the showcase -->
+    <record id="menu_club_plans" model="ir.ui.menu"><field name="name">Plan Settings</field></record>
+
+    <!-- Odoo's Apps page (module manager). Everything the club needs is already installed and
+         updates run from the command line; the page only invites people to install unrelated
+         apps (Sales, Restaurant, Manufacturing, ...) and shows Enterprise upgrade buttons.
+         Hidden, not deleted: the menu comes back by ticking Active on it (Settings > Technical >
+         Menu Items, "Apps"). Apps can still be installed or updated from the command line. -->
+    <record id="base.menu_management" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- The Club app in the app grid: first, with its own icon, opening on the Club Home page -->
+    <record id="menu_club_root" model="ir.ui.menu">
+        <field name="sequence">0</field>
+        <field name="web_icon">club_management,static/description/icon.svg</field>
+    </record>
+    <menuitem id="menu_club_home" name="Home" parent="menu_club_root" action="action_club_home" sequence="1"/>
+</odoo>

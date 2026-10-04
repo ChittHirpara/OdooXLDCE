@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Employees: monthly salary, visible to club managers only -->
+    <record id="view_employee_form_club_salary" model="ir.ui.view">
+        <field name="name">hr.employee.form.club.salary</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='department_id']" position="after">
+                <field name="club_currency_id" invisible="1"/>
+                <field name="club_monthly_salary" groups="club_management.group_club_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Payroll -->
+    <record id="view_club_payroll_run_tree" model="ir.ui.view">
+        <field name="name">club.payroll.run.tree</field>
+        <field name="model">club.payroll.run</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state == 'paid'" decoration-warning="state == 'posted'">
+                <field name="name"/>
+                <field name="month"/>
+                <field name="total" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_club_payroll_run_form" model="ir.ui.view">
+        <field name="name">club.payroll.run.form</field>
+        <field name="model">club.payroll.run</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_compute" type="object" string="Load Employees" invisible="state != 'draft'"/>
+                    <button name="action_post" type="object" string="Raise Salary Bills" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_pay" type="object" string="Pay Salaries" class="btn-primary"
+                            invisible="state != 'posted'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <field name="month" readonly="state != 'draft'"/>
+                        <field name="company_id" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="total"/>
+                    </group>
+                    <field name="line_ids" readonly="state != 'draft'">
+                        <tree editable="bottom">
+                            <field name="employee_id"/>
+                            <field name="amount"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="bill_id"/>
+                            <field name="payment_state" widget="badge"/>
+                        </tree>
+                    </field>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_club_payroll" model="ir.actions.act_window">
+        <field name="name">Payroll</field>
+        <field name="res_model">club.payroll.run</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Run the month's payroll</p>
+            <p>Load the employees, raise one salary bill each, then pay them. Set each person's monthly salary on the employee form.</p>
+        </field>
+    </record>
+
+    <!-- Business clients: companies the club invoices (corporate memberships, court blocks) -->
+    <record id="action_club_business_clients" model="ir.actions.act_window">
+        <field name="name">Business Clients</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('is_company', '=', True), ('customer_rank', '>', 0)]</field>
+        <field name="context">{'default_is_company': True, 'default_customer_rank': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No business clients yet</p>
+            <p>Create a company, then raise its invoice under Accounting. Business clients are separate from members in the reports.</p>
+        </field>
+    </record>
+
+    <record id="action_club_client_invoices" model="ir.actions.act_window">
+        <field name="name">Invoices</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('move_type', 'in', ('out_invoice', 'out_refund')), ('partner_id.is_company', '=', True)]</field>
+        <field name="context">{'default_move_type': 'out_invoice'}</field>
+    </record>
+
+    <menuitem id="menu_club_member_lookup" name="Member Lookup" parent="menu_club_root"
+              action="action_club_member_lookup" sequence="9"/>
+    <menuitem id="menu_club_employees" name="Employees" parent="menu_club_staff"
+              action="hr.open_view_employee_list_my" sequence="15" groups="group_club_manager"/>
+    <menuitem id="menu_club_time_off" name="Time Off to Approve" parent="menu_club_staff"
+              action="hr_holidays.hr_leave_action_action_approve_department" sequence="16" groups="group_club_manager"/>
+    <menuitem id="menu_club_payroll" name="Payroll" parent="menu_club_staff"
+              action="action_club_payroll" sequence="17" groups="group_club_manager"/>
+    <menuitem id="menu_club_business" name="Business Clients" parent="menu_club_root" sequence="27"
+              groups="group_club_manager"/>
+    <menuitem id="menu_club_business_clients" name="Clients" parent="menu_club_business"
+              action="action_club_business_clients" sequence="1"/>
+    <menuitem id="menu_club_business_invoices" name="Invoices" parent="menu_club_business"
+              action="action_club_client_invoices" sequence="2"/>
+
+    <function model="club.finance" name="ensure_tax"/>
+</odoo>

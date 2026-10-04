@@ -43,7 +43,7 @@ One Odoo 17 platform for a sports club: **court bookings, memberships, a pro-sho
 | 2 | **Membership** | Gold ₹5,000 / Silver ₹3,000 / Junior ₹1,500, benefits, comparison | Plans come from the database, not hard-coded |
 | 3 | **Courts**: pick tomorrow | A grid with the busy evening struck through; pick a Friday and see "N left" | Live availability, Friday social play |
 | 4 | Click a free slot, then **Send enquiry** | "Thank you" and a reference `ENQ-000xx` | Website to CRM |
-| 5 | Log in at `/web` (admin / admin), **Club, Enquiries (CRM)** | The new lead in **New**, with a follow-up call task | CRM pipeline, automatic assignment |
+| 5 | Log in at `/web` (admin / admin), **Club, Enquiries** | The new lead in **New**, with a follow-up call task | CRM pipeline, automatic assignment |
 | 6 | Click **Contacted**, then **Interested**; refresh the visitor's status link | The visitor's status page follows each stage | Visitor-facing transparency |
 | 7 | **Create Membership Quote**, then **Confirm** | Quotation from the plan's product, then lead turns **Won** | CRM to Sales to member |
 | 8 | Open the lead's **Member** button | A Gold member with ID `CC-000xx`, QR code, welcome e-mail queued | Lead to member automatically |
@@ -536,11 +536,11 @@ The pro-shop on the website is browse-and-reserve (pay at the club); there is **
 
 Judges respect candour. These are true today:
 
-- **No online payment** on the website. Shop is "reserve for pickup"; membership is quote, then accept.
-- **The OWL screens run under staff sessions.** There is no member self-service login yet.
-- **"Choose plan" on the plans screen** only shows a notification; joining goes through the enquiry form.
+- **Payments are test mode.** Membership is bought online with a test card gateway (nothing is charged); shop orders are paid at the club or on delivery. A real provider can replace `check_card`.
+- **The OWL screens run under staff sessions.** Members have their own login and self-service page (My Club, /my/club).
+- **Desk enrolment** on the Membership Plans screen takes payment as cash, card or UPI by staff declaration; no terminal is integrated.
 - **Rupees** apply only to databases built with `scripts/create_demo_db.sh` (Odoo's own accounting demo data blocks a currency change, so a plain install with Odoo demo data stays in dollars).
-- **Accounting is basic:** court bookings can create draft invoices; shop and bar orders are recorded as club orders and stock moves, not as posted accounting entries. A real deployment would map these to a chart of accounts and taxes.
+- **Accounting is simple:** membership, shop and bar sales raise a posted invoice with the payment registered on the bank journal, and a court booking becomes an invoice from the booking form (Create Invoice); a real deployment would map them to a full chart of accounts and taxes.
 - The `preview/` folder is an **offline mock-up** of the screens (no Odoo needed), kept for design reference; the real screens live in `addons/club_management/static/src/components`.
 
 ---
@@ -558,3 +558,23 @@ Visitors no longer have to send an enquiry to book a court or buy from the shop.
 - **Safety**: CSRF, honeypot, secret tokens, savepoints (a refused request leaves nothing), prices never read from the browser, one vague member-verification error.
 - **Staff view**: Club > Bookings and Bar & Shop Orders show a Source column and "Booked/Ordered Online" filters. Guest bookings also file a follow-up lead so the club can offer a membership.
 - **Tests**: 401 Python tests, plus `tests/e2e/flow_online.js` (34 browser checks).
+
+---
+
+## Problem statement coverage
+
+Each scene of the brief ("A Week at the Club") and where it is solved.
+
+| Scene in the brief | What the club has | Where |
+|---|---|---|
+| A new member walks in: who they are, plan, entitlements, expiry nobody remembers, recognised quickly with history | Member record with plan, member ID and QR card, expiry and automatic lapse, reminder e-mails; **Member Lookup** shows plan, discounts, bookings, orders, spend, warnings and checks them in; desk enrolment takes payment | Club > Members, Member Lookup, Membership Plans |
+| Booking a court on a busy evening: 1-hour sessions, 30-minute slots, 2 per day, member/walk-in price, cancel/reschedule, Friday social play, no double booking | `club.booking` rules enforced in Python and SQL, live availability grid on the site and at the desk, tier pricing, reschedule wizard, day-before reminder | Court Booking, `/courts`, Club > Bookings |
+| Gearing up: rackets, balls, shoes, accessories; stock and low-stock; order from home, collect or delivery; same shelf as the counter | Pro-Shop screen and website shop share one stock; reorder minimums, low-stock alert to managers; collect or deliver | Pro-Shop, `/club-shop` |
+| After the match at the bar: tabs, member discount automatically, cash/card/UPI, shifts, tables, what the bar earned | Bar & POS screen (tables, open tabs, discount from the member's plan, payment methods), POS shifts, bar revenue on the dashboard | Bar & POS, Club > Staff > POS Shifts |
+| A stranger finds the club online: plans and prices, what is free, shop, book a trial session; enquiries must not vanish | Public website with live availability and "Book a trial session"; enquiry becomes a CRM lead with follow-up, quote and welcome; buy a membership online (test card) | `/`, `/membership`, `/join`, Club > Enquiries |
+| The owner at the end of the month: how much, from where, what do we owe; business clients; employees to pay; leave; taxes; share the numbers | Owner Dashboard (today / week / month / all): revenue by source, **what we owe** (supplier bills and salaries), **GST in sales**, **business clients billed and unpaid**, payroll, leave waiting; Reports & Analytics by month; **Download CSV and e-mail the report** | Club > Owner Dashboard, Reports & Analytics |
+| Employees to pay, leave to approve | Standard Odoo Employees and Time Off; monthly salary per employee; **Payroll run** raises one vendor bill per person and pays them | Club > Staff > Employees, Time Off to Approve, Payroll |
+| Memberships and business clients to invoice | Membership quotes and invoices; companies are **Business Clients** with their own invoices (court blocks, events) and totals | Club > Business Clients |
+| Taxes to report | GST 18% is built into every club price; invoices show the tax inside the total; the dashboard and monthly analytics report it | Owner Dashboard, Analytics |
+
+Known simplification: payroll is a flat monthly salary per employee (Odoo's Payroll app is Enterprise-only); GST is a single included rate.

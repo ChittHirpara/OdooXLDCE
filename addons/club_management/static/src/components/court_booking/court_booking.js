@@ -3,6 +3,7 @@
 import { Component, useState, onWillStart } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
+import { ClubMemberPicker, WALK_IN } from "../common/member_picker";
 
 // Seed Courts matching Champions Club Facility
 const DEFAULT_COURTS = [
@@ -20,16 +21,6 @@ const TIME_SLOTS = [
     "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
     "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"
 ];
-
-// Current Member session
-const CURRENT_MEMBER = {
-    id: 101,
-    name: "Chitt Hirpara",
-    plan: "Gold",
-    planCode: "gold",
-    status: "active",
-    memberId: "CC-MEM-00142",
-};
 
 // Initial Mock Bookings
 let MOCK_EXISTING_BOOKINGS = [
@@ -70,6 +61,7 @@ const MOCK_AVAILABILITY_MAP = {
 
 export class CourtBookingPage extends Component {
     static template = "club_management.CourtBookingPage";
+    static components = { ClubMemberPicker };
 
     setup() {
         try {
@@ -101,7 +93,8 @@ export class CourtBookingPage extends Component {
             lastConfirmedBooking: null,
 
             // My Bookings
-            myBookings: [...MOCK_EXISTING_BOOKINGS],
+            myBookings: [],
+            member: { ...WALK_IN },
             bookingsTab: "upcoming", // "upcoming" | "completed" | "cancelled"
             isCancelModalOpen: false,
             bookingToCancel: null,
@@ -112,36 +105,27 @@ export class CourtBookingPage extends Component {
         });
 
         onWillStart(async () => {
-            await this.loadMember();
             await this.loadCourtsAndAvailability();
         });
     }
 
-    /**
-     * The logged-in member and their real bookings come from Odoo. The constants above
-     * are only the offline preview fallback.
-     */
-    async loadMember() {
+    /** Who the desk is booking for changed: show their bookings (a walk-in sees the latest at the club). */
+    async onMemberChange(member) {
+        this.state.member = { ...member };
+        await this.loadBookings();
+    }
+
+    async loadBookings() {
         if (!this.orm) return;
         try {
-            const member = await this.orm.call("res.partner", "get_current_member", []);
-            if (!member || !member.id) return;
-            Object.assign(CURRENT_MEMBER, {
-                id: member.id,
-                name: member.name,
-                plan: member.plan,
-                planCode: member.plan_code,
-                status: member.status,
-                memberId: member.member_id,
-            });
-            const bookings = await this.orm.call("club.booking", "get_partner_bookings", [member.id]);
+            const bookings = await this.orm.call("club.booking", "get_partner_bookings", [this.state.member.id]);
             this.state.myBookings = bookings.map((b) => ({
                 ...b,
                 // backend "done" is shown on the Completed tab; a draft is still upcoming
                 state: b.state === "done" ? "completed" : b.state === "draft" ? "confirmed" : b.state,
             }));
         } catch (err) {
-            console.warn("[CourtBooking] Could not load the member profile:", err);
+            console.warn("[CourtBooking] Could not load the bookings:", err);
         }
     }
 
@@ -156,7 +140,7 @@ export class CourtBookingPage extends Component {
     }
 
     get member() {
-        return CURRENT_MEMBER;
+        return this.state.member;
     }
 
     get filteredMyBookings() {
@@ -263,7 +247,7 @@ export class CourtBookingPage extends Component {
                     this.state.selectedCourt.id,
                     this.state.selectedDate,
                     this.state.selectedSlot,
-                    CURRENT_MEMBER.id
+                    this.state.member.id
                 ]);
                 this.state.modalPrice = priceInfo.formatted_price;
             } catch (err) {
@@ -280,9 +264,9 @@ export class CourtBookingPage extends Component {
     calculateMockPrice() {
         const hour = parseInt(this.state.selectedSlot.split(":")[0]);
         const isPrimeTime = hour >= 17 && hour <= 21;
-        if (CURRENT_MEMBER.planCode === "gold") {
+        if (this.state.member.planCode === "gold") {
             return isPrimeTime ? "₹300" : "₹0";
-        } else if (CURRENT_MEMBER.planCode === "silver") {
+        } else if (this.state.member.planCode === "silver") {
             return isPrimeTime ? "₹500" : "₹350";
         }
         return "₹800";
@@ -305,7 +289,7 @@ export class CourtBookingPage extends Component {
         if (sameDayCount >= 2) {
             this.state.loading = false;
             this.state.isModalOpen = false;
-            this.state.error = "⚠ You have reached your maximum of 2 bookings for today.";
+            this.state.error = "You have reached your maximum of 2 bookings for today.";
             return;
         }
 
@@ -313,7 +297,7 @@ export class CourtBookingPage extends Component {
         if (this.isSlotBooked(this.state.selectedCourt.id, this.state.selectedSlot)) {
             this.state.loading = false;
             this.state.isModalOpen = false;
-            this.state.error = "⚠ This court is no longer available.";
+            this.state.error = "This court is no longer available.";
             return;
         }
 
@@ -325,7 +309,8 @@ export class CourtBookingPage extends Component {
                     this.state.selectedCourt.id,
                     this.state.selectedDate,
                     this.state.selectedSlot,
-                    CURRENT_MEMBER.id,
+                    this.state.member.id || false,
+                    this.state.member.id ? false : "Walk-in guest",
                 ]);
                 if (res.success) {
                     newBooking = { ...res.booking, state: "confirmed" };
@@ -354,7 +339,7 @@ export class CourtBookingPage extends Component {
                 start_time: this.state.selectedSlot,
                 end_time: this.state.slotEndTime,
                 price: this.state.modalPrice,
-                member_name: CURRENT_MEMBER.name,
+                member_name: this.state.member.name,
                 plan_name: "Gold Member",
                 state: "confirmed",
             };
