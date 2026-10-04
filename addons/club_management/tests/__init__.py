@@ -17,3 +17,4 @@ from . import test_dashboard
 from . import test_owner_reports
 from . import test_support
 from . import test_demo_extras
+from . import test_membership_purchase

@@ -15,3 +15,4 @@ from . import club_dashboard
 from . import demo_data
 from . import club_support
 from . import demo_extras
+from . import membership_purchase

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Buy or renew a membership: plan summary, details (new customers) and the test card -->
+    <template id="buy_page" name="Buy a membership">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'club_buy'"/>
+            <div id="wrap" class="club-site club-buy">
+                <t t-call="club_website.page_header">
+                    <t t-set="eyebrow" t-value="'Membership'"/>
+                    <t t-set="title" t-value="'%s %s membership' % ('Renew your' if renewal else 'Get your', plan.name)"/>
+                    <t t-set="subtitle" t-value="'Active straight after payment: your member card, court rate and shop and bar discounts.'"/>
+                </t>
+                <section class="club-section">
+                    <div class="container">
+                        <div class="row g-4">
+                            <div class="col-lg-5 order-lg-2">
+                                <div class="club-summary">
+                                    <h3 t-esc="plan.name"/>
+                                    <p class="club-muted" t-if="plan.description" t-esc="plan.description"/>
+                                    <p class="club-price-large">₹<t t-esc="'{:,.0f}'.format(plan.price)"/>
+                                        <small class="club-muted fs-6"> / <t t-esc="plan.validity_days"/> days</small></p>
+                                    <ul class="club-benefits">
+                                        <li><t t-if="plan.court_rate">Courts at ₹<t t-esc="'{:,.0f}'.format(plan.court_rate)"/> per hour</t><t t-else="">Court bookings included</t></li>
+                                        <li><t t-esc="'{:g}'.format(plan.shop_discount)"/>% off in the Pro-Shop</li>
+                                        <li><t t-if="plan.bar_discount"><t t-esc="'{:g}'.format(plan.bar_discount)"/>% off at the bar and cafeteria</t><t t-else="">Bar and cafeteria at standard prices</t></li>
+                                    </ul>
+                                    <p class="club-muted small mb-0" t-if="renewal">Renewing extends your membership from its end date, so no days are lost.</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-7">
+                                <div class="alert alert-danger" role="alert" t-if="error" t-esc="error"/>
+                                <form t-attf-action="/membership/buy/#{plan.code}/submit" method="post" class="club-form" novalidate="novalidate">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="row g-3">
+                                        <t t-if="not customer">
+                                            <div class="col-12"><h5 class="mb-0">Your details</h5></div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="by-name">Your name *</label>
+                                                <input id="by-name" type="text" name="name" class="form-control" maxlength="100" t-att-value="form['name']"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="by-phone">Phone</label>
+                                                <input id="by-phone" type="tel" name="phone" class="form-control" maxlength="30" t-att-value="form['phone']"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="by-email">Email * <span class="club-muted fw-normal">(your login)</span></label>
+                                                <input id="by-email" type="email" name="email" class="form-control" t-att-value="form['email']"/>
+                                            </div>
+                                            <div class="col-md-6" t-if="needs_dob">
+                                                <label class="form-label" for="by-dob">Child's date of birth *</label>
+                                                <input id="by-dob" type="date" name="dob" class="form-control" t-att-value="form['dob']"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="by-pw">Choose a password *</label>
+                                                <input id="by-pw" type="password" name="password" class="form-control" minlength="8" autocomplete="new-password"/>
+                                                <div class="form-text">At least 8 characters. You will sign in with your email.</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="by-pw2">Confirm password *</label>
+                                                <input id="by-pw2" type="password" name="password_confirm" class="form-control" minlength="8" autocomplete="new-password"/>
+                                            </div>
+                                            <div class="col-12 club-muted small">Already a member or have an account? <a t-attf-href="/web/login?redirect=/membership/buy/#{plan.code}">Sign in</a> first.</div>
+                                        </t>
+                                        <div class="col-12" t-else="">
+                                            <div class="club-member-box club-member-on">
+                                                <i class="fa fa-id-card-o"/> <t t-esc="'Renewing for' if renewal else 'Joining as'"/> <strong t-esc="customer.name"/>
+                                                <t t-if="customer.member_id">(<span class="club-ref" t-esc="customer.member_id"/>)</t>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" t-if="customer and needs_dob">
+                                            <label class="form-label" for="by-dob2">Child's date of birth *</label>
+                                            <input id="by-dob2" type="date" name="dob" class="form-control" t-att-value="form['dob']"/>
+                                        </div>
+
+                                        <div class="col-12 mt-3"><h5 class="mb-0">Payment</h5></div>
+                                        <div class="col-12">
+                                            <div class="club-note mb-0"><strong>Test mode.</strong> No money is taken and only the last four digits are kept.
+                                                Use <code>4242 4242 4242 4242</code>, any future date and any 3 digit code.
+                                                <code>4000 0000 0000 0002</code> is always declined.</div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label" for="by-holder">Name on card *</label>
+                                            <input id="by-holder" type="text" name="holder" class="form-control" maxlength="100" autocomplete="cc-name" t-att-value="form['holder']"/>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label" for="by-number">Card number *</label>
+                                            <input id="by-number" type="text" name="number" class="form-control" inputmode="numeric"
+                                                   maxlength="23" autocomplete="cc-number" placeholder="4242 4242 4242 4242"/>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label" for="by-expiry">Expiry (MM/YY) *</label>
+                                            <input id="by-expiry" type="text" name="expiry" class="form-control" maxlength="7" autocomplete="cc-exp" placeholder="12/30"/>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label" for="by-cvc">Security code *</label>
+                                            <input id="by-cvc" type="password" name="cvc" class="form-control" inputmode="numeric" maxlength="4" autocomplete="cc-csc" placeholder="123"/>
+                                        </div>
+                                        <div class="club-hp" aria-hidden="true">
+                                            <label for="by-website">Leave this empty</label>
+                                            <input id="by-website" type="text" name="website_url" tabindex="-1" autocomplete="off"/>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-club-primary btn-lg w-100">
+                                                Pay ₹<t t-esc="'{:,.0f}'.format(plan.price)"/> and <t t-esc="'renew' if renewal else 'join'"/>
+                                            </button>
+                                            <p class="club-muted small mt-2 mb-0">Prefer to talk first? <a t-attf-href="/join?type=membership&amp;plan=#{plan.code}">Send us an enquiry</a>.</p>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

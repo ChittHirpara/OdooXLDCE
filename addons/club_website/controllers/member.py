@@ -56,7 +56,7 @@ class ClubMember(http.Controller):
         }
 
     @http.route('/my/club', type='http', auth='user', website=True, sitemap=False)
-    def my_club(self, **kw):
+    def my_club(self, paid=None, **kw):
         partner = request.env.user.partner_id.sudo()
         plan = partner._get_active_plan()
         today = club_today()
@@ -71,6 +71,7 @@ class ClubMember(http.Controller):
         enquiry = request.env['crm.lead'].sudo().search(
             [('partner_id', '=', partner.id), ('enquiry_ref', '!=', False)], order='id desc', limit=1)
         return request.render('club_website.my_club_page', {
+            'paid': paid if paid in ('joined', 'renewed') else None,
             'enquiry': enquiry and {
                 'reference': enquiry.enquiry_ref, 'plan': enquiry.interested_plan_id.name,
                 'url': '/club/enquiry/status/%s' % enquiry.enquiry_token},

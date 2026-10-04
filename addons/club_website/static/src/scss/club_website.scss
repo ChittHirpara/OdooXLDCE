@@ -207,3 +207,6 @@ a.nav-link[href="/join"] {
     .club-quote-stars svg { fill: #e2e8f0; &.on { fill: $club-gold; } }
     blockquote { flex-grow: 1; margin: .75rem 0 1rem; color: #334155; font-size: 1rem; }
     figcaption { font-size: .9rem; } }
+
+.club-site .club-plan-ask { display: block; text-align: center; margin-top: .6rem; font-size: .9rem; color: $club-muted; }
+.club-site .club-note code { background: #fef3c7; padding: .05rem .35rem; border-radius: .3rem; }

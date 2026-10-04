@@ -12,6 +12,11 @@
                 </t>
                 <section class="club-section">
                     <div class="container">
+                        <div class="alert alert-success" t-if="paid">
+                            <t t-if="paid == 'renewed'">Payment received and your membership is renewed.</t>
+                            <t t-else="">Welcome to the club! Payment received and your membership is active.</t>
+                            We have emailed your receipt.
+                        </div>
                         <div class="row g-4">
                             <div class="col-lg-5">
                                 <div class="club-member-card" t-if="is_member">
@@ -42,7 +47,7 @@
                                         Your membership ends in <t t-esc="days_left"/> day<t t-if="days_left != 1">s</t>.
                                     </div>
                                     <a t-if="expiring or not active"
-                                       t-attf-href="/join?type=membership&amp;plan=#{plan.code or ''}"
+                                       t-attf-href="/membership/buy/#{plan.code or 'gold'}"
                                        class="btn btn-club-primary w-100">Renew my membership</a>
                                 </div>
                                 <div class="club-summary" t-else="">
