@@ -19,3 +19,4 @@ from . import test_support
 from . import test_demo_extras
 from . import test_membership_purchase
 from . import test_desk_and_alerts
+from . import test_finance

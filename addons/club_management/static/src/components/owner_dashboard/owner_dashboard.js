@@ -18,7 +18,8 @@ export class OwnerDashboard extends Component {
         this.orm = useService("orm");
         this.action = useService("action");
         this.periods = PERIODS;
-        this.state = useState({ period: "month", data: null, loading: true });
+        this.notification = useService("notification");
+        this.state = useState({ period: "month", data: null, loading: true, shareTo: "", sharing: false, shareMessage: "" });
         onWillStart(() => this.load());
     }
 
@@ -31,6 +32,32 @@ export class OwnerDashboard extends Component {
     async setPeriod(period) {
         this.state.period = period;
         await this.load();
+    }
+
+    openLeave() {
+        this.action.doAction("hr_holidays.hr_leave_action_action_approve_department");
+    }
+
+    downloadCsv() {
+        window.location.href = `/club/report.csv?period=${this.state.period}`;
+    }
+
+    async emailReport() {
+        if (this.state.sharing) {
+            return;
+        }
+        this.state.sharing = true;
+        this.state.shareMessage = "";
+        try {
+            const sent = await this.orm.call("club.dashboard", "email_report", [this.state.period, this.state.shareTo]);
+            this.state.shareMessage = `Sent to ${sent}.`;
+            this.notification.add(this.state.shareMessage, { type: "success" });
+        } catch (err) {
+            const message = (err.data && err.data.message) || "The report could not be sent.";
+            this.notification.add(message, { type: "danger" });
+        } finally {
+            this.state.sharing = false;
+        }
     }
 
     openReports() {

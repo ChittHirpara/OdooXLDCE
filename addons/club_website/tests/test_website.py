@@ -418,7 +418,7 @@ class TestVisitorToMemberJourney(WebsiteCase):
         self.assertEqual(lead.stage_id.name, 'Quote Sent')
         self.assertIn('membership quote', self.get(status_url))
         quote = lead.order_ids
-        self.assertEqual(quote.amount_untaxed, 5000.0)
+        self.assertEqual(quote.amount_total, 5000.0)
         # 10-11. the customer accepts: the lead is won
         quote.action_confirm()
         self.assertTrue(lead.stage_id.is_won)

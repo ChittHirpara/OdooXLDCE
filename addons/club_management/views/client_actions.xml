@@ -21,6 +21,13 @@
         <field name="target">main</field>
     </record>
 
+    <!-- Member lookup: recognise a member quickly and see their history -->
+    <record id="action_club_member_lookup" model="ir.actions.client">
+        <field name="name">Member Lookup</field>
+        <field name="tag">club_management.member_lookup</field>
+        <field name="target">main</field>
+    </record>
+
     <!-- Club Home OWL Client Action: the landing page of the Club app -->
     <record id="action_club_home" model="ir.actions.client">
         <field name="name">Club Home</field>

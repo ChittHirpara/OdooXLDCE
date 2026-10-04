@@ -222,4 +222,5 @@
     </record>
     <!-- Product pictures (idempotent: only products without a picture get one). -->
     <function model="club.demo" name="load_product_images"/>
+    <function model="club.finance" name="ensure_tax"/>
 </odoo>

@@ -28,7 +28,7 @@
                                 </div>
                                 <div class="small text-muted">
                                     Memberships <t t-esc="money(row.membership)"/> · Courts <t t-esc="money(row.court)"/> ·
-                                    Shop <t t-esc="money(row.shop)"/> · Bar <t t-esc="money(row.bar)"/>
+                                    Shop <t t-esc="money(row.shop)"/> · Bar <t t-esc="money(row.bar)"/> · GST included <t t-esc="money(row.tax)"/>
                                 </div>
                             </div>
                         </t>

@@ -558,3 +558,23 @@ Visitors no longer have to send an enquiry to book a court or buy from the shop.
 - **Safety**: CSRF, honeypot, secret tokens, savepoints (a refused request leaves nothing), prices never read from the browser, one vague member-verification error.
 - **Staff view**: Club > Bookings and Bar & Shop Orders show a Source column and "Booked/Ordered Online" filters. Guest bookings also file a follow-up lead so the club can offer a membership.
 - **Tests**: 401 Python tests, plus `tests/e2e/flow_online.js` (34 browser checks).
+
+---
+
+## Problem statement coverage
+
+Each scene of the brief ("A Week at the Club") and where it is solved.
+
+| Scene in the brief | What the club has | Where |
+|---|---|---|
+| A new member walks in: who they are, plan, entitlements, expiry nobody remembers, recognised quickly with history | Member record with plan, member ID and QR card, expiry and automatic lapse, reminder e-mails; **Member Lookup** shows plan, discounts, bookings, orders, spend, warnings and checks them in; desk enrolment takes payment | Club > Members, Member Lookup, Membership Plans |
+| Booking a court on a busy evening: 1-hour sessions, 30-minute slots, 2 per day, member/walk-in price, cancel/reschedule, Friday social play, no double booking | `club.booking` rules enforced in Python and SQL, live availability grid on the site and at the desk, tier pricing, reschedule wizard, day-before reminder | Court Booking, `/courts`, Club > Bookings |
+| Gearing up: rackets, balls, shoes, accessories; stock and low-stock; order from home, collect or delivery; same shelf as the counter | Pro-Shop screen and website shop share one stock; reorder minimums, low-stock alert to managers; collect or deliver | Pro-Shop, `/club-shop` |
+| After the match at the bar: tabs, member discount automatically, cash/card/UPI, shifts, tables, what the bar earned | Bar & POS screen (tables, open tabs, discount from the member's plan, payment methods), POS shifts, bar revenue on the dashboard | Bar & POS, Club > Staff > POS Shifts |
+| A stranger finds the club online: plans and prices, what is free, shop, book a trial session; enquiries must not vanish | Public website with live availability and "Book a trial session"; enquiry becomes a CRM lead with follow-up, quote and welcome; buy a membership online (test card) | `/`, `/membership`, `/join`, Club > Enquiries |
+| The owner at the end of the month: how much, from where, what do we owe; business clients; employees to pay; leave; taxes; share the numbers | Owner Dashboard (today / week / month / all): revenue by source, **what we owe** (supplier bills and salaries), **GST in sales**, **business clients billed and unpaid**, payroll, leave waiting; Reports & Analytics by month; **Download CSV and e-mail the report** | Club > Owner Dashboard, Reports & Analytics |
+| Employees to pay, leave to approve | Standard Odoo Employees and Time Off; monthly salary per employee; **Payroll run** raises one vendor bill per person and pays them | Club > Staff > Employees, Time Off to Approve, Payroll |
+| Memberships and business clients to invoice | Membership quotes and invoices; companies are **Business Clients** with their own invoices (court blocks, events) and totals | Club > Business Clients |
+| Taxes to report | GST 18% is built into every club price; invoices show the tax inside the total; the dashboard and monthly analytics report it | Owner Dashboard, Analytics |
+
+Known simplification: payroll is a flat monthly salary per employee (Odoo's Payroll app is Enterprise-only); GST is a single included rate.

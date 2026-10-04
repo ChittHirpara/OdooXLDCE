@@ -72,6 +72,7 @@ class MembershipPlan(models.Model):
                 plan.product_id.write(vals)
             else:
                 plan.product_id = self.env['product.product'].create(vals)
+            self.env['club.finance'].apply_tax(plan.product_id)
 
     def _sync_pricelist(self):
         """Keep one pricelist per plan: shop % on the Club Shop category and

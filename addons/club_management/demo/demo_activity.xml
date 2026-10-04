@@ -4,4 +4,6 @@
     <function model="club.demo" name="load"/>
     <!-- More members, orders, feedback and tickets so the site looks lived in -->
     <function model="club.demo" name="load_extras"/>
+    <!-- Employees, leave, payroll, business clients and supplier bills -->
+    <function model="club.demo" name="load_finance_demo"/>
 </odoo>

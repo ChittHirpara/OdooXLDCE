@@ -110,6 +110,45 @@
                         <div class="small text-muted">complaints, booking, refund and order issues</div>
                     </div></div>
                 </div>
+                <h6 class="text-muted text-uppercase mb-2">What we owe, taxes and business clients</h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">We owe suppliers and staff</div>
+                        <div class="fs-3 fw-bold" t-att-class="state.data.money.owed_total ? 'text-danger' : ''" t-esc="money(state.data.money.owed_total)"/>
+                        <div class="small text-muted">
+                            Bills <t t-esc="money(state.data.money.owed_bills)"/> · Salaries <t t-esc="money(state.data.money.owed_salaries)"/>
+                        </div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">GST in sales (to report)</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.money.tax_collected)"/>
+                        <div class="small text-muted">tax included in the prices, this period</div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Business clients billed</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.money.business_billed)"/>
+                        <div class="small text-muted">
+                            <t t-esc="state.data.money.business_clients"/> clients · <t t-esc="money(state.data.money.business_open)"/> unpaid
+                        </div>
+                    </div></div>
+                    <div class="col-6 col-lg-3"><div class="card p-3 h-100">
+                        <div class="text-muted">Payroll this month</div>
+                        <div class="fs-3 fw-bold" t-esc="money(state.data.money.payroll_total)"/>
+                        <div class="small text-muted">
+                            <t t-esc="state.data.money.payroll_state"/> · <t t-esc="state.data.money.employees"/> employees ·
+                            <a href="#" t-on-click.prevent="openLeave"><t t-esc="state.data.money.pending_leave"/> leave to approve</a>
+                        </div>
+                    </div></div>
+                </div>
+                <div class="card p-3 mb-3">
+                    <h6 class="mb-2">Share these numbers</h6>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <button class="btn btn-outline-primary" t-on-click="downloadCsv"><i class="fa fa-download"/> Download (CSV)</button>
+                        <input class="form-control" style="max-width: 20rem;" type="email" placeholder="E-mail the report to..." t-model="state.shareTo"/>
+                        <button class="btn btn-primary" t-att-disabled="state.sharing" t-on-click="emailReport"><i class="fa fa-envelope-o"/> Send</button>
+                        <span class="text-muted small" t-if="state.shareMessage" t-esc="state.shareMessage"/>
+                    </div>
+                </div>
                 <div class="text-end">
                     <button class="btn btn-link" t-on-click="openReports">Open Reports &amp; Analytics <i class="fa fa-arrow-right"/></button>
                 </div>

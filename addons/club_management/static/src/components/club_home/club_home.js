@@ -13,6 +13,7 @@ const GROUPS = [
             { icon: "fa-calendar-check-o", name: "Book a court", text: "See free slots and book for a member or a walk-in.", action: "club_management.action_club_court_booking_ui", count: "bookings_today", countLabel: "today" },
             { icon: "fa-shopping-bag", name: "Pro-Shop", text: "Sell rackets, balls and gear. Member prices apply.", action: "club_management.action_club_shop_ui" },
             { icon: "fa-coffee", name: "Bar & POS", text: "Take a bar or cafeteria order and settle the tab.", action: "club_management.action_club_bar_pos_ui" },
+            { icon: "fa-qrcode", name: "Member lookup", text: "Scan a card or search: plan, history and check-in.", action: "club_management.action_club_member_lookup" },
             { icon: "fa-id-card-o", name: "Membership plans", text: "Compare Gold, Silver and Junior at a glance.", action: "club_management.action_club_membership_plans_ui" },
         ],
     },
@@ -40,6 +41,9 @@ const GROUPS = [
             { icon: "fa-bar-chart", name: "Reports & analytics", text: "Monthly revenue, tiers, utilization and best sellers.", action: "club_management.action_club_analytics" },
             { icon: "fa-heartbeat", name: "System monitoring", text: "What needs attention: payments, stock, expiries, shifts.", action: "club_management.action_club_monitoring", count: "low_stock", countLabel: "low stock" },
             { icon: "fa-user-circle-o", name: "Staff", text: "Team, shifts, roles and who did what.", action: "club_management.action_club_staff_overview" },
+            { icon: "fa-briefcase", name: "Business clients", text: "Companies we invoice for court blocks and events.", action: "club_management.action_club_business_clients" },
+            { icon: "fa-money", name: "Payroll", text: "Raise and pay the month salaries.", action: "club_management.action_club_payroll" },
+            { icon: "fa-calendar-times-o", name: "Leave to approve", text: "Time off requests from the team.", action: "hr_holidays.hr_leave_action_action_approve_department", count: "pending_leave", countLabel: "waiting" },
         ],
     },
     {
