@@ -136,7 +136,10 @@ class TestOwnerReports(TransactionCase):
         return reachable.mapped('name')
 
     def test_the_new_menus_exist_for_a_manager(self):
-        names = self.visible_menus(self.env.ref('base.user_admin'))
+        # The whole Club app may be switched off in the app switcher (menu_tidy.xml), so look
+        # at the menus themselves, hidden or not.
+        names = self.env['ir.ui.menu'].with_context(active_test=False).search([
+            ('parent_path', '=like', self.env.ref('club_management.menu_club_root').parent_path + '%')]).mapped('name')
         for expected in ('Owner Dashboard', 'Reports & Analytics', 'Staff', 'Notifications', 'Administration',
                          'Staff Overview', 'POS Shifts', 'Staff Activity',
                          'Notification Templates', 'Products', 'Record History'):
