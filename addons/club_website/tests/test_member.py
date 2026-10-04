@@ -113,15 +113,81 @@ class TestMyClub(HttpCase):
         page = self.url_open('/my/club').text
         self.assertIn('not a member yet', page)
 
-    def test_booking_form_is_filled_in_for_a_signed_in_member(self):
+    def test_booking_form_for_a_signed_in_member_asks_for_nothing(self):
         court = self.env['club.court'].create({'name': 'Prefill Court', 'sport': 'tennis', 'list_price': 500.0})
         self.authenticate('tara.member@example.com', 'tara-test-pw-1')
         from odoo.addons.club_management.models.booking import club_today
         from datetime import timedelta
         day = (club_today() + timedelta(days=2)).isoformat()
         page = self.url_open('/book?court_id=%d&date=%s&time=09:00' % (court.id, day)).text
-        self.assertIn('value="Tara Member"', page)
-        self.assertIn('value="%s"' % self.partner.member_id, page)
+        self.assertIn('Signed in as', page)
+        self.assertIn(self.partner.member_id, page)
+        self.assertNotIn('name="member_ref"', page)
+        self.assertNotIn('name="name"', page, "a signed-in member is not asked for their details again")
+
+    def test_a_member_books_two_courts_signed_in_once(self):
+        from datetime import timedelta
+        from odoo import http
+        from odoo.addons.club_management.models.booking import club_today
+        env = self.env
+        court_a = env['club.court'].create({'name': 'Twice A', 'sport': 'tennis', 'list_price': 500.0})
+        court_b = env['club.court'].create({'name': 'Twice B', 'sport': 'padel', 'list_price': 700.0})
+        day = (club_today() + timedelta(days=3)).isoformat()
+        self.authenticate('tara.member@example.com', 'tara-test-pw-1')
+        tokens = []
+        for court, hour in ((court_a, '09:00'), (court_b, '11:00')):
+            data = {'court_id': court.id, 'date': day, 'time': hour, 'players': '1',
+                    'csrf_token': http.Request.csrf_token(self)}     # no name, phone, e-mail or member ID
+            response = self.url_open('/book/submit', data=data, allow_redirects=False)
+            self.assertEqual(response.status_code, 303, response.text[:300])
+            tokens.append(response.headers['Location'].split('?')[0].rsplit('/', 1)[1])
+        bookings = env['club.booking'].search([('access_token', 'in', tokens)])
+        self.assertEqual(len(bookings), 2)
+        self.assertEqual(bookings.partner_id, self.partner, "both bookings belong to the signed-in member")
+        self.assertEqual(set(bookings.mapped('tier')), {'gold'})
+
+    def test_the_two_bookings_a_day_limit_still_applies_to_a_signed_in_member(self):
+        from datetime import timedelta
+        from odoo import http
+        from odoo.addons.club_management.models.booking import club_today
+        court = self.env['club.court'].create({'name': 'Limit Court', 'sport': 'tennis', 'list_price': 500.0})
+        day = (club_today() + timedelta(days=4)).isoformat()
+        self.authenticate('tara.member@example.com', 'tara-test-pw-1')
+        statuses = []
+        for hour in ('08:00', '10:00', '12:00'):
+            data = {'court_id': court.id, 'date': day, 'time': hour, 'csrf_token': http.Request.csrf_token(self)}
+            statuses.append(self.url_open('/book/submit', data=data, allow_redirects=False).status_code)
+        self.assertEqual(statuses, [303, 303, 400], "the third booking in one day is refused")
+
+    def test_a_signed_in_member_checks_out_with_their_discount_and_no_details(self):
+        from odoo import http
+        env = self.env
+        shop = env.ref('club_management.product_category_shop')
+        product = env['product.product'].create({'name': 'Member Grip', 'list_price': 1000.0,
+                                                  'categ_id': shop.id, 'club_category': 'accessories'})
+        self.authenticate('tara.member@example.com', 'tara-test-pw-1')
+        token = http.Request.csrf_token(self)
+        self.url_open('/club-shop/cart/add', data={'product_id': product.id, 'qty': 1, 'csrf_token': token})
+        page = self.url_open('/club-shop/checkout').text
+        self.assertIn('Signed in as', page)
+        self.assertNotIn('name="member_ref"', page)
+        response = self.url_open('/club-shop/checkout/submit', allow_redirects=False,
+                                 data={'fulfillment': 'collect', 'csrf_token': token})
+        self.assertEqual(response.status_code, 303, response.text[:300])
+        order = env['club.order'].search([('partner_id', '=', self.partner.id)], order='id desc', limit=1)
+        self.assertEqual(order.plan_id, env.ref('club_management.plan_gold'))
+        self.assertLess(order.total, 1000.0, "the Gold shop discount applied")
+
+    def test_a_guest_sees_a_sign_in_link_instead_of_a_member_id_box(self):
+        court = self.env['club.court'].create({'name': 'Guest Court', 'sport': 'tennis', 'list_price': 500.0})
+        from odoo.addons.club_management.models.booking import club_today
+        from datetime import timedelta
+        day = (club_today() + timedelta(days=2)).isoformat()
+        self.authenticate(None, None)
+        page = self.url_open('/book?court_id=%d&date=%s&time=09:00' % (court.id, day)).text
+        self.assertIn('Already a member?', page)
+        self.assertIn('/web/login?redirect=', page)
+        self.assertNotIn('name="member_ref"', page)
 
     def test_portal_home_and_menu_link_to_my_club(self):
         self.authenticate('tara.member@example.com', 'tara-test-pw-1')

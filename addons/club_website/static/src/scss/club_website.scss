@@ -199,3 +199,11 @@ a.nav-link[href="/join"] {
         input:focus-visible + label svg { outline: 2px solid $club-green; outline-offset: 2px; } }
     .club-help-links { color: $club-muted; font-size: .9rem; }
 }
+
+.club-site .club-member-on { border-style: solid; border-color: #a7f3d0; background: #ecfdf5; color: #065f46; }
+
+// Home: what members say
+.club-site .club-quote { background: #fff; border: 1px solid $club-line; border-radius: 1.1rem; padding: 1.5rem; height: 100%; margin: 0; display: flex; flex-direction: column;
+    .club-quote-stars svg { fill: #e2e8f0; &.on { fill: $club-gold; } }
+    blockquote { flex-grow: 1; margin: .75rem 0 1rem; color: #334155; font-size: 1rem; }
+    figcaption { font-size: .9rem; } }

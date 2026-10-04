@@ -36,6 +36,7 @@ class ClubFeedback(models.Model):
     order_id = fields.Many2one('club.order', string='Order')
     source = fields.Selection([('website', 'Website'), ('staff', 'Front desk')], default='website')
     reviewed = fields.Boolean(help="Tick once someone on the team has read it.")
+    public = fields.Boolean(string='Show on website', help="Show this comment (first name and initial only) in 'What members say' on the home page. Needs a comment and 4 or 5 stars.")
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
 
     _sql_constraints = [

@@ -2,4 +2,6 @@
 <odoo noupdate="1">
     <!-- Bookings, stock levels and enquiries are generated relative to today's date. -->
     <function model="club.demo" name="load"/>
+    <!-- More members, orders, feedback and tickets so the site looks lived in -->
+    <function model="club.demo" name="load_extras"/>
 </odoo>

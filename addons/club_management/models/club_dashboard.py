@@ -322,6 +322,36 @@ class ClubDashboard(models.AbstractModel):
         return {'staff': staff, 'shifts': shifts, 'open_shifts': sum(1 for s in shifts if s['state'] != 'closed')}
 
     # ------------------------------------------------------------------
+    # club home (the landing page for everyone on the team)
+    # ------------------------------------------------------------------
+    @api.model
+    def get_home(self):
+        """Numbers for the Club Home page. Open to all club staff: counts only, no revenue."""
+        if not self.env.user.has_group('club_management.group_club_staff'):
+            raise AccessError("Only club staff can open the club home page.")
+        env = self.sudo().env
+        today = club_today()
+        low_stock = len(env['stock.warehouse.orderpoint'].search([]).filtered(
+            lambda op: op.product_id.qty_available < op.product_min_qty))
+        days = int(env['ir.config_parameter'].get_param('club_management.reminder_days', DEFAULT_REMINDER_DAYS))
+        return {
+            'user': self.env.user.name,
+            'is_manager': self.env.user.has_group('club_management.group_club_manager'),
+            'today': today.strftime('%A %d %B %Y'),
+            'counts': {
+                'bookings_today': env['club.booking'].search_count([
+                    ('booking_date', '=', today), ('state', '!=', 'cancelled')]),
+                'open_enquiries': env['crm.lead'].search_count([
+                    ('enquiry_ref', '!=', False), ('active', '=', True), ('probability', '<', 100)]),
+                'open_tickets': env['club.ticket'].search_count([('state', 'in', ('new', 'progress'))]),
+                'low_stock': low_stock,
+                'expiring': env['res.partner'].search_count([
+                    ('is_member', '=', True), ('member_state', '=', 'active'),
+                    ('expiry_date', '>=', today), ('expiry_date', '<=', today + timedelta(days=days))]),
+            },
+        }
+
+    # ------------------------------------------------------------------
     # system monitoring
     # ------------------------------------------------------------------
     @api.model

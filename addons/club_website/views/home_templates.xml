@@ -19,6 +19,21 @@
                     </div>
                 </section>
 
+                <t t-set="proof" t-value="site.social_proof()"/>
+                <section class="club-stats">
+                    <div class="container">
+                        <div class="row g-3 text-center">
+                            <div class="col-6 col-md-3"><strong t-esc="proof['members']"/><span>Active members</span></div>
+                            <div class="col-6 col-md-3"><strong t-esc="'{:,}'.format(proof['sessions'])"/><span>Court sessions booked</span></div>
+                            <div class="col-6 col-md-3"><strong t-esc="proof['courts']"/><span>Courts and nets</span></div>
+                            <div class="col-6 col-md-3">
+                                <strong><t t-if="proof['ratings']"><t t-esc="'%.1f' % proof['rating']"/> / 5</t><t t-else="">New</t></strong>
+                                <span><t t-if="proof['ratings']">from <t t-esc="proof['ratings']"/> member ratings</t><t t-else="">be the first to rate us</t></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <section class="club-section">
                     <div class="container">
                         <h2 class="club-section-title">Everything under one roof</h2>
@@ -75,6 +90,32 @@
                             </t>
                         </div>
                         <p class="text-center mt-4"><a href="/club-shop">Browse the whole shop</a></p>
+                    </div>
+                </section>
+
+                <t t-set="voices" t-value="site.testimonials()"/>
+                <section class="club-section" t-if="voices">
+                    <div class="container">
+                        <h2 class="club-section-title">What members say</h2>
+                        <p class="club-section-sub">Real feedback from the club. <a href="/feedback">Share yours</a>.</p>
+                        <div class="row g-4">
+                            <t t-foreach="voices" t-as="voice">
+                                <div class="col-md-6 col-lg-4">
+                                    <figure class="club-quote">
+                                        <div class="club-quote-stars" t-att-aria-label="'%d out of 5 stars' % voice['rating']">
+                                            <t t-foreach="range(5)" t-as="star">
+                                                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"
+                                                     t-attf-class="#{star &lt; voice['rating'] and 'on' or ''}">
+                                                    <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.400l6.600-.9z"/>
+                                                </svg>
+                                            </t>
+                                        </div>
+                                        <blockquote t-esc="voice['comment']"/>
+                                        <figcaption><strong t-esc="voice['author']"/> <span class="club-muted" t-esc="voice['about']"/></figcaption>
+                                    </figure>
+                                </div>
+                            </t>
+                        </div>
                     </div>
                 </section>
 

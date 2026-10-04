@@ -24,6 +24,25 @@ def signed_in_defaults():
     return values
 
 
+def signed_in_member():
+    """The member behind the current session (a signed-in portal user who is a club member),
+    or an empty recordset. Their identity comes from the session, never from the form."""
+    user = request.env.user
+    partner = user.partner_id.sudo()
+    if user.share and not user._is_public() and partner.is_member:
+        return partner
+    return request.env['res.partner']
+
+
+def member_card(partner):
+    """What the booking and checkout pages show about the signed-in member."""
+    if not partner:
+        return None
+    plan = partner._get_active_plan()
+    return {'name': partner.name, 'member_id': partner.member_id,
+            'plan': plan.name if plan else None, 'active': bool(plan)}
+
+
 class ClubMember(http.Controller):
 
     def _booking_row(self, booking):

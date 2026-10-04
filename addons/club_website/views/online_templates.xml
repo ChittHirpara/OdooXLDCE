@@ -2,22 +2,15 @@
 <odoo>
     <!-- Who is ordering / booking: shared by the booking and checkout forms.
          Params: form (dict with member_ref, member_email) -->
-    <template id="member_check_fields" name="Member verification fields">
-        <details class="club-member-box" t-att-open="'open' if form['member_ref'] else None">
-            <summary>I am a member (use my member price)</summary>
-            <div class="row g-3 mt-1">
-                <div class="col-md-6">
-                    <label class="form-label" for="mem-ref">Member ID</label>
-                    <input id="mem-ref" type="text" name="member_ref" class="form-control" placeholder="CC-00001"
-                           maxlength="20" t-att-value="form['member_ref']"/>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label" for="mem-email">E-mail on your membership</label>
-                    <input id="mem-email" type="email" name="member_email" class="form-control" t-att-value="form['member_email']"/>
-                </div>
-                <div class="col-12 form-text">We check the ID and e-mail together. Leave this closed to continue as a guest.</div>
-            </div>
-        </details>
+    <template id="member_check_fields" name="Member notice">
+        <div class="club-member-box club-member-on" t-if="member">
+            <i class="fa fa-id-card-o"/> Signed in as <strong t-esc="member['name']"/> (<span class="club-ref" t-esc="member['member_id']"/>).
+            <t t-if="member['active']"><t t-esc="member['plan']"/> member prices apply automatically.</t>
+            <t t-else="">Your membership has ended, so standard prices apply.</t>
+        </div>
+        <p class="club-muted small mb-0" t-else="">
+            Already a member? <a t-att-href="login_url">Sign in</a> to book and shop at your member price.
+        </p>
     </template>
 
     <!-- ============================ COURT BOOKING ============================ -->
@@ -38,7 +31,8 @@
                                 <h3 t-esc="court.name"/>
                                 <p class="club-muted"><t t-esc="when"/> · <strong><t t-esc="start_label"/> to <t t-esc="end_label"/></strong> (1 hour)</p>
                                 <p>Guest price <strong>₹<t t-esc="'{:,.0f}'.format(court.list_price)"/></strong>.
-                                   Members pay their tier rate: enter your member ID below.</p>
+                                   <t t-if="member">Your member rate is applied automatically.</t>
+                                   <t t-else="">Members pay their tier rate once signed in.</t></p>
                                 <p class="club-note" t-if="is_social">Friday is social play: several players share the court, so tell us how many are coming.</p>
                             </div>
                             <form action="/book/submit" method="post" class="club-form" novalidate="novalidate">
@@ -47,6 +41,7 @@
                                 <input type="hidden" name="date" t-att-value="book_date"/>
                                 <input type="hidden" name="time" t-att-value="book_time"/>
                                 <div class="row g-3">
+                                    <t t-if="not member">
                                     <div class="col-md-6">
                                         <label class="form-label" for="bk-name">Your name *</label>
                                         <input id="bk-name" type="text" name="name" class="form-control" maxlength="100"
@@ -61,6 +56,7 @@
                                         <label class="form-label" for="bk-email">E-mail (for your confirmation)</label>
                                         <input id="bk-email" type="email" name="email" class="form-control" t-att-value="form['email']"/>
                                     </div>
+                                    </t>
                                     <div class="col-md-6" t-if="is_social">
                                         <label class="form-label" for="bk-players">Players</label>
                                         <input id="bk-players" type="number" name="players" min="1" max="20" class="form-control"
@@ -206,6 +202,7 @@
                                 <form action="/club-shop/checkout/submit" method="post" class="club-form" novalidate="novalidate">
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                     <div class="row g-3">
+                                        <t t-if="not member">
                                         <div class="col-md-6">
                                             <label class="form-label" for="co-name">Your name *</label>
                                             <input id="co-name" type="text" name="name" class="form-control" maxlength="100" t-att-value="form['name']"/>
@@ -218,6 +215,7 @@
                                             <label class="form-label" for="co-email">E-mail (for your confirmation)</label>
                                             <input id="co-email" type="email" name="email" class="form-control" t-att-value="form['email']"/>
                                         </div>
+                                        </t>
                                         <div class="col-12">
                                             <label class="form-label d-block">How do you want it?</label>
                                             <div class="form-check">

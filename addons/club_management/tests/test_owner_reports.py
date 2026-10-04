@@ -149,3 +149,42 @@ class TestOwnerReports(TransactionCase):
         names = self.visible_menus(self.desk_user('desk_menu'))
         for hidden in ('Owner Dashboard', 'Reports & Analytics', 'Staff Overview', 'Notifications', 'Administration'):
             self.assertNotIn(hidden, names)
+
+
+@tagged('post_install', '-at_install', 'club_management')
+class TestClubHome(TransactionCase):
+    """The landing page of the Club app, open to every member of the team."""
+
+    def desk(self, login, manager=False):
+        group = 'club_management.group_club_manager' if manager else 'club_management.group_club_staff'
+        return self.env['res.users'].create({
+            'name': login, 'login': login, 'groups_id': [(6, 0, [self.env.ref(group).id])]})
+
+    def test_staff_get_counts_but_no_owner_tiles(self):
+        data = self.env['club.dashboard'].with_user(self.desk('home_staff')).get_home()
+        self.assertFalse(data['is_manager'])
+        for key in ('bookings_today', 'open_enquiries', 'open_tickets', 'low_stock', 'expiring'):
+            self.assertGreaterEqual(data['counts'][key], 0)
+        self.assertNotIn('revenue', str(data).lower())
+
+    def test_a_manager_is_flagged_so_the_owner_tiles_show(self):
+        self.assertTrue(self.env['club.dashboard'].with_user(self.desk('home_boss', manager=True)).get_home()['is_manager'])
+
+    def test_only_club_staff_can_open_it(self):
+        outsider = self.env['res.users'].create({'name': 'Outsider', 'login': 'home_outsider'})
+        with self.assertRaises(AccessError):
+            self.env['club.dashboard'].with_user(outsider).get_home()
+
+    def test_the_counts_follow_the_data(self):
+        Dash = self.env['club.dashboard']
+        before = Dash.get_home()['counts']['open_tickets']
+        self.env['club.ticket'].create_public('Hal', 'complaint', 'Home test', email='hal@example.com')
+        self.assertEqual(Dash.get_home()['counts']['open_tickets'], before + 1)
+
+    def test_the_club_app_opens_on_home_and_has_an_icon(self):
+        root = self.env.ref('club_management.menu_club_root')
+        self.assertTrue(root.active)
+        self.assertTrue(root.web_icon_data, "the Club app has its own icon in the app grid")
+        children = root.child_id.sorted('sequence')
+        self.assertEqual(children[0].name, 'Home')
+        self.assertEqual(children[0].action, self.env.ref('club_management.action_club_home'))

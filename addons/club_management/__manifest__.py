@@ -62,6 +62,8 @@
             'club_management/static/src/components/staff_overview/staff_overview.js',
             'club_management/static/src/components/monitoring/monitoring.xml',
             'club_management/static/src/components/monitoring/monitoring.js',
+            'club_management/static/src/components/club_home/club_home.xml',
+            'club_management/static/src/components/club_home/club_home.js',
         ],
     },
     'application': True,

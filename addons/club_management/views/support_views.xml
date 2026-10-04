@@ -112,6 +112,12 @@
         <field name="res_model">club.ticket</field>
         <field name="view_mode">tree,form,graph</field>
         <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No support tickets</p>
+            <p>Members and visitors send complaints, booking or order problems and refund requests
+               from the website. They appear here; press Start when you pick one up and Resolve
+               when it is done, and the customer is told by email.</p>
+        </field>
     </record>
 
     <!-- ================= Feedback ================= -->
@@ -129,6 +135,7 @@
                 <field name="booking_id" optional="hide"/>
                 <field name="order_id" optional="hide"/>
                 <field name="reviewed" widget="boolean_toggle"/>
+                <field name="public" widget="boolean_toggle"/>
             </tree>
         </field>
     </record>
@@ -145,6 +152,7 @@
                             <field name="rating"/>
                             <field name="stars"/>
                             <field name="reviewed"/>
+                            <field name="public"/>
                         </group>
                         <group>
                             <field name="partner_id"/>
@@ -170,6 +178,7 @@
                 <field name="comment"/>
                 <filter name="low" string="Low ratings (1-2)" domain="[('rating', '&lt;=', 2)]"/>
                 <filter name="unreviewed" string="Not reviewed" domain="[('reviewed', '=', False)]"/>
+                <filter name="public" string="Shown on website" domain="[('public', '=', True)]"/>
                 <group expand="0" string="Group By">
                     <filter name="group_area" string="Area" context="{'group_by': 'area'}"/>
                     <filter name="group_rating" string="Rating" context="{'group_by': 'rating'}"/>
@@ -202,6 +211,11 @@
         <field name="name">Feedback</field>
         <field name="res_model">club.feedback</field>
         <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No feedback yet</p>
+            <p>Star ratings and comments from the website land here. Tick "Show on website" on a
+               4 or 5 star comment to feature it on the home page.</p>
+        </field>
     </record>
 
     <record id="action_club_feedback_analysis" model="ir.actions.act_window">

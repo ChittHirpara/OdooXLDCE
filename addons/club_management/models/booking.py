@@ -469,7 +469,7 @@ class Booking(models.Model):
 
     @api.model
     def create_public_booking(self, court_id, date_str, time_str, name, phone=None, email=None,
-                              players=1, member_ref=None, member_email=None):
+                              players=1, member_ref=None, member_email=None, member=None):
         """Book a court online, instantly confirmed, for a website visitor.
 
         A guest pays the court's list price. A member who gives their member ID and the
@@ -486,7 +486,10 @@ class Booking(models.Model):
         start = self._club_start_utc(date_str, time_str)
         self._check_public_window(start)
         partner = self.env['res.partner']
-        if member_ref:
+        if member:      # a signed-in member: the website already knows who they are
+            partner = member.sudo()
+            name = partner.name
+        elif member_ref:
             partner = self.env['res.partner']._club_verify_member(member_ref, member_email)
             name = partner.name
         else:

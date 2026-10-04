@@ -5,6 +5,11 @@ from odoo.addons.club_management.models.club_pos_and_shop import MAX_ONLINE_QTY
 LOW_STOCK = 5
 
 
+def env_labels(model):
+    """(area, label) pairs of the feedback areas, for display."""
+    return model.env['club.feedback']._fields['area'].selection
+
+
 class ClubWebsiteData(models.AbstractModel):
     """What the public pages show. Visitors have no access rights, so everything is read as
     superuser, and only the fields a page needs are returned: no costs, no customers."""
@@ -76,6 +81,32 @@ class ClubWebsiteData(models.AbstractModel):
             qty = max(1, min(int(qty), product['stock'], MAX_ONLINE_QTY))
             lines.append({'product': product, 'qty': qty, 'total': product['price'] * qty})
         return lines
+
+    @api.model
+    def social_proof(self):
+        """Honest numbers for the home page: active members, sessions booked and the average rating."""
+        env = self.sudo().env
+        rating = env['club.feedback'].rating_summary()
+        return {
+            'members': env['res.partner'].search_count([('is_member', '=', True), ('member_state', '=', 'active')]),
+            'sessions': env['club.booking'].search_count([('state', 'in', ('confirmed', 'done'))]),
+            'courts': env['club.court'].search_count([('active', '=', True)]),
+            'rating': rating['average'], 'ratings': rating['count'],
+        }
+
+    @api.model
+    def testimonials(self, limit=6):
+        """Feedback the club chose to show: 4-5 stars with a comment. Only first name and initial."""
+        labels = dict(env_labels(self))
+        rows = self.env['club.feedback'].sudo().search([
+            ('public', '=', True), ('rating', '>=', 4), ('comment', '!=', False)], order='id desc', limit=limit)
+        result = []
+        for row in rows:
+            parts = (row.name or 'Club member').split()
+            author = parts[0] + (' %s.' % parts[-1][0] if len(parts) > 1 else '')
+            result.append({'comment': row.comment, 'rating': row.rating, 'author': author,
+                           'about': labels.get(row.area, '')})
+        return result
 
     @api.model
     def stock_label(self, stock):

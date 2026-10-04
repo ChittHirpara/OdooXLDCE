@@ -35,4 +35,11 @@
     <record id="base.menu_management" model="ir.ui.menu">
         <field name="active" eval="False"/>
     </record>
+
+    <!-- The Club app in the app grid: first, with its own icon, opening on the Club Home page -->
+    <record id="menu_club_root" model="ir.ui.menu">
+        <field name="sequence">0</field>
+        <field name="web_icon">club_management,static/description/icon.svg</field>
+    </record>
+    <menuitem id="menu_club_home" name="Home" parent="menu_club_root" action="action_club_home" sequence="1"/>
 </odoo>

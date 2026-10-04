@@ -275,7 +275,7 @@ class ClubOrderService(models.AbstractModel):
 
     @api.model
     def place_public_order(self, items, name, phone=None, email=None, fulfillment='collect',
-                           address=None, member_ref=None, member_email=None):
+                           address=None, member_ref=None, member_email=None, member=None):
         """A website visitor's pro-shop order: priced on the server, stock deducted, paid at the
         club (collect) or on delivery. A member who gives their member ID and the e-mail on file
         gets their tier price. Only products sold in the public shop can be ordered this way.
@@ -285,7 +285,11 @@ class ClubOrderService(models.AbstractModel):
         phone = re.sub(r'[^\d+]', '', phone or '')
         email = email_normalize((email or '').strip()) or False
         partner = self.env['res.partner']
-        if member_ref:
+        if member:      # a signed-in member: the website already knows who they are
+            partner = member.sudo()
+            name = partner.name
+            email = email or email_normalize(partner.email or '') or False
+        elif member_ref:
             partner = self.env['res.partner']._club_verify_member(member_ref, member_email)
             name = partner.name
         else:

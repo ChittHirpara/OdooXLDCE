@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="club_management.ClubHome">
+        <div class="o_club_home p-4">
+            <t t-if="state.data">
+                <div class="mb-4">
+                    <h2 class="m-0">Welcome, <t t-esc="state.data.user"/></h2>
+                    <div class="text-muted"><t t-esc="state.data.today"/> · The Champions Club</div>
+                </div>
+                <t t-foreach="groups" t-as="group" t-key="group.title">
+                    <h6 class="text-uppercase text-muted mt-4 mb-2" t-esc="group.title"/>
+                    <div class="row g-3">
+                        <t t-foreach="group.tiles" t-as="tile" t-key="tile.name">
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <button type="button" class="o_club_tile card h-100 w-100 text-start p-3 border"
+                                        t-on-click="() => this.open(tile)">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <span class="o_club_tile_icon"><i t-att-class="'fa fa-fw fa-2x ' + tile.icon"/></span>
+                                        <span class="flex-grow-1">
+                                            <span class="d-flex justify-content-between align-items-center">
+                                                <strong class="fs-5" t-esc="tile.name"/>
+                                                <span t-if="count(tile) !== null" class="badge rounded-pill"
+                                                      t-att-class="count(tile) ? 'text-bg-primary' : 'text-bg-light border'">
+                                                    <t t-esc="count(tile)"/> <t t-esc="tile.countLabel"/>
+                                                </span>
+                                            </span>
+                                            <span class="d-block text-muted small mt-1" t-esc="tile.text"/>
+                                        </span>
+                                    </div>
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+            <div t-else="" class="text-muted">Loading...</div>
+        </div>
+    </t>
+</templates>
